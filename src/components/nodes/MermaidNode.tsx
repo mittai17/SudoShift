@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { GitGraph } from 'lucide-react';
-import { NodeData } from '../types';
+import { NodeData } from '../../types';
 import mermaid from 'mermaid';
+import NodeWrapper from './NodeWrapper';
 
 export default function MermaidNode({ data, id }: { data: NodeData, id: string }) {
   const { task, onChange } = data;
@@ -41,10 +42,11 @@ export default function MermaidNode({ data, id }: { data: NodeData, id: string }
 
   // N8N style nodes: dark purple for Diagram nodes
   return (
-    <div className="flex flex-col w-96 rounded-xl shadow-md bg-white border border-gray-200 overflow-hidden transition-shadow hover:shadow-lg">
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-gray-400 border-2 border-white -ml-0.5" />
+    <NodeWrapper>
+      <div className="flex flex-col w-96 rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg">
+      <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
-      <div className="bg-[#8b5cf6] px-3 py-2 flex items-center space-x-2 text-white">
+      <div className="bg-[#8b5cf6] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white">
         <GitGraph className="w-4 h-4 opacity-80" />
         <h3 className="font-semibold text-sm leading-tight tracking-tight shadow-sm w-full truncate">
           Mermaid Diagram
@@ -73,7 +75,9 @@ export default function MermaidNode({ data, id }: { data: NodeData, id: string }
         )}
       </div>
 
-      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-[#8b5cf6] border-2 border-white -mr-0.5" />
+      <Handle type="source" position={Position.Right} className="w-4 h-4 bg-[#8b5cf6] border-2 border-white -mr-2 z-10" />
     </div>
+  
+    </NodeWrapper>
   );
 }

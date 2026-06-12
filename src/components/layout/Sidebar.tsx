@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrainCircuit, Youtube, Loader2, ListPlus, StickyNote, GitGraph } from 'lucide-react';
+import { BrainCircuit, Youtube, Loader2, ListPlus, StickyNote, GitGraph, Table as TableIcon, Image as ImageIcon, Link2, CheckSquare, Code2, Film, Palette, Timer, Calculator, Calendar, Sigma } from 'lucide-react';
 
 interface SidebarProps {
   onAddNodes: (nodes: any[]) => void;
@@ -103,6 +103,105 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
             >
               <GitGraph className="w-4 h-4 text-[#8b5cf6]" />
               <span className="text-xs font-medium text-gray-700">Mermaid</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#10b981] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'tableNodeType')}
+              draggable
+            >
+              <TableIcon className="w-4 h-4 text-[#10b981]" />
+              <span className="text-xs font-medium text-gray-700">Table</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#f59e0b] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'imageNodeType')}
+              draggable
+            >
+              <ImageIcon className="w-4 h-4 text-[#f59e0b]" />
+              <span className="text-xs font-medium text-gray-700">Image</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#3b82f6] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'linkNodeType')}
+              draggable
+            >
+              <Link2 className="w-4 h-4 text-[#3b82f6]" />
+              <span className="text-xs font-medium text-gray-700">Link</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#ec4899] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'checklistNodeType')}
+              draggable
+            >
+              <CheckSquare className="w-4 h-4 text-[#ec4899]" />
+              <span className="text-xs font-medium text-gray-700">Checklist</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#6b7280] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'codeNodeType')}
+              draggable
+            >
+              <Code2 className="w-4 h-4 text-[#6b7280]" />
+              <span className="text-xs font-medium text-gray-700">Code</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#ef4444] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'videoNodeType')}
+              draggable
+            >
+              <Film className="w-4 h-4 text-[#ef4444]" />
+              <span className="text-xs font-medium text-gray-700">Video</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#a855f7] hover:bg-white transition-all col-span-2 sm:col-span-1"
+              onDragStart={(event) => onDragStart(event, 'whiteboardNodeType')}
+              draggable
+            >
+              <Palette className="w-4 h-4 text-[#a855f7]" />
+              <span className="text-xs font-medium text-gray-700">Whiteboard</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#f43f5e] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'timerNodeType')}
+              draggable
+            >
+              <Timer className="w-4 h-4 text-[#f43f5e]" />
+              <span className="text-xs font-medium text-gray-700">Timer</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-zinc-800 hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'calculatorNodeType')}
+              draggable
+            >
+              <Calculator className="w-4 h-4 text-zinc-800" />
+              <span className="text-xs font-medium text-gray-700">Calculator</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#0ea5e9] hover:bg-white transition-all"
+              onDragStart={(event) => onDragStart(event, 'calendarNodeType')}
+              draggable
+            >
+              <Calendar className="w-4 h-4 text-[#0ea5e9]" />
+              <span className="text-xs font-medium text-gray-700">Calendar</span>
+            </div>
+
+            <div
+              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#6366f1] hover:bg-white transition-all col-span-2 sm:col-span-1"
+              onDragStart={(event) => onDragStart(event, 'formulaNodeType')}
+              draggable
+            >
+              <Sigma className="w-4 h-4 text-[#6366f1]" />
+              <span className="text-xs font-medium text-gray-700">Formulas</span>
             </div>
           </div>
           <p className="text-[10px] text-gray-400 mt-2 text-center">Drag items to the canvas</p>

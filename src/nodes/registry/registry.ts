@@ -55,6 +55,12 @@ import ResourceLinkNode from '../resource/ResourceLinkNode';
 import ResourceNoteNode from '../resource/ResourceNoteNode';
 import ResourceImageNode from '../resource/ResourceImageNode';
 import ResourcePdfNode from '../resource/ResourcePdfNode';
+import YoutubeTranscribeNode from '../resource/YoutubeTranscribeNode';
+import OutputNode from '../resource/OutputNode';
+
+import RoadmapMakerNode from '../resource/RoadmapMakerNode';
+import CanvasNode from '../resource/CanvasNode';
+import YoutubeApiNode from '../resource/YoutubeApiNode';
 
 // ── Note ──────────────────────────────────────────────────────────────────────
 import NoteNode from '../note/NoteNode';
@@ -120,6 +126,12 @@ export const NODE_REGISTRY: NodeDefinition[] = [
   { id: 'resource-note-node', label: 'Resource Note', category: 'resource', icon: '📝', component: ResourceNoteNode, color: '#06b6d4', defaultData: { title: 'Resource Note', description: '', matrix: 'RESOURCE_NOTE', deadline: null } },
   { id: 'resource-image-node', label: 'Resource Image', category: 'resource', icon: '🖼️', component: ResourceImageNode, color: '#06b6d4', defaultData: { title: 'Resource Image', description: '', matrix: 'RESOURCE_IMAGE', deadline: null } },
   { id: 'resource-pdf-node', label: 'Resource PDF', category: 'resource', icon: '📄', component: ResourcePdfNode, color: '#06b6d4', defaultData: { title: 'Resource PDF', description: '', matrix: 'RESOURCE_PDF', deadline: null } },
+
+  { id: 'resource-youtube-transcribe-node', label: 'YouTube Transcribe', category: 'resource', icon: '📝', component: YoutubeTranscribeNode, color: '#06b6d4', defaultData: { title: 'YouTube Transcript', description: '', matrix: 'RESOURCE_YOUTUBE_TRANSCRIBE', deadline: null } },
+  { id: 'resource-output-node', label: 'Output Viewer', category: 'resource', icon: '🖥️', component: OutputNode, color: '#d946ef', defaultData: { title: 'Output Viewer', description: '', matrix: 'RESOURCE_OUTPUT', deadline: null } },
+  { id: 'resource-roadmap-maker-node', label: 'Roadmap Maker', category: 'resource', icon: '🛤️', component: RoadmapMakerNode, color: '#8b5cf6', defaultData: { title: 'Roadmap Maker', description: '', matrix: 'RESOURCE_ROADMAP_MAKER', deadline: null } },
+  { id: 'resource-canvas-node', label: 'Nested Canvas', category: 'resource', icon: '🎨', component: CanvasNode, color: '#f59e0b', defaultData: { title: 'Nested Canvas', description: '', matrix: 'RESOURCE_CANVAS', deadline: null } },
+  { id: 'resource-youtube-api-node', label: 'YouTube API (Pro)', category: 'resource', icon: '📺', component: YoutubeApiNode, color: '#f43f5e', defaultData: { title: 'YouTube Pro', description: '', matrix: 'RESOURCE_YOUTUBE_API', deadline: null } },
 
   // ── Note ─────────────────────────────────────────────────────────────────────
   { id: 'note-node', label: 'Note', category: 'note', icon: '📝', component: NoteNode, color: '#64748b', defaultData: { title: 'Note', description: '', matrix: 'NOTE_NODE', deadline: null } },

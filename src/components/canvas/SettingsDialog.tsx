@@ -1,0 +1,122 @@
+import React, { useState, useEffect } from 'react';
+import { Settings, Key, User, Shield } from 'lucide-react';
+
+interface SettingsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
+  const [geminiKey, setGeminiKey] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState('editor');
+
+  useEffect(() => {
+    if (isOpen) {
+      setGeminiKey(localStorage.getItem('gemini_api_key') || '');
+      setUserName(localStorage.getItem('user_name') || '');
+      setUserRole(localStorage.getItem('user_role') || 'editor');
+    }
+  }, [isOpen]);
+
+  const handleSave = () => {
+    localStorage.setItem('gemini_api_key', geminiKey);
+    localStorage.setItem('user_name', userName);
+    localStorage.setItem('user_role', userRole);
+    onClose();
+    // Optional: reload to apply new user name if needed
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-[#6366f1]" />
+            Application Settings
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+              <Key className="w-4 h-4 text-gray-400" />
+              API Credentials
+            </h4>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-gray-600 block">Gemini API Key</label>
+              <input
+                type="password"
+                value={geminiKey}
+                onChange={e => setGeminiKey(e.target.value)}
+                placeholder="AI Studio API Key"
+                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+              />
+              <p className="text-[10px] text-gray-500">Stored locally in your browser. Sent securely to the backend for AI tasks.</p>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+              <User className="w-4 h-4 text-gray-400" />
+              User Profile
+            </h4>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-gray-600 block">Display Name</label>
+              <input
+                type="text"
+                value={userName}
+                onChange={e => setUserName(e.target.value)}
+                placeholder="Your Name"
+                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-gray-400" />
+              Role Management
+            </h4>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-gray-600 block">Default Role</label>
+              <select
+                value={userRole}
+                onChange={e => setUserRole(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+              >
+                <option value="owner">Owner</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[#6366f1] text-white hover:bg-indigo-600 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          >
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

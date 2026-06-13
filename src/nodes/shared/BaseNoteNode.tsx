@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
-import { Loader2, Sparkles, Tag } from 'lucide-react';
+import { Loader2, Sparkles, Tag, Wand2 } from 'lucide-react';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
 
@@ -17,6 +17,7 @@ export function createNoteNode(config: NoteConfig) {
     const { setNodes } = useReactFlow();
     const nodeId = useNodeId();
     const [isTagging, setIsTagging] = useState(false);
+    const [isImproving, setIsImproving] = useState(false);
 
     const updateTask = (updates: Partial<TaskData>) => {
       if (!nodeId) return;
@@ -33,9 +34,13 @@ export function createNoteNode(config: NoteConfig) {
       if (!task.description || isTagging) return;
       setIsTagging(true);
       try {
+        const gkey = localStorage.getItem('gemini_api_key') || '';
         const res = await fetch('/api/auto-tag', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-gemini-key': gkey
+          },
           body: JSON.stringify({ text: task.description }),
         });
         const result = await res.json();
@@ -44,6 +49,28 @@ export function createNoteNode(config: NoteConfig) {
         console.error(e);
       } finally {
         setIsTagging(false);
+      }
+    };
+
+    const handleImprove = async () => {
+      if (!task.description || isImproving) return;
+      setIsImproving(true);
+      try {
+        const gkey = localStorage.getItem('gemini_api_key') || '';
+        const res = await fetch('/api/ai-action', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-gemini-key': gkey
+          },
+          body: JSON.stringify({ action: 'improve', text: task.description }),
+        });
+        const result = await res.json();
+        if (result.result) updateTask({ description: result.result });
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsImproving(false);
       }
     };
 
@@ -56,16 +83,22 @@ export function createNoteNode(config: NoteConfig) {
               <span className="opacity-80">{config.icon}</span>
               <h3 className="font-semibold text-sm tracking-tight truncate">{config.label}</h3>
             </div>
-            <button onClick={handleAutoTag} disabled={isTagging || !task.description}
-              className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="Auto-tag">
-              {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            </button>
+            <div className="flex items-center space-x-1">
+              <button onClick={handleImprove} disabled={isImproving || !task.description}
+                className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="AI Rewrite & Polish">
+                {isImproving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={handleAutoTag} disabled={isTagging || !task.description}
+                className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="Auto-tag">
+                {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              </button>
+            </div>
           </div>
           <div className="p-3 flex flex-col rounded-b-xl">
             <textarea
               className="w-full text-sm text-gray-700 bg-transparent resize-none focus:outline-none placeholder-gray-300 min-h-[80px]"
               placeholder={config.placeholder || 'Type your note...'}
-              defaultValue={task.description || ''}
+              value={task.description || ''}
               onChange={(e) => updateTask({ description: e.target.value })}
             />
             {task.tags && task.tags.length > 0 && (

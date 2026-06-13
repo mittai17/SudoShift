@@ -2,11 +2,10 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { YoutubeTranscript } from 'youtube-transcript';
 import { randomUUID } from "crypto";
 import http from "http";
 import { Server } from "socket.io";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function startServer() {
   const app = express();
@@ -248,8 +247,129 @@ async function startServer() {
     return JSON.parse(clean);
   };
 
+  const getAIClient = (req: express.Request) => {
+    const headerKey = req.headers['x-gemini-key'] as string;
+    const apiKey = headerKey?.trim() || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("No Gemini API key provided. Please set one in settings.");
+    }
+    return new GoogleGenAI({ apiKey });
+  };
+
+  app.post("/api/transcriptapi", async (req, res) => {
+    try {
+      const { url, apiKey } = req.body;
+      if (!url || !apiKey) {
+        return res.status(400).json({ error: "YouTube URL and API Key are required" });
+      }
+
+      let transcriptText = "";
+      try {
+        const urlToFetch = new URL("https://transcriptapi.com/api/v2/youtube/transcript");
+        urlToFetch.searchParams.set("video_url", url);
+        
+        const response = await fetch(urlToFetch.toString(), {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`
+          }
+        });
+        
+        if (response.ok) {
+           const jsonResponse = await response.json();
+           if (jsonResponse.transcript && Array.isArray(jsonResponse.transcript)) {
+             transcriptText = jsonResponse.transcript.map((t: any) => t.text).join(' ');
+           } else {
+             transcriptText = jsonResponse.transcript || JSON.stringify(jsonResponse);
+           }
+        } else {
+           const errorBody = await response.text();
+           throw new Error(`Transcript API failed (Status: ${response.status}): ${errorBody}`);
+        }
+      } catch (err: any) {
+        console.warn("External Transcript API failed, using internal fallback. ", err);
+        // Fallback to internal extractor if transcriptapi fails
+        try {
+          const transcript = await YoutubeTranscript.fetchTranscript(url);
+          transcriptText = transcript.map(t => t.text).join(' ');
+        } catch (fallbackErr: any) {
+             throw new Error(`API failed: ${err.message}. Fallback also failed: ${fallbackErr.message}`);
+        }
+      }
+
+      res.json({ transcript: transcriptText });
+    } catch (e: any) {
+      console.warn("Transcript API Error:", e);
+      res.status(500).json({ error: "Failed to transcribe video using Pro API. " + (e.message || "") });
+    }
+  });
+
+  app.post("/api/youtube-transcribe", async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ error: "YouTube URL is required" });
+      }
+
+      const transcript = await YoutubeTranscript.fetchTranscript(url);
+      const fullText = transcript.map(t => t.text).join(' ');
+
+      res.json({ transcript: fullText });
+    } catch (e: any) {
+      let msg = "Failed to transcribe video.";
+      if (e.message?.includes("Transcript is disabled") || e.message?.includes("Impossible to retrieve")) {
+          msg = "Free scraper failed: Transcript is disabled or URL invalid. Please use the YouTube Pro node instead.";
+          console.warn("YouTube Transcribe expected failure:", msg);
+      } else {
+          console.error("YouTube Transcribe Error:", e);
+      }
+      res.status(500).json({ error: msg });
+    }
+  });
+
+  app.post("/api/ai-action", async (req, res) => {
+    try {
+      const ai = getAIClient(req);
+      const { action, text, context } = req.body;
+      
+      let prompt = '';
+      if (action === 'improve') {
+        prompt = `You are an AI editor. Please rewrite and improve the following text to make it more professional, clear, and concise. Only provide the improved text.\n\nText:\n"${text}"`;
+      } else if (action === 'summarize') {
+        prompt = `You are an AI summarizing assistant. Summarize the following text clearly in bullet points or a short paragraph. Only provide the summary.\n\nText:\n"${text}"`;
+      } else if (action === 'subtasks') {
+        prompt = `You are an AI task planner. Break down the following task into 3-5 subtasks as a JSON array of strings. Do not include any other text.\n\nTask:\n"${text}"`;
+      } else if (action === 'extract_action_items') {
+        prompt = `You are an AI assistant. Extract 3-5 clear action items from the following transcript or text. Format them as a simple bulleted list.\n\nText:\n"${text}"`;
+      } else if (action === 'ask') {
+        prompt = `You are an AI assistant answering a question based on the provided text. Keep it concise.\n\nContext:\n"${context}"\n\nQuestion:\n"${text}"`;
+      } else {
+        return res.status(400).json({ error: "Invalid action" });
+      }
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+
+      const resultText = response.text;
+      if (!resultText) throw new Error("No response from AI");
+
+      if (action === 'subtasks') {
+        const parsed = parseJsonFromMarkdown(resultText);
+        res.json({ result: Array.isArray(parsed) ? parsed : [] });
+      } else {
+        res.json({ result: resultText.trim() });
+      }
+    } catch (e: any) {
+      console.error("AI Action Error:", e);
+      res.status(500).json({ error: e.message || "Failed to process AI action." });
+    }
+  });
+
   app.post("/api/auto-tag", async (req, res) => {
     try {
+      const ai = getAIClient(req);
       const { text } = req.body;
       if (!text) {
         return res.status(400).json({ error: "Text is required" });

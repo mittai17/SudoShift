@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
-import { Loader2, Sparkles, Tag, Wand2 } from 'lucide-react';
+import { Loader2, Sparkles, Tag, Wand2, Edit3, Eye } from 'lucide-react';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface NoteConfig {
   label: string;
@@ -18,6 +20,7 @@ export function createNoteNode(config: NoteConfig) {
     const nodeId = useNodeId();
     const [isTagging, setIsTagging] = useState(false);
     const [isImproving, setIsImproving] = useState(false);
+    const [isEditing, setIsEditing] = useState(task.description?.length ? false : true);
 
     const updateTask = (updates: Partial<TaskData>) => {
       if (!nodeId) return;
@@ -76,7 +79,7 @@ export function createNoteNode(config: NoteConfig) {
 
     return (
       <NodeWrapper data={data} selected={selected} resizable={true} minWidth={256} minHeight={150}>
-        <div className="flex flex-col w-full h-full min-w-64 min-h-[150px] rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="flex flex-col w-full h-full min-w-64 min-h-[150px] rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow" onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white shrink-0" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
@@ -84,25 +87,41 @@ export function createNoteNode(config: NoteConfig) {
               <h3 className="font-semibold text-sm tracking-tight truncate">{config.label}</h3>
             </div>
             <div className="flex items-center space-x-1 shrink-0">
-              <button onClick={handleImprove} disabled={isImproving || !task.description}
-                className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="AI Rewrite & Polish">
-                {isImproving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+              <button onClick={() => setIsEditing(!isEditing)} className="hover:bg-white/20 p-1 rounded transition-colors" title={isEditing ? 'View Markdown' : 'Edit Note'}>
+                {isEditing ? <Eye className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
               </button>
-              <button onClick={handleAutoTag} disabled={isTagging || !task.description}
-                className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="Auto-tag">
-                {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-              </button>
+              {isEditing && (
+                <>
+                  <button onClick={handleImprove} disabled={isImproving || !task.description}
+                    className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="AI Rewrite & Polish">
+                    {isImproving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                  </button>
+                  <button onClick={handleAutoTag} disabled={isTagging || !task.description}
+                    className="hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50" title="Auto-tag">
+                    {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  </button>
+                </>
+              )}
             </div>
           </div>
-          <div className="p-3 flex flex-col rounded-b-xl flex-1 overflow-hidden">
-            <textarea
-              className="w-full h-full text-sm text-gray-700 bg-transparent resize-none focus:outline-none placeholder-gray-300 min-h-[80px]"
-              placeholder={config.placeholder || 'Type your note...'}
-              value={task.description || ''}
-              onChange={(e) => updateTask({ description: e.target.value })}
-            />
+          <div className={`p-3 flex flex-col rounded-b-xl flex-1 overflow-auto ${!isEditing ? 'bg-gray-50' : ''}`}>
+            {isEditing ? (
+              <textarea
+                className="w-full h-full text-sm text-gray-700 bg-transparent resize-none focus:outline-none placeholder-gray-300 min-h-[80px]"
+                placeholder={config.placeholder || 'Type your note...'}
+                value={task.description || ''}
+                onChange={(e) => updateTask({ description: e.target.value })}
+              />
+            ) : (
+              <div className="prose prose-sm prose-slate max-w-none text-sm text-gray-700 w-full mb-auto pb-4">
+                <Markdown remarkPlugins={[remarkGfm]}>
+                  {task.description || '*Empty note. Double click or click edit.*'}
+                </Markdown>
+              </div>
+            )}
+            
             {task.tags && task.tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-gray-100 shrink-0">
+              <div className="mt-auto flex flex-wrap gap-1.5 pt-2 border-t border-gray-100 shrink-0">
                 {task.tags.map((tag: string, i: number) => (
                   <span key={i} className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-medium border border-gray-200">
                     <Tag className="w-2.5 h-2.5" /><span>{tag}</span>

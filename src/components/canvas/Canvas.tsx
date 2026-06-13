@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -11,11 +11,15 @@ import {
   Edge,
   OnNodesChange,
   OnEdgesChange,
-  OnConnect
+  OnConnect,
+  useReactFlow,
+  getNodesBounds,
+  getViewportForBounds
 } from '@xyflow/react';
-import { MousePointer2, Move, ZoomIn, ZoomOut, Expand, Trash2 } from 'lucide-react';
+import { MousePointer2, Move, ZoomIn, ZoomOut, Expand, Trash2, Download } from 'lucide-react';
 import { TaskData } from '../../types';
 import { nodeColorMap } from '../../nodes/registry/nodeTypes';
+import { toPng } from 'html-to-image';
 
 interface CanvasProps {
   nodes: Node[];
@@ -50,6 +54,32 @@ export function Canvas({
   handleFitView,
   handleDeleteSelected
 }: CanvasProps) {
+  const { getNodes } = useReactFlow();
+  
+  const handleDownload = useCallback(() => {
+    const nodesBounds = getNodesBounds(getNodes());
+    const viewport = getViewportForBounds(nodesBounds, 2500, 2500, 0.5, 2, 0.2); // width, height, minZoom, maxZoom, padding
+
+    const reactFlowElement = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!reactFlowElement) return;
+
+    toPng(reactFlowElement, {
+        backgroundColor: '#f8fafc',
+        width: 2500,
+        height: 2500,
+        style: {
+          width: '2500px',
+          height: '2500px',
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+        }
+    }).then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'workspace.png';
+        link.href = dataUrl;
+        link.click();
+    });
+  }, [getNodes]);
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -94,6 +124,10 @@ export function Canvas({
         </button>
         <button onClick={handleFitView} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Fit View">
           <Expand className="w-4 h-4" />
+        </button>
+        <div className="w-px h-5 bg-gray-300 mx-1"></div>
+        <button onClick={handleDownload} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Export as PNG">
+          <Download className="w-4 h-4" />
         </button>
         {hasSelectedElements && (
           <>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Make React Flow handles easier to click with a larger interaction area */
 .react-flow__handle {

@@ -22,7 +22,16 @@ export type EisenhowerMatrix =
   | 'MILESTONE' | 'MILESTONE_EVIDENCE' | 'MILESTONE_NOTE' | 'MILESTONE_ATTACHMENT'
   | 'HABIT' | 'HABIT_TIMER' | 'HABIT_TABLE' | 'HABIT_CALENDAR' | 'HABIT_NOTE'
   | 'RESOURCE' | 'RESOURCE_VIDEO' | 'RESOURCE_LINK' | 'RESOURCE_NOTE' | 'RESOURCE_IMAGE' | 'RESOURCE_PDF'
-  | 'NOTE_NODE' | 'NOTE_IMAGE' | 'NOTE_CODE' | 'NOTE_MERMAID' | 'NOTE_FORMULA' | 'NOTE_TABLE' | 'NOTE_LINK';
+  | 'NOTE_NODE' | 'NOTE_IMAGE' | 'NOTE_CODE' | 'NOTE_MERMAID' | 'NOTE_FORMULA' | 'NOTE_TABLE' | 'NOTE_LINK'
+  // Board container type
+  | 'BOARD';
+
+export type NodeSize = 'sm' | 'md' | 'lg' | 'auto';
+
+export interface NodeStyle {
+  color?: string;
+  size?: NodeSize;
+}
 
 export interface TaskData {
   id: string;
@@ -33,6 +42,8 @@ export interface TaskData {
   estimatedMinutes?: number;
   isConflicting?: boolean;
   tags?: string[];
+  boardId?: string; // Links node to a board container
+  nodeStyle?: NodeStyle; // Persisted style customization
   [key: string]: unknown;
 }
 

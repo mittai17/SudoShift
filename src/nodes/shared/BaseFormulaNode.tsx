@@ -38,7 +38,7 @@ const evalFormulas = (input: string): string => {
 };
 
 export function createFormulaNode(config: FormulaConfig) {
-  const FormulaComponent = ({ data }: { data: any }) => {
+  const FormulaComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const { task } = data;
     const { setNodes } = useReactFlow();
     const nodeId = useNodeId();
@@ -54,10 +54,10 @@ export function createFormulaNode(config: FormulaConfig) {
     const output = evalFormulas(input);
 
     return (
-      <NodeWrapper>
-        <div className="flex flex-col w-72 rounded-xl shadow-md bg-white border border-gray-200 hover:shadow-lg transition-shadow">
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
-          <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white" style={{ backgroundColor: config.accentColor }}>
+      <NodeWrapper data={data} selected={selected}>
+        <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
+          <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <span className="opacity-80">{config.icon}</span>
             <h3 className="font-semibold text-sm">{config.label}</h3>
           </div>
@@ -68,7 +68,7 @@ export function createFormulaNode(config: FormulaConfig) {
               {output}
             </div>
           </div>
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-white -mr-2 z-10" style={{ backgroundColor: config.accentColor }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

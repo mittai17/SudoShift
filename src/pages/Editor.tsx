@@ -68,19 +68,19 @@ const detectConflicts = (nodes: Node[]): { conflictingNodeIds: Set<string>, conf
     for (let j = i + 1; j < tasksWithDates.length; j++) {
       const t1 = tasksWithDates[i];
       const t2 = tasksWithDates[j];
-      
+
       const d1 = parseISO(t1.deadline!);
       const d2 = parseISO(t2.deadline!);
-      
+
       if (!isValid(d1) || !isValid(d2)) continue;
-      
+
       const hoursDiff = Math.abs(differenceInHours(d1, d2));
-      
+
       // If tasks are due within 24 hours of each other, mark them as conflicting
       if (hoursDiff <= 24) {
         conflictingNodeIds.add(t1.id);
         conflictingNodeIds.add(t2.id);
-        
+
         conflictEdges.push({
           id: `conflict-${t1.id}-${t2.id}`,
           source: t1.id,
@@ -93,7 +93,7 @@ const detectConflicts = (nodes: Node[]): { conflictingNodeIds: Set<string>, conf
       }
     }
   }
-  
+
   return { conflictingNodeIds, conflictEdges };
 };
 
@@ -109,7 +109,7 @@ function FlowEditor() {
   const [panMode, setPanMode] = useState(false);
   const [searchParams] = useSearchParams();
   const canvasId = searchParams.get('id') || 'default';
-  
+
   // Real-time state
   const [socket, setSocket] = useState<Socket | null>(null);
   const [cursors, setCursors] = useState<Record<string, { user: any, position: XYPosition }>>({});
@@ -136,21 +136,21 @@ function FlowEditor() {
   useEffect(() => {
     const newSocket = io();
     setSocket(newSocket);
-    
+
     newSocket.on("connect", () => {
       newSocket.emit("join_canvas", { canvasId, user: currentUser });
     });
-    
+
     newSocket.on("init_canvas", (data) => {
       skipSyncRef.current = true;
       if (data && data.nodes && data.nodes.length > 0) {
         setNodes(data.nodes);
         setEdges(data.edges);
       } else if (canvasId === 'default') {
-         // Fallback to initial data just for default
-         const init = getInitialData();
-         setNodes(init.initialNodes);
-         setEdges(init.initialEdges);
+        // Fallback to initial data just for default
+        const init = getInitialData();
+        setNodes(init.initialNodes);
+        setEdges(init.initialEdges);
       }
       setTimeout(() => skipSyncRef.current = false, 500);
     });
@@ -163,7 +163,7 @@ function FlowEditor() {
       alert("You have been removed from this canvas.");
       window.location.href = "/";
     });
-    
+
     newSocket.on("cursors_update", (curs: any[]) => {
       const cmap: Record<string, any> = {};
       curs.filter(c => c.id !== newSocket.id).forEach(c => cmap[c.id] = c);
@@ -193,7 +193,7 @@ function FlowEditor() {
     });
 
     return () => { newSocket.disconnect(); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasId]);
 
   // Sync to server
@@ -232,7 +232,7 @@ function FlowEditor() {
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id === id) {
-           return { ...n, data: { ...n.data, task: { ...(n.data.task as TaskData), description: text } } };
+          return { ...n, data: { ...n.data, task: { ...(n.data.task as TaskData), description: text } } };
         }
         return n;
       })
@@ -299,12 +299,12 @@ function FlowEditor() {
       const taskData = registryEntry
         ? { id: uuidv4(), ...registryEntry.defaultData }
         : {
-            id: uuidv4(),
-            title: type === 'mermaidNodeType' ? 'Mermaid Diagram' : type === 'tableNodeType' ? 'Table' : type === 'imageNodeType' ? 'Image' : type === 'linkNodeType' ? 'Link' : type === 'checklistNodeType' ? 'Checklist' : type === 'codeNodeType' ? 'Code' : type === 'videoNodeType' ? 'Video' : type === 'whiteboardNodeType' ? 'Whiteboard' : type === 'timerNodeType' ? 'Timer' : type === 'calculatorNodeType' ? 'Calculator' : type === 'calendarNodeType' ? 'Calendar' : type === 'formulaNodeType' ? 'Formulas' : 'Note',
-            description: type === 'mermaidNodeType' ? 'graph TD\n  A-->B;' : type === 'checklistNodeType' ? '[{"id":"1","text":"First item","checked":false}]' : type === 'formulaNodeType' ? 'Budget = 5000\nSpend = 1200\nBudget - Spend' : '',
-            matrix: type === 'mermaidNodeType' ? 'MERMAID' : type === 'tableNodeType' ? 'TABLE' : type === 'imageNodeType' ? 'IMAGE' : type === 'linkNodeType' ? 'LINK' : type === 'checklistNodeType' ? 'CHECKLIST' : type === 'codeNodeType' ? 'CODE' : type === 'videoNodeType' ? 'VIDEO' : type === 'whiteboardNodeType' ? 'WHITEBOARD' : type === 'timerNodeType' ? 'TIMER' : type === 'calculatorNodeType' ? 'CALCULATOR' : type === 'calendarNodeType' ? 'CALENDAR' : type === 'formulaNodeType' ? 'FORMULA' : 'NOTE',
-            deadline: null,
-          };
+          id: uuidv4(),
+          title: type === 'mermaidNodeType' ? 'Mermaid Diagram' : type === 'tableNodeType' ? 'Table' : type === 'imageNodeType' ? 'Image' : type === 'linkNodeType' ? 'Link' : type === 'checklistNodeType' ? 'Checklist' : type === 'codeNodeType' ? 'Code' : type === 'videoNodeType' ? 'Video' : type === 'whiteboardNodeType' ? 'Whiteboard' : type === 'timerNodeType' ? 'Timer' : type === 'calculatorNodeType' ? 'Calculator' : type === 'calendarNodeType' ? 'Calendar' : type === 'formulaNodeType' ? 'Formulas' : 'Note',
+          description: type === 'mermaidNodeType' ? 'graph TD\n  A-->B;' : type === 'checklistNodeType' ? '[{"id":"1","text":"First item","checked":false}]' : type === 'formulaNodeType' ? 'Budget = 5000\nSpend = 1200\nBudget - Spend' : '',
+          matrix: type === 'mermaidNodeType' ? 'MERMAID' : type === 'tableNodeType' ? 'TABLE' : type === 'imageNodeType' ? 'IMAGE' : type === 'linkNodeType' ? 'LINK' : type === 'checklistNodeType' ? 'CHECKLIST' : type === 'codeNodeType' ? 'CODE' : type === 'videoNodeType' ? 'VIDEO' : type === 'whiteboardNodeType' ? 'WHITEBOARD' : type === 'timerNodeType' ? 'TIMER' : type === 'calculatorNodeType' ? 'CALCULATOR' : type === 'calendarNodeType' ? 'CALENDAR' : type === 'formulaNodeType' ? 'FORMULA' : 'NOTE',
+          deadline: null,
+        };
 
       const newNode: Node = {
         id: uuidv4(),
@@ -381,24 +381,24 @@ function FlowEditor() {
 
   useEffect(() => {
     if (nodes.length === 0) return;
-    
+
     // Skip collision recalculation if skipSync is active helps with remote flickering, but local depends on it.
     if (skipSyncRef.current) return;
-    
+
     const { conflictingNodeIds, conflictEdges } = detectConflicts(nodes);
-    
+
     const ndsCopy = [...nodes];
     let changed = false;
     for (let i = 0; i < ndsCopy.length; i++) {
-        const n = ndsCopy[i];
-        if (n.type === 'taskNodeType') {
-          const t = n.data.task as TaskData;
-          const isConflicting = conflictingNodeIds.has(n.id);
-          if (t.isConflicting !== isConflicting) {
-            ndsCopy[i] = { ...n, data: { ...n.data, task: { ...t, isConflicting } } };
-            changed = true;
-          }
+      const n = ndsCopy[i];
+      if (n.type === 'taskNodeType') {
+        const t = n.data.task as TaskData;
+        const isConflicting = conflictingNodeIds.has(n.id);
+        if (t.isConflicting !== isConflicting) {
+          ndsCopy[i] = { ...n, data: { ...n.data, task: { ...t, isConflicting } } };
+          changed = true;
         }
+      }
     }
     if (changed) setNodes(ndsCopy);
 
@@ -407,7 +407,7 @@ function FlowEditor() {
       return [...nonConflictEdges, ...conflictEdges];
     });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes]);
 
   return (
@@ -420,7 +420,7 @@ function FlowEditor() {
           </Link>
           <h2 className="font-semibold text-sm">Workspace</h2>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex -space-x-2 mr-2">
             <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-100 text-[10px] font-bold shadow-sm" style={{ backgroundColor: currentUser.color, color: 'white' }}>
@@ -437,32 +437,32 @@ function FlowEditor() {
               </div>
             )}
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setMembersModalOpen(true)}
             className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
           >
             <Users className="w-4 h-4" />
             <span className="hidden md:inline">Members</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={handleShare}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-[#6366f1] text-white hover:bg-indigo-600 border border-transparent'}`}
           >
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             <span className="hidden md:inline">{copied ? 'Copied' : 'Share'}</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => { setHistoryOpen(!historyOpen); setChatOpen(false); }}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${historyOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
           >
             <History className="w-4 h-4" />
             <span className="hidden md:inline">History</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => { setChatOpen(!chatOpen); setHistoryOpen(false); }}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
           >
@@ -471,10 +471,10 @@ function FlowEditor() {
           </button>
         </div>
       </div>
-      
+
       <div className="flex-1 flex overflow-hidden bg-[#f8fafc] font-sans text-gray-900 relative">
         <Sidebar onAddNodes={handleAddTasks} onAddEdges={handleAddEdges} />
-        
+
         <div className="flex-1 h-full relative p-2 md:p-4 pb-0">
           <div className="w-full h-full bg-white rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border border-gray-200 overflow-hidden relative" onDrop={onDrop} onDragOver={onDragOver} onPointerMove={handlePointerMove}>
             <ReactFlow
@@ -495,17 +495,17 @@ function FlowEditor() {
               maxZoom={2}
             >
               <Background color="#64748b" variant={BackgroundVariant.Dots} gap={24} size={3} />
-              
+
               <Panel position="top-right" className="bg-white shadow-md rounded-lg p-1.5 border border-gray-200 flex items-center space-x-1 z-10 m-4">
-                <button 
-                  onClick={() => setPanMode(false)} 
+                <button
+                  onClick={() => setPanMode(false)}
                   className={`p-2 rounded transition-colors ${!panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   title="Select Tool (Marquee)"
                 >
                   <MousePointer2 className="w-4 h-4" />
                 </button>
-                <button 
-                  onClick={() => setPanMode(true)} 
+                <button
+                  onClick={() => setPanMode(true)}
                   className={`p-2 rounded transition-colors ${panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   title="Hand Tool (Pan)"
                 >
@@ -569,13 +569,13 @@ function FlowEditor() {
               if (!data.position) return null;
               const sp = flowToScreenPosition(data.position);
               return (
-                <div 
-                  key={id} 
+                <div
+                  key={id}
                   className="absolute pointer-events-none z-50 flex items-center justify-center transition-all duration-75 ease-linear"
                   style={{ transform: `translate(${sp.x}px, ${sp.y}px)`, left: 0, top: 0 }}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill={data.user.color} xmlns="http://www.w3.org/2000/svg" className="absolute -left-1 -top-1" style={{ filter: 'drop-shadow(1px 2px 2px rgba(0,0,0,0.2))' }}>
-                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.42c.45 0 .67-.54.35-.85L6.35 3.32a.5.5 0 0 0-.85.35z"/>
+                    <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.42c.45 0 .67-.54.35-.85L6.35 3.32a.5.5 0 0 0-.85.35z" />
                   </svg>
                   <div className="absolute top-5 left-5 bg-white text-xs px-2 py-0.5 rounded shadow-sm font-semibold truncate border whitespace-nowrap" style={{ color: data.user.color, borderColor: data.user.color }}>
                     {data.user.name}
@@ -596,47 +596,47 @@ function FlowEditor() {
               </div>
               <button onClick={() => setChatOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">&times;</button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-               {messages.length === 0 ? (
-                  <div className="text-center text-gray-400 text-sm mt-10">
-                    No messages yet. Start collaborating!
-                  </div>
-               ) : (
-                 messages.map(msg => {
-                   const isMe = msg.user.id === currentUser.id;
-                   return (
-                     <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                       {!isMe && <span className="text-[10px] text-gray-500 font-semibold mb-1 ml-1">{msg.user.name}</span>}
-                       <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm shadow-sm ${isMe ? 'bg-[#6366f1] text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'}`}>
-                         {/* Basic mention highlight matching */}
-                         {msg.text.split(' ').map((word: string, i: number) => {
-                           if (word.startsWith('@')) {
-                              return <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-indigo-600'}`}>{word} </span>
-                           }
-                           return word + ' ';
-                         })}
-                       </div>
-                     </div>
-                   );
-                 })
-               )}
-               <div ref={chatBottomRef} />
+              {messages.length === 0 ? (
+                <div className="text-center text-gray-400 text-sm mt-10">
+                  No messages yet. Start collaborating!
+                </div>
+              ) : (
+                messages.map(msg => {
+                  const isMe = msg.user.id === currentUser.id;
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                      {!isMe && <span className="text-[10px] text-gray-500 font-semibold mb-1 ml-1">{msg.user.name}</span>}
+                      <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm shadow-sm ${isMe ? 'bg-[#6366f1] text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'}`}>
+                        {/* Basic mention highlight matching */}
+                        {msg.text.split(' ').map((word: string, i: number) => {
+                          if (word.startsWith('@')) {
+                            return <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-indigo-600'}`}>{word} </span>
+                          }
+                          return word + ' ';
+                        })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatBottomRef} />
             </div>
 
             <div className="p-3 border-t border-gray-200 bg-white shrink-0">
-               <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-                 <input 
-                   type="text" 
-                   value={chatInput}
-                   onChange={e => setChatInput(e.target.value)}
-                   placeholder="Type a message or @mention..."
-                   className="flex-1 bg-gray-50 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
-                 />
-                 <button type="submit" disabled={!chatInput.trim()} className="bg-[#6366f1] text-white p-2 rounded-full hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
-                   <Send className="w-4 h-4 ml-0.5" />
-                 </button>
-               </form>
+              <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  placeholder="Type a message or @mention..."
+                  className="flex-1 bg-gray-50 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+                />
+                <button type="submit" disabled={!chatInput.trim()} className="bg-[#6366f1] text-white p-2 rounded-full hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
+                  <Send className="w-4 h-4 ml-0.5" />
+                </button>
+              </form>
             </div>
           </div>
         )}
@@ -651,50 +651,50 @@ function FlowEditor() {
               </div>
               <button onClick={() => setHistoryOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">&times;</button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-               {versions.length === 0 ? (
-                  <div className="text-center text-gray-400 text-sm mt-10">
-                    No versions saved yet. Save a state below.
+              {versions.length === 0 ? (
+                <div className="text-center text-gray-400 text-sm mt-10">
+                  No versions saved yet. Save a state below.
+                </div>
+              ) : (
+                versions.map(v => (
+                  <div key={v.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-sm text-gray-900">{v.name}</h4>
+                      <span className="text-[10px] text-gray-500 ml-2 shrink-0">{new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: v.author.color }}></div>
+                      <span className="text-xs text-gray-600 truncate">{v.author.name}</span>
+                    </div>
+                    <button
+                      onClick={() => handleRestoreVersion(v.id)}
+                      className="w-full flex items-center justify-center space-x-2 py-1.5 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Restore Version</span>
+                    </button>
                   </div>
-               ) : (
-                 versions.map(v => (
-                   <div key={v.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow group">
-                     <div className="flex justify-between items-start mb-2">
-                       <h4 className="font-semibold text-sm text-gray-900">{v.name}</h4>
-                       <span className="text-[10px] text-gray-500 ml-2 shrink-0">{new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                     </div>
-                     <div className="flex items-center space-x-2 mb-3">
-                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: v.author.color }}></div>
-                       <span className="text-xs text-gray-600 truncate">{v.author.name}</span>
-                     </div>
-                     <button
-                       onClick={() => handleRestoreVersion(v.id)}
-                       className="w-full flex items-center justify-center space-x-2 py-1.5 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
-                     >
-                       <RotateCcw className="w-3.5 h-3.5" />
-                       <span>Restore Version</span>
-                     </button>
-                   </div>
-                 ))
-               )}
+                ))
+              )}
             </div>
 
             <div className="p-4 border-t border-gray-200 bg-gray-50 shrink-0">
-               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Save Current State</h3>
-               <form onSubmit={handleSaveVersion} className="flex flex-col space-y-2">
-                 <input 
-                   type="text" 
-                   value={versionName}
-                   onChange={e => setVersionName(e.target.value)}
-                   placeholder="e.g. Added login flow"
-                   className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
-                 />
-                 <button type="submit" className="w-full bg-[#6366f1] text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors shadow-sm text-sm font-medium flex items-center justify-center space-x-2">
-                   <Save className="w-4 h-4" />
-                   <span>Create Snapshot</span>
-                 </button>
-               </form>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Save Current State</h3>
+              <form onSubmit={handleSaveVersion} className="flex flex-col space-y-2">
+                <input
+                  type="text"
+                  value={versionName}
+                  onChange={e => setVersionName(e.target.value)}
+                  placeholder="e.g. Added login flow"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+                />
+                <button type="submit" className="w-full bg-[#6366f1] text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors shadow-sm text-sm font-medium flex items-center justify-center space-x-2">
+                  <Save className="w-4 h-4" />
+                  <span>Create Snapshot</span>
+                </button>
+              </form>
             </div>
           </div>
         )}
@@ -709,14 +709,14 @@ function FlowEditor() {
                 <Users className="w-5 h-5 mr-2 text-[#6366f1]" />
                 Manage Members
               </h3>
-              <button 
+              <button
                 onClick={() => setMembersModalOpen(false)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
               >
                 &times;
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
                 {members.map(member => {
@@ -727,8 +727,8 @@ function FlowEditor() {
                   return (
                     <div key={member.user.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-gray-200 transition-colors">
                       <div className="flex items-center space-x-3">
-                        <div 
-                          className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold shadow-sm relative" 
+                        <div
+                          className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold shadow-sm relative"
                           style={{ backgroundColor: member.user.color, color: 'white' }}
                         >
                           {member.user.name.substring(0, 1).toUpperCase()}
@@ -746,11 +746,11 @@ function FlowEditor() {
                           <p className="text-xs text-gray-500">{member.isOnline ? 'Active now' : 'Offline'}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-3">
                         {canManage ? (
-                          <select 
-                            value={member.role} 
+                          <select
+                            value={member.role}
                             onChange={(e) => handleUpdateRole(member.user.id, e.target.value)}
                             className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded focus:ring-[#6366f1] focus:border-[#6366f1] p-1.5"
                           >
@@ -760,9 +760,9 @@ function FlowEditor() {
                         ) : (
                           member.role !== 'owner' && <span className="text-xs text-gray-500 capitalize">{member.role}</span>
                         )}
-                        
+
                         {canManage && (
-                          <button 
+                          <button
                             onClick={() => handleKickMember(member.user.id)}
                             className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-md transition-colors"
                             title="Remove member"
@@ -776,9 +776,9 @@ function FlowEditor() {
                 })}
               </div>
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-              <button 
+              <button
                 onClick={() => setMembersModalOpen(false)}
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
               >
@@ -789,6 +789,33 @@ function FlowEditor() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Editor() {
+  return (
+    <ReactFlowProvider>
+      <FlowEditor />
+    </ReactFlowProvider>
+  );
+}
+Close
+              </button >
+            </div >
+          </div >
+        </div >
+      )}
+
+{
+  showShareModal && (
+    <ShareModal
+      canvasId={canvasId}
+      canvasTitle={canvasTitle}
+      onClose={() => setShowShareModal(false)}
+    />
+  )
+}
+    </div >
   );
 }
 

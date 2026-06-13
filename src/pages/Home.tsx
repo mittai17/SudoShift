@@ -85,7 +85,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {/* Create New Card */}
-            <div 
+            <div
               onClick={createNewCanvas}
               className="group cursor-pointer border-2 border-dashed border-gray-300 hover:border-[#6366f1] bg-gray-50 hover:bg-[#EEF2FF] rounded-2xl p-6 h-48 flex flex-col items-center justify-center transition-all"
             >
@@ -97,8 +97,8 @@ export default function Home() {
 
             {/* List Canvases */}
             {canvases.map(canvas => (
-              <Link 
-                key={canvas.id} 
+              <Link
+                key={canvas.id}
                 to={`/app?id=${canvas.id}`}
                 className="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg rounded-2xl p-5 h-48 flex flex-col justify-between transition-all"
               >
@@ -108,16 +108,16 @@ export default function Home() {
                   </div>
                   <h3 className="font-semibold text-gray-900 text-lg leading-tight line-clamp-2">{canvas.name}</h3>
                 </div>
-                
+
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center space-x-1.5 text-xs text-gray-500 font-medium">
                     <Clock className="w-3.5 h-3.5" />
                     <span>{new Date(canvas.lastEdited).toLocaleDateString()}</span>
                   </div>
-                  
+
                   {/* Delete button appears on group hover */}
                   {canvas.id !== 'default' && (
-                    <button 
+                    <button
                       onClick={(e) => deleteCanvas(canvas.id, e)}
                       className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-md transition-all"
                       title="Delete Canvas"
@@ -142,18 +142,18 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
             <div className="order-2 md:order-1 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-4">
-               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">1</div>
-                 <p className="text-sm font-medium text-gray-700">Drag a node from the sidebar onto the canvas.</p>
-               </div>
-               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">2</div>
-                 <p className="text-sm font-medium text-gray-700">Use handles (dots on the left/right) to connect dependencies.</p>
-               </div>
-               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">3</div>
-                 <p className="text-sm font-medium text-gray-700">Pan around infinitely, zoom in and out as you build a massive map.</p>
-               </div>
+              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">1</div>
+                <p className="text-sm font-medium text-gray-700">Drag a node from the sidebar onto the canvas.</p>
+              </div>
+              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">2</div>
+                <p className="text-sm font-medium text-gray-700">Use handles (dots on the left/right) to connect dependencies.</p>
+              </div>
+              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">3</div>
+                <p className="text-sm font-medium text-gray-700">Pan around infinitely, zoom in and out as you build a massive map.</p>
+              </div>
             </div>
             <div className="order-1 md:order-2">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-orange-100 text-orange-600 mb-6">

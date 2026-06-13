@@ -10,7 +10,7 @@ interface TimerConfig {
 }
 
 export function createTimerNode(config: TimerConfig) {
-  const TimerComponent = ({ data }: { data: any }) => {
+  const TimerComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const defaultMinutes = parseInt(data.task?.description || '25', 10);
     const [totalSeconds, setTotalSeconds] = useState(defaultMinutes * 60);
     const [remaining, setRemaining] = useState(defaultMinutes * 60);
@@ -35,10 +35,10 @@ export function createTimerNode(config: TimerConfig) {
     const secs = String(remaining % 60).padStart(2, '0');
 
     return (
-      <NodeWrapper>
-        <div className="flex flex-col w-56 rounded-xl shadow-md bg-white border border-gray-200 hover:shadow-lg transition-shadow">
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
-          <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white" style={{ backgroundColor: config.accentColor }}>
+      <NodeWrapper data={data} selected={selected}>
+        <div className="flex flex-col w-56 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
+          <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <span className="opacity-80">{config.icon}</span>
             <h3 className="font-semibold text-sm">{config.label}</h3>
           </div>
@@ -55,7 +55,7 @@ export function createTimerNode(config: TimerConfig) {
             </div>
             <div className="flex items-center space-x-3">
               <button onClick={() => setRunning(!running)}
-                className="p-2 rounded-full text-white transition-colors" style={{ backgroundColor: config.accentColor }}>
+                className="p-2 rounded-full text-white transition-colors" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
                 {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </button>
               <button onClick={reset} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
@@ -63,7 +63,7 @@ export function createTimerNode(config: TimerConfig) {
               </button>
             </div>
           </div>
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-white -mr-2 z-10" style={{ backgroundColor: config.accentColor }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

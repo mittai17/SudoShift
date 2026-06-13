@@ -180,7 +180,8 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
       </div>
 
       {/* ── Node Grid ────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-3 py-2.5 space-y-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#2a2b36 transparent' }}>
+      <div className="flex-1 overflow-y-auto px-3 py-2.5 space-y-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#2a2b36 transparent' }}>
+        
         {search && (
           <div className="text-[10px] text-gray-500 px-1">
             {filteredNodes.length} result{filteredNodes.length !== 1 ? 's' : ''} for &ldquo;{search}&rdquo;

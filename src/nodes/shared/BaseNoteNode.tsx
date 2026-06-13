@@ -12,7 +12,7 @@ interface NoteConfig {
 }
 
 export function createNoteNode(config: NoteConfig) {
-  const NoteComponent = ({ data }: { data: any }) => {
+  const NoteComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const { task } = data;
     const { setNodes } = useReactFlow();
     const nodeId = useNodeId();
@@ -48,10 +48,10 @@ export function createNoteNode(config: NoteConfig) {
     };
 
     return (
-      <NodeWrapper>
-        <div className="flex flex-col w-64 rounded-xl shadow-md bg-white border border-gray-200 hover:shadow-lg transition-shadow">
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
-          <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: config.accentColor }}>
+      <NodeWrapper data={data} selected={selected}>
+        <div className="flex flex-col w-64 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
+          <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
               <span className="opacity-80">{config.icon}</span>
               <h3 className="font-semibold text-sm tracking-tight truncate">{config.label}</h3>
@@ -78,7 +78,7 @@ export function createNoteNode(config: NoteConfig) {
               </div>
             )}
           </div>
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-white -mr-2 z-10" style={{ backgroundColor: config.accentColor }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

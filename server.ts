@@ -20,28 +20,28 @@ async function startServer() {
 
   // Socket.io real-time collaboration Logic
   // Using a simple in-memory store for canvases
-  const canvases = new Map<string, { 
-    nodes: any[], 
-    edges: any[], 
+  const canvases = new Map<string, {
+    nodes: any[],
+    edges: any[],
     versions: any[],
     members: Record<string, { role: 'owner' | 'editor' | 'viewer', user: any, isOnline: boolean, socketId?: string }>
   }>();
-  
+
   // Also store chat messages per canvas
   const canvasChats = new Map<string, any[]>();
-  
+
   // Track cursor positions
   const canvasCursors = new Map<string, Map<string, any>>();
 
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
-    
+
     // Join a canvas room
     socket.on("join_canvas", ({ canvasId, user }) => {
       socket.join(canvasId);
       socket.data.canvasId = canvasId;
       socket.data.user = user;
-      
+
       if (!canvases.has(canvasId)) {
         canvases.set(canvasId, { nodes: [], edges: [], versions: [], members: {} });
       }
@@ -51,18 +51,18 @@ async function startServer() {
       if (!canvasCursors.has(canvasId)) {
         canvasCursors.set(canvasId, new Map());
       }
-      
+
       const canvas = canvases.get(canvasId)!;
-      
+
       // Determine if a user is joining for the first time
       if (!canvas.members[user.id]) {
         // First member is automatically the owner
         const isFirst = Object.keys(canvas.members).length === 0;
         canvas.members[user.id] = {
-           role: isFirst ? 'owner' : 'editor',
-           user: user,
-           isOnline: true,
-           socketId: socket.id
+          role: isFirst ? 'owner' : 'editor',
+          user: user,
+          isOnline: true,
+          socketId: socket.id
         };
       } else {
         canvas.members[user.id].isOnline = true;
@@ -70,15 +70,15 @@ async function startServer() {
         // Update user properties in case they changed
         canvas.members[user.id].user = user;
       }
-      
+
       const cursorsMap = canvasCursors.get(canvasId)!;
       cursorsMap.set(socket.id, { user, position: { x: 0, y: 0 } });
-      
+
       // Send current state
       socket.emit("init_canvas", canvas);
       socket.emit("init_chat", canvasChats.get(canvasId));
       socket.emit("versions_updated", canvas.versions);
-      
+
       // Broadcast updated members and cursors
       io.to(canvasId).emit("members_updated", Object.values(canvas.members));
       io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
@@ -91,13 +91,13 @@ async function startServer() {
         // Check if requester is owner
         const requesterId = socket.data.user.id;
         if (canvas.members[requesterId]?.role === 'owner') {
-           if (canvas.members[userId]) {
-              // Ensure we don't remove the last owner unless it's handled, but for simplicity:
-              if (userId !== requesterId) {
-                  canvas.members[userId].role = role;
-                  io.to(canvasId).emit("members_updated", Object.values(canvas.members));
-              }
-           }
+          if (canvas.members[userId]) {
+            // Ensure we don't remove the last owner unless it's handled, but for simplicity:
+            if (userId !== requesterId) {
+              canvas.members[userId].role = role;
+              io.to(canvasId).emit("members_updated", Object.values(canvas.members));
+            }
+          }
         }
       }
     });
@@ -119,7 +119,7 @@ async function startServer() {
               }
             }
             io.to(canvasId).emit("members_updated", Object.values(canvas.members));
-            
+
             // Also clean up cursor
             const cursorsMap = canvasCursors.get(canvasId);
             if (cursorsMap && targetSocketId) {
@@ -138,7 +138,7 @@ async function startServer() {
         if (cursorsMap && cursorsMap.has(socket.id)) {
           cursorsMap.get(socket.id)!.position = { x, y };
           // Throttle broadcast slightly in a real app, but here simple broadcast
-          socket.to(canvasId).emit("cursor_moved", { id: socket.id, position: { x, y }});
+          socket.to(canvasId).emit("cursor_moved", { id: socket.id, position: { x, y } });
         }
       }
     });
@@ -164,12 +164,12 @@ async function startServer() {
       if (canvasId && canvases.has(canvasId)) {
         const canvas = canvases.get(canvasId)!;
         const newVersion = {
-           id: randomUUID(),
-           timestamp: new Date().toISOString(),
-           author: socket.data.user,
-           name: versionName || `Version ${canvas.versions.length + 1}`,
-           nodes: JSON.parse(JSON.stringify(canvas.nodes)),
-           edges: JSON.parse(JSON.stringify(canvas.edges))
+          id: randomUUID(),
+          timestamp: new Date().toISOString(),
+          author: socket.data.user,
+          name: versionName || `Version ${canvas.versions.length + 1}`,
+          nodes: JSON.parse(JSON.stringify(canvas.nodes)),
+          edges: JSON.parse(JSON.stringify(canvas.edges))
         };
         canvas.versions = [newVersion, ...canvas.versions];
         io.to(canvasId).emit("versions_updated", canvas.versions);
@@ -182,33 +182,33 @@ async function startServer() {
         const canvas = canvases.get(canvasId)!;
         const version = canvas.versions.find((v: any) => v.id === versionId);
         if (version) {
-           canvas.nodes = JSON.parse(JSON.stringify(version.nodes));
-           canvas.edges = JSON.parse(JSON.stringify(version.edges));
-           io.to(canvasId).emit("nodes_updated", canvas.nodes);
-           io.to(canvasId).emit("edges_updated", canvas.edges);
-           // Add a restore marker
-           const newVersion = {
-             id: randomUUID(),
-             timestamp: new Date().toISOString(),
-             author: socket.data.user,
-             name: `Restored to ${version.name}`,
-             nodes: JSON.parse(JSON.stringify(canvas.nodes)),
-             edges: JSON.parse(JSON.stringify(canvas.edges))
-           };
-           canvas.versions = [newVersion, ...canvas.versions];
-           io.to(canvasId).emit("versions_updated", canvas.versions);
+          canvas.nodes = JSON.parse(JSON.stringify(version.nodes));
+          canvas.edges = JSON.parse(JSON.stringify(version.edges));
+          io.to(canvasId).emit("nodes_updated", canvas.nodes);
+          io.to(canvasId).emit("edges_updated", canvas.edges);
+          // Add a restore marker
+          const newVersion = {
+            id: randomUUID(),
+            timestamp: new Date().toISOString(),
+            author: socket.data.user,
+            name: `Restored to ${version.name}`,
+            nodes: JSON.parse(JSON.stringify(canvas.nodes)),
+            edges: JSON.parse(JSON.stringify(canvas.edges))
+          };
+          canvas.versions = [newVersion, ...canvas.versions];
+          io.to(canvasId).emit("versions_updated", canvas.versions);
         }
       }
     });
-    
+
     socket.on("send_message", (message) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvasChats.has(canvasId)) {
         const msgObj = {
-           id: randomUUID(),
-           user: socket.data.user,
-           text: message,
-           timestamp: new Date().toISOString()
+          id: randomUUID(),
+          user: socket.data.user,
+          text: message,
+          timestamp: new Date().toISOString()
         };
         canvasChats.get(canvasId)!.push(msgObj);
         io.to(canvasId).emit("new_message", msgObj);
@@ -216,24 +216,24 @@ async function startServer() {
     });
 
     socket.on("disconnect", () => {
-       const canvasId = socket.data.canvasId;
-       if (canvasId) {
-         const cursorsMap = canvasCursors.get(canvasId);
-         if (cursorsMap) {
-            cursorsMap.delete(socket.id);
-            io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
-         }
-         
-         const canvas = canvases.get(canvasId);
-         if (canvas && socket.data.user?.id) {
-           const member = canvas.members[socket.data.user.id];
-           if (member && member.socketId === socket.id) {
-             member.isOnline = false;
-             io.to(canvasId).emit("members_updated", Object.values(canvas.members));
-           }
-         }
-       }
-       console.log("Client disconnected:", socket.id);
+      const canvasId = socket.data.canvasId;
+      if (canvasId) {
+        const cursorsMap = canvasCursors.get(canvasId);
+        if (cursorsMap) {
+          cursorsMap.delete(socket.id);
+          io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
+        }
+
+        const canvas = canvases.get(canvasId);
+        if (canvas && socket.data.user?.id) {
+          const member = canvas.members[socket.data.user.id];
+          if (member && member.socketId === socket.id) {
+            member.isOnline = false;
+            io.to(canvasId).emit("members_updated", Object.values(canvas.members));
+          }
+        }
+      }
+      console.log("Client disconnected:", socket.id);
     });
   });
 
@@ -282,7 +282,7 @@ async function startServer() {
 
       const resultText = response.text;
       if (!resultText) throw new Error("No response from AI");
-      
+
       const parsed = parseJsonFromMarkdown(resultText);
 
       // Mutate parsed to include unique IDs
@@ -331,9 +331,9 @@ async function startServer() {
 
       const resultText = response.text;
       if (!resultText) throw new Error("No response from AI");
-      
+
       const parsed = parseJsonFromMarkdown(resultText);
-      
+
       const nodes = parsed.map((item: any) => ({
         id: randomUUID(),
         ...item
@@ -369,7 +369,7 @@ async function startServer() {
 
       const resultText = response.text;
       if (!resultText) throw new Error("No response from AI");
-      
+
       const parsed = parseJsonFromMarkdown(resultText);
       const tags = Array.isArray(parsed) ? parsed : [];
 

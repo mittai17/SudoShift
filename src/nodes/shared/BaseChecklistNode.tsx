@@ -14,7 +14,7 @@ interface ChecklistConfig {
 interface ChecklistItem { id: string; text: string; checked: boolean; }
 
 export function createChecklistNode(config: ChecklistConfig) {
-  const ChecklistComponent = ({ data }: { data: any }) => {
+  const ChecklistComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const { task } = data;
     const { setNodes } = useReactFlow();
     const nodeId = useNodeId();
@@ -41,10 +41,10 @@ export function createChecklistNode(config: ChecklistConfig) {
     const done = items.filter((i) => i.checked).length;
 
     return (
-      <NodeWrapper>
-        <div className="flex flex-col w-72 rounded-xl shadow-md bg-white border border-gray-200 hover:shadow-lg transition-shadow">
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
-          <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: config.accentColor }}>
+      <NodeWrapper data={data} selected={selected}>
+        <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
+          <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
               <span className="opacity-80">{config.icon}</span>
               <h3 className="font-semibold text-sm tracking-tight">{config.label}</h3>
@@ -55,7 +55,7 @@ export function createChecklistNode(config: ChecklistConfig) {
             {items.map((item) => (
               <div key={item.id} className="flex items-center space-x-2 group">
                 <input type="checkbox" checked={item.checked} onChange={() => toggle(item.id)}
-                  className="w-4 h-4 rounded cursor-pointer" style={{ accentColor: config.accentColor }} />
+                  className="w-4 h-4 rounded cursor-pointer" style={{ accentColor: `var(--node-color, ${config.accentColor})` }} />
                 <input type="text" value={item.text} onChange={(e) => updateText(item.id, e.target.value)}
                   className={`flex-1 text-sm bg-transparent focus:outline-none ${item.checked ? 'line-through text-gray-400' : 'text-gray-700'}`}
                   placeholder="List item..." />
@@ -68,7 +68,7 @@ export function createChecklistNode(config: ChecklistConfig) {
               <Plus className="w-3.5 h-3.5" /><span>Add item</span>
             </button>
           </div>
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-white -mr-2 z-10" style={{ backgroundColor: config.accentColor }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

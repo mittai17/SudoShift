@@ -12,7 +12,7 @@ export interface PrimaryNodeConfig {
 }
 
 export function createPrimaryNode(config: PrimaryNodeConfig) {
-  const PrimaryComponent = ({ data }: { data: any }) => {
+  const PrimaryComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const { task } = data;
     const { setNodes } = useReactFlow();
     const nodeId = useNodeId();
@@ -27,11 +27,11 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
     const extraFields = config.fields || [];
 
     return (
-      <NodeWrapper>
-        <div className="flex flex-col w-72 rounded-xl shadow-md bg-white border-2 hover:shadow-xl transition-shadow" style={{ borderColor: config.accentColor + '40' }}>
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
+      <NodeWrapper data={data} selected={selected}>
+        <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           {/* Header */}
-          <div className="rounded-t-xl px-4 py-3 text-white" style={{ background: `linear-gradient(135deg, ${config.accentColor}, ${config.accentColor}cc)` }}>
+          <div className="rounded-t-xl px-4 py-3 text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
               <span className="text-xl">{config.icon}</span>
               <div>
@@ -75,8 +75,8 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
             ))}
           </div>
           {/* Progress bar strip */}
-          <div className="h-1 rounded-b-xl opacity-30" style={{ backgroundColor: config.accentColor }} />
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-white -mr-2 z-10" style={{ backgroundColor: config.accentColor }} />
+          <div className="h-1 rounded-b-xl opacity-30" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

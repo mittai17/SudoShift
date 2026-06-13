@@ -26,22 +26,25 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 
 import Sidebar from '../components/layout/Sidebar';
-import TaskNode from '../components/nodes/TaskNode';
-import NoteNode from '../components/nodes/NoteNode';
-import MermaidNode from '../components/nodes/MermaidNode';
-import TableNode from '../components/nodes/TableNode';
-import ImageNode from '../components/nodes/ImageNode';
-import LinkNode from '../components/nodes/LinkNode';
-import ChecklistNode from '../components/nodes/ChecklistNode';
-import CodeNode from '../components/nodes/CodeNode';
-import VideoNode from '../components/nodes/VideoNode';
-import WhiteboardNode from '../components/nodes/WhiteboardNode';
-import TimerNode from '../components/nodes/TimerNode';
-import CalculatorNode from '../components/nodes/CalculatorNode';
-import CalendarNode from '../components/nodes/CalendarNode';
-import FormulaNode from '../components/nodes/FormulaNode';
 import { TaskData } from '../types';
 import { getInitialData } from '../data/initialData';
+import { nodeTypes as registryNodeTypes, nodeColorMap, NODE_REGISTRY } from '../nodes/registry/nodeTypes';
+
+// Legacy node imports for backward compat with existing canvas data
+import TaskNodeLegacy from '../components/nodes/TaskNode';
+import NoteNodeLegacy from '../components/nodes/NoteNode';
+import MermaidNodeLegacy from '../components/nodes/MermaidNode';
+import TableNodeLegacy from '../components/nodes/TableNode';
+import ImageNodeLegacy from '../components/nodes/ImageNode';
+import LinkNodeLegacy from '../components/nodes/LinkNode';
+import ChecklistNodeLegacy from '../components/nodes/ChecklistNode';
+import CodeNodeLegacy from '../components/nodes/CodeNode';
+import VideoNodeLegacy from '../components/nodes/VideoNode';
+import WhiteboardNodeLegacy from '../components/nodes/WhiteboardNode';
+import TimerNodeLegacy from '../components/nodes/TimerNode';
+import CalculatorNodeLegacy from '../components/nodes/CalculatorNode';
+import CalendarNodeLegacy from '../components/nodes/CalendarNode';
+import FormulaNodeLegacy from '../components/nodes/FormulaNode';
 
 // Constants
 const COLORS = ['#ef4444', '#f97316', '#84cc16', '#0ea5e9', '#8b5cf6', '#d946ef'];
@@ -237,20 +240,23 @@ function FlowEditor() {
   }, [setNodes]);
 
   const nodeTypes = useMemo(() => ({
-    taskNodeType: TaskNode,
-    noteNodeType: NoteNode,
-    mermaidNodeType: MermaidNode,
-    tableNodeType: TableNode,
-    imageNodeType: ImageNode,
-    linkNodeType: LinkNode,
-    checklistNodeType: ChecklistNode,
-    codeNodeType: CodeNode,
-    videoNodeType: VideoNode,
-    whiteboardNodeType: WhiteboardNode,
-    timerNodeType: TimerNode,
-    calculatorNodeType: CalculatorNode,
-    calendarNodeType: CalendarNode,
-    formulaNodeType: FormulaNode,
+    // Legacy node types for backward compatibility
+    taskNodeType: TaskNodeLegacy,
+    noteNodeType: NoteNodeLegacy,
+    mermaidNodeType: MermaidNodeLegacy,
+    tableNodeType: TableNodeLegacy,
+    imageNodeType: ImageNodeLegacy,
+    linkNodeType: LinkNodeLegacy,
+    checklistNodeType: ChecklistNodeLegacy,
+    codeNodeType: CodeNodeLegacy,
+    videoNodeType: VideoNodeLegacy,
+    whiteboardNodeType: WhiteboardNodeLegacy,
+    timerNodeType: TimerNodeLegacy,
+    calculatorNodeType: CalculatorNodeLegacy,
+    calendarNodeType: CalendarNodeLegacy,
+    formulaNodeType: FormulaNodeLegacy,
+    // New hierarchical node types from registry
+    ...registryNodeTypes,
   }), []);
 
   // Determine user role
@@ -283,31 +289,28 @@ function FlowEditor() {
       if (myRole === 'viewer') return;
 
       const type = event.dataTransfer.getData('application/reactflow');
+      if (!type) return;
 
-      // check if the dropped element is valid
-      if (typeof type === 'undefined' || !type) {
-        return;
-      }
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
 
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+      // Look up default data from the central registry
+      const registryEntry = NODE_REGISTRY.find((n) => n.id === type);
+
+      const taskData = registryEntry
+        ? { id: uuidv4(), ...registryEntry.defaultData }
+        : {
+            id: uuidv4(),
+            title: type === 'mermaidNodeType' ? 'Mermaid Diagram' : type === 'tableNodeType' ? 'Table' : type === 'imageNodeType' ? 'Image' : type === 'linkNodeType' ? 'Link' : type === 'checklistNodeType' ? 'Checklist' : type === 'codeNodeType' ? 'Code' : type === 'videoNodeType' ? 'Video' : type === 'whiteboardNodeType' ? 'Whiteboard' : type === 'timerNodeType' ? 'Timer' : type === 'calculatorNodeType' ? 'Calculator' : type === 'calendarNodeType' ? 'Calendar' : type === 'formulaNodeType' ? 'Formulas' : 'Note',
+            description: type === 'mermaidNodeType' ? 'graph TD\n  A-->B;' : type === 'checklistNodeType' ? '[{"id":"1","text":"First item","checked":false}]' : type === 'formulaNodeType' ? 'Budget = 5000\nSpend = 1200\nBudget - Spend' : '',
+            matrix: type === 'mermaidNodeType' ? 'MERMAID' : type === 'tableNodeType' ? 'TABLE' : type === 'imageNodeType' ? 'IMAGE' : type === 'linkNodeType' ? 'LINK' : type === 'checklistNodeType' ? 'CHECKLIST' : type === 'codeNodeType' ? 'CODE' : type === 'videoNodeType' ? 'VIDEO' : type === 'whiteboardNodeType' ? 'WHITEBOARD' : type === 'timerNodeType' ? 'TIMER' : type === 'calculatorNodeType' ? 'CALCULATOR' : type === 'calendarNodeType' ? 'CALENDAR' : type === 'formulaNodeType' ? 'FORMULA' : 'NOTE',
+            deadline: null,
+          };
 
       const newNode: Node = {
         id: uuidv4(),
         type,
         position,
-        data: { 
-          onChange: handleNoteChange,
-          task: { 
-            id: uuidv4(),
-            title: type === 'mermaidNodeType' ? 'Mermaid Diagram' : type === 'tableNodeType' ? 'Table' : type === 'imageNodeType' ? 'Image' : type === 'linkNodeType' ? 'Link' : type === 'checklistNodeType' ? 'Checklist' : type === 'codeNodeType' ? 'Code' : type === 'videoNodeType' ? 'Video' : type === 'whiteboardNodeType' ? 'Whiteboard' : type === 'timerNodeType' ? 'Timer' : type === 'calculatorNodeType' ? 'Calculator' : type === 'calendarNodeType' ? 'Calendar' : type === 'formulaNodeType' ? 'Formulas' : 'Note',
-            description: type === 'mermaidNodeType' ? 'graph TD\n  A-->B;' : type === 'checklistNodeType' ? '[{"id":"1","text":"First item","checked":false},{"id":"2","text":"Second item","checked":false}]' : type === 'formulaNodeType' ? 'Budget = 5000\nSpend = 1200\nBudget - Spend' : '',
-            matrix: type === 'mermaidNodeType' ? 'MERMAID' : type === 'tableNodeType' ? 'TABLE' : type === 'imageNodeType' ? 'IMAGE' : type === 'linkNodeType' ? 'LINK' : type === 'checklistNodeType' ? 'CHECKLIST' : type === 'codeNodeType' ? 'CODE' : type === 'videoNodeType' ? 'VIDEO' : type === 'whiteboardNodeType' ? 'WHITEBOARD' : type === 'timerNodeType' ? 'TIMER' : type === 'calculatorNodeType' ? 'CALCULATOR' : type === 'calendarNodeType' ? 'CALENDAR' : type === 'formulaNodeType' ? 'FORMULA' : 'NOTE',
-            deadline: null,
-          } 
-        },
+        data: { onChange: handleNoteChange, task: taskData },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -528,10 +531,13 @@ function FlowEditor() {
                 )}
               </Panel>
 
-              <MiniMap 
+              <MiniMap
                 nodeColor={(node) => {
                   const task = node.data.task as TaskData;
                   if (task?.isConflicting) return '#ef4444';
+                  // New registry nodes
+                  if (node.type && nodeColorMap[node.type]) return nodeColorMap[node.type];
+                  // Legacy node types
                   if (node.type === 'noteNodeType') return '#ff6d5a';
                   if (node.type === 'mermaidNodeType') return '#8b5cf6';
                   if (node.type === 'tableNodeType') return '#10b981';

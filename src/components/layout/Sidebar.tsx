@@ -1,269 +1,278 @@
-import React, { useState } from 'react';
-import { BrainCircuit, Youtube, Loader2, ListPlus, StickyNote, GitGraph, Table as TableIcon, Image as ImageIcon, Link2, CheckSquare, Code2, Film, Palette, Timer, Calculator, Calendar, Sigma } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  BrainCircuit, Youtube, Loader2, ListPlus, Search, X,
+  Target, FolderKanban, CheckSquare, CalendarDays, Flag,
+  Flame, Library, BookOpen, LayoutGrid
+} from 'lucide-react';
+import { NODE_REGISTRY } from '../../nodes/registry/nodeTypes';
+import { NodeDefinition } from '../../nodes/registry/types';
+import { NodeCategory } from '../../types';
 
 interface SidebarProps {
   onAddNodes: (nodes: any[]) => void;
   onAddEdges: (edges: any[]) => void;
 }
 
+type TabId = NodeCategory | 'all';
+
+interface TabConfig {
+  id: TabId;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+const TABS: TabConfig[] = [
+  { id: 'all',       label: 'All',       icon: <LayoutGrid className="w-4 h-4" />,    color: '#64748b' },
+  { id: 'goal',      label: 'Goal',      icon: <Target className="w-4 h-4" />,         color: '#f59e0b' },
+  { id: 'project',   label: 'Project',   icon: <FolderKanban className="w-4 h-4" />,   color: '#6366f1' },
+  { id: 'task',      label: 'Task',      icon: <CheckSquare className="w-4 h-4" />,    color: '#22c55e' },
+  { id: 'event',     label: 'Event',     icon: <CalendarDays className="w-4 h-4" />,   color: '#0ea5e9' },
+  { id: 'milestone', label: 'Milestone', icon: <Flag className="w-4 h-4" />,           color: '#ef4444' },
+  { id: 'habit',     label: 'Habit',     icon: <Flame className="w-4 h-4" />,          color: '#f97316' },
+  { id: 'resource',  label: 'Resource',  icon: <Library className="w-4 h-4" />,        color: '#8b5cf6' },
+  { id: 'note',      label: 'Note',      icon: <BookOpen className="w-4 h-4" />,       color: '#ff6d5a' },
+];
+
+const CATEGORY_LABELS: Record<NodeCategory, string> = {
+  goal: 'Goal', project: 'Project', task: 'Task', event: 'Event',
+  milestone: 'Milestone', habit: 'Habit', resource: 'Resource', note: 'Note',
+};
+
+// ── Node Card ─────────────────────────────────────────────────────────────────
+function NodeCard({ node, onDragStart }: {
+  node: NodeDefinition;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+  key?: React.Key;
+}) {
+  return (
+    <div
+      className="group flex items-center space-x-2.5 px-3 py-2.5 rounded-xl cursor-grab select-none border transition-all duration-150 bg-[#1a1b23] border-[#2a2b36] hover:scale-[1.02] active:scale-95 hover:shadow-lg"
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = node.color + '80')}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+      onDragStart={(e) => onDragStart(e, node.id)}
+      draggable
+      title={node.id}
+    >
+      <span className="text-base shrink-0 leading-none">{node.icon}</span>
+      <span className="text-xs font-medium text-gray-300 leading-tight">{node.label}</span>
+      <div className="ml-auto w-1.5 h-1.5 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: node.color }} />
+    </div>
+  );
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
 export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
+  const [activeTab, setActiveTab] = useState<TabId>('all');
+  const [search, setSearch] = useState('');
   const [brainDump, setBrainDump] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [loadingType, setLoadingType] = useState<'brain' | 'youtube' | null>(null);
 
-  const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
+  const handleDragStart = (event: React.DragEvent<HTMLDivElement>, nodeId: string) => {
+    event.dataTransfer.setData('application/reactflow', nodeId);
     event.dataTransfer.effectAllowed = 'move';
   };
+
+  // Filter nodes by tab + search
+  const filteredNodes = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return NODE_REGISTRY.filter((n) => {
+      const matchesTab = activeTab === 'all' || n.category === activeTab;
+      const matchesSearch = !q || n.label.toLowerCase().includes(q) || n.id.includes(q) || n.category.includes(q);
+      return matchesTab && matchesSearch;
+    });
+  }, [activeTab, search]);
+
+  // For "All" tab or search: group by category
+  const grouped = useMemo(() => {
+    if (activeTab !== 'all' && !search) return null;
+    const map = new Map<NodeCategory, NodeDefinition[]>();
+    for (const node of filteredNodes) {
+      if (!map.has(node.category)) map.set(node.category, []);
+      map.get(node.category)!.push(node);
+    }
+    return map;
+  }, [activeTab, filteredNodes, search]);
+
+  const activeTabConfig = TABS.find((t) => t.id === activeTab)!;
 
   const handleBrainDump = async () => {
     if (!brainDump.trim()) return;
     try {
       setLoadingType('brain');
-      const res = await fetch('/api/brain-dump', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: brainDump }),
-      });
+      const res = await fetch('/api/brain-dump', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: brainDump }) });
       if (!res.ok) throw new Error('Response failed');
       const data = await res.json();
       onAddNodes(data.nodes);
       setBrainDump('');
-    } catch (e) {
-      console.error(e);
-      alert("Failed to process brain dump");
-    } finally {
-      setLoadingType(null);
-    }
+    } catch (e) { console.error(e); alert('Failed to process brain dump'); }
+    finally { setLoadingType(null); }
   };
 
   const handleYoutubeExtract = async () => {
     if (!youtubeUrl.trim()) return;
     try {
       setLoadingType('youtube');
-      const res = await fetch('/api/youtube-extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: youtubeUrl }),
-      });
+      const res = await fetch('/api/youtube-extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: youtubeUrl }) });
       if (!res.ok) throw new Error('Response failed');
       const data = await res.json();
-      
       const nodes = data.nodes;
-      const edges = [];
-      for (let i = 0; i < nodes.length - 1; i++) {
-        edges.push({
-          id: `edge-${nodes[i].id}-${nodes[i+1].id}`,
-          source: nodes[i].id,
-          target: nodes[i+1].id,
-          animated: true,
-        });
-      }
-
+      const edges = nodes.slice(0, -1).map((n: any, i: number) => ({ id: `edge-${n.id}-${nodes[i + 1].id}`, source: n.id, target: nodes[i + 1].id, animated: true }));
       onAddNodes(nodes);
       if (edges.length > 0) onAddEdges(edges);
-      
       setYoutubeUrl('');
-    } catch (e) {
-      console.error(e);
-      alert("Failed to extract youtube action");
-    } finally {
-      setLoadingType(null);
-    }
+    } catch (e) { console.error(e); alert('Failed to extract youtube actions'); }
+    finally { setLoadingType(null); }
   };
 
   return (
-    <div className="w-80 h-full border-r border-gray-200 bg-[#fafafa] flex flex-col pt-4 px-4 overflow-y-auto shrink-0 shadow-sm z-10">
-      <div className="mb-6 flex space-x-2 items-center">
-        <div className="p-2 bg-[#ff6d5a] text-white rounded-lg">
-          <BrainCircuit className="w-5 h-5" />
+    <div className="w-72 h-full flex flex-col bg-[#13141c] border-r border-[#1e2030] shrink-0 shadow-2xl z-10 overflow-hidden">
+      {/* ── Brand ─────────────────────────────────────────── */}
+      <div className="px-4 py-3.5 flex items-center space-x-2.5 border-b border-[#1e2030] shrink-0">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6d5a, #f59e0b)' }}>
+          <BrainCircuit className="w-5 h-5 text-white" />
         </div>
-        <h1 className="font-bold text-lg text-gray-800 tracking-tight">Visual Second Brain</h1>
+        <div>
+          <h1 className="font-bold text-sm text-white leading-tight tracking-tight">Visual Second Brain</h1>
+          <p className="text-[10px] text-gray-500">LifeOS Canvas</p>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        
-        {/* Node Library Section */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-xs text-gray-500 uppercase tracking-wider mb-3">Nodes</h2>
-          <div className="grid grid-cols-2 gap-2">
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#ff6d5a] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'noteNodeType')}
-              draggable
-            >
-              <StickyNote className="w-4 h-4 text-[#ff6d5a]" />
-              <span className="text-xs font-medium text-gray-700">Note</span>
-            </div>
-            
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#8b5cf6] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'mermaidNodeType')}
-              draggable
-            >
-              <GitGraph className="w-4 h-4 text-[#8b5cf6]" />
-              <span className="text-xs font-medium text-gray-700">Mermaid</span>
-            </div>
+      {/* ── Search ────────────────────────────────────────── */}
+      <div className="px-3 py-2.5 border-b border-[#1e2030] shrink-0">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); if (e.target.value) setActiveTab('all'); }}
+            placeholder='Search nodes...'
+            className="w-full bg-[#1a1b23] border border-[#2a2b36] rounded-lg pl-8 pr-8 py-2 text-xs text-gray-300 placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
 
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#10b981] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'tableNodeType')}
-              draggable
+      {/* ── Tab Rail ─────────────────────────────────────── */}
+      <div className="flex overflow-x-auto gap-1 px-2 py-2 border-b border-[#1e2030] shrink-0" style={{ scrollbarWidth: 'none' }}>
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id && !search;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSearch(''); }}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 whitespace-nowrap shrink-0"
+              style={isActive
+                ? { backgroundColor: tab.color + '25', color: tab.color, borderWidth: 1, borderStyle: 'solid', borderColor: tab.color + '50' }
+                : { color: '#6b7280' }}
+              title={tab.label}
             >
-              <TableIcon className="w-4 h-4 text-[#10b981]" />
-              <span className="text-xs font-medium text-gray-700">Table</span>
-            </div>
+              <span style={isActive ? { color: tab.color } : { color: '#4b5563' }}>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#f59e0b] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'imageNodeType')}
-              draggable
-            >
-              <ImageIcon className="w-4 h-4 text-[#f59e0b]" />
-              <span className="text-xs font-medium text-gray-700">Image</span>
-            </div>
+      {/* ── Node Grid ────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-3 py-2.5 space-y-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#2a2b36 transparent' }}>
+        {search && (
+          <div className="text-[10px] text-gray-500 px-1">
+            {filteredNodes.length} result{filteredNodes.length !== 1 ? 's' : ''} for &ldquo;{search}&rdquo;
+          </div>
+        )}
 
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#3b82f6] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'linkNodeType')}
-              draggable
-            >
-              <Link2 className="w-4 h-4 text-[#3b82f6]" />
-              <span className="text-xs font-medium text-gray-700">Link</span>
-            </div>
+        {filteredNodes.length === 0 && (
+          <div className="text-center py-8 text-gray-600 text-xs">No nodes found</div>
+        )}
 
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#ec4899] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'checklistNodeType')}
-              draggable
-            >
-              <CheckSquare className="w-4 h-4 text-[#ec4899]" />
-              <span className="text-xs font-medium text-gray-700">Checklist</span>
-            </div>
+        {/* Grouped display (All tab or search) */}
+        {grouped && grouped.size > 0 && (
+          Array.from(grouped.entries()).map(([category, nodes]) => {
+            const tabCfg = TABS.find((t) => t.id === category);
+            return (
+              <div key={category}>
+                <div className="flex items-center space-x-1.5 mb-1.5 px-1">
+                  <span style={{ color: tabCfg?.color }} className="opacity-70">{tabCfg?.icon}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: (tabCfg?.color || '#888') + 'aa' }}>
+                    {CATEGORY_LABELS[category]}
+                  </span>
+                  <div className="flex-1 h-px" style={{ backgroundColor: (tabCfg?.color || '#888') + '20' }} />
+                </div>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {nodes.map((node) => <NodeCard key={node.id} node={node} onDragStart={handleDragStart} />)}
+                </div>
+              </div>
+            );
+          })
+        )}
 
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#6b7280] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'codeNodeType')}
-              draggable
-            >
-              <Code2 className="w-4 h-4 text-[#6b7280]" />
-              <span className="text-xs font-medium text-gray-700">Code</span>
+        {/* Single category display */}
+        {!grouped && filteredNodes.length > 0 && (
+          <div>
+            <div className="flex items-center space-x-1.5 mb-2 px-1">
+              <span style={{ color: activeTabConfig.color }}>{activeTabConfig.icon}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: activeTabConfig.color + 'aa' }}>
+                {activeTabConfig.label} Nodes
+              </span>
+              <span className="text-[10px] text-gray-600 ml-1">({filteredNodes.length})</span>
             </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#ef4444] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'videoNodeType')}
-              draggable
-            >
-              <Film className="w-4 h-4 text-[#ef4444]" />
-              <span className="text-xs font-medium text-gray-700">Video</span>
-            </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#a855f7] hover:bg-white transition-all col-span-2 sm:col-span-1"
-              onDragStart={(event) => onDragStart(event, 'whiteboardNodeType')}
-              draggable
-            >
-              <Palette className="w-4 h-4 text-[#a855f7]" />
-              <span className="text-xs font-medium text-gray-700">Whiteboard</span>
-            </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#f43f5e] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'timerNodeType')}
-              draggable
-            >
-              <Timer className="w-4 h-4 text-[#f43f5e]" />
-              <span className="text-xs font-medium text-gray-700">Timer</span>
-            </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-zinc-800 hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'calculatorNodeType')}
-              draggable
-            >
-              <Calculator className="w-4 h-4 text-zinc-800" />
-              <span className="text-xs font-medium text-gray-700">Calculator</span>
-            </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#0ea5e9] hover:bg-white transition-all"
-              onDragStart={(event) => onDragStart(event, 'calendarNodeType')}
-              draggable
-            >
-              <Calendar className="w-4 h-4 text-[#0ea5e9]" />
-              <span className="text-xs font-medium text-gray-700">Calendar</span>
-            </div>
-
-            <div
-              className="flex items-center space-x-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:border-[#6366f1] hover:bg-white transition-all col-span-2 sm:col-span-1"
-              onDragStart={(event) => onDragStart(event, 'formulaNodeType')}
-              draggable
-            >
-              <Sigma className="w-4 h-4 text-[#6366f1]" />
-              <span className="text-xs font-medium text-gray-700">Formulas</span>
+            <div className="grid grid-cols-1 gap-1.5">
+              {filteredNodes.map((node) => <NodeCard key={node.id} node={node} onDragStart={handleDragStart} />)}
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 mt-2 text-center">Drag items to the canvas</p>
+        )}
+
+        <p className="text-[10px] text-gray-600 text-center pt-1 pb-2">Drag nodes to the canvas</p>
+      </div>
+
+      {/* ── AI Assistants ────────────────────────────────── */}
+      <div className="border-t border-[#1e2030] px-3 py-3 space-y-3 bg-[#0f1016] shrink-0">
+        <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">AI Assistants</p>
+
+        {/* Brain Dump */}
+        <div className="space-y-1.5">
+          <div className="flex items-center space-x-1.5">
+            <ListPlus className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-xs font-medium text-gray-400">Smart Brain-Dump</span>
+          </div>
+          <textarea
+            value={brainDump}
+            onChange={(e) => setBrainDump(e.target.value)}
+            className="w-full min-h-[60px] p-2 text-xs border border-[#1e2030] rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-none bg-[#1a1b23] text-gray-300 placeholder-gray-600 font-sans"
+            placeholder="Dump unstructured thoughts..."
+          />
+          <button
+            onClick={handleBrainDump}
+            disabled={loadingType !== null || !brainDump.trim()}
+            className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          >
+            {loadingType === 'brain' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Extract to Matrix'}
+          </button>
         </div>
 
-        {/* AI Operations Section */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
-          <h2 className="font-semibold text-xs text-gray-500 uppercase tracking-wider mb-2">AI Assistants</h2>
-          
-          {/* Brain Dump Item */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 mb-1">
-              <ListPlus className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-medium text-sm text-gray-800">Smart Brain-Dump</h3>
-            </div>
-            <textarea
-              value={brainDump}
-              onChange={(e) => setBrainDump(e.target.value)}
-              className="w-full min-h-[80px] p-2.5 text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-y bg-gray-50 font-sans placeholder-gray-400 transition-colors"
-              placeholder="Dump unstructured thoughts here..."
-            />
-            <button
-              onClick={handleBrainDump}
-              disabled={loadingType !== null || !brainDump.trim()}
-              className="w-full py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              {loadingType === 'brain' ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                'Extract to Eisenhower Matrix'
-              )}
-            </button>
+        {/* YouTube */}
+        <div className="space-y-1.5">
+          <div className="flex items-center space-x-1.5">
+            <Youtube className="w-3.5 h-3.5 text-red-500" />
+            <span className="text-xs font-medium text-gray-400">YouTube Actions</span>
           </div>
-
-          <div className="h-px bg-gray-100 my-4" />
-
-          {/* YouTube Extractor Item */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 mb-1 text-blue-900">
-              <Youtube className="w-4 h-4 text-red-500" />
-              <h3 className="font-medium text-sm text-gray-800">YouTube Actions</h3>
-            </div>
-            <input
-              type="text"
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              className="w-full p-2.5 text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-red-500 focus:border-red-500 focus:outline-none bg-gray-50 text-gray-900 placeholder-gray-400 transition-colors"
-              placeholder="Enter YouTube URL or Topic..."
-            />
-            <button
-              onClick={handleYoutubeExtract}
-              disabled={loadingType !== null || !youtubeUrl.trim()}
-              className="w-full py-2 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              {loadingType === 'youtube' ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                'Extract Roadmap'
-              )}
-            </button>
-          </div>
-          
+          <input
+            type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)}
+            className="w-full p-2 text-xs border border-[#1e2030] rounded-lg focus:ring-1 focus:ring-red-500 focus:border-red-500 focus:outline-none bg-[#1a1b23] text-gray-300 placeholder-gray-600"
+            placeholder="YouTube URL or topic..." />
+          <button
+            onClick={handleYoutubeExtract}
+            disabled={loadingType !== null || !youtubeUrl.trim()}
+            className="w-full py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          >
+            {loadingType === 'youtube' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Extract Roadmap'}
+          </button>
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import {
-  FolderKanban, CheckSquare, CalendarDays, Flag,
-  Flame, Library, BookOpen, LayoutGrid, Target, Search, X, BrainCircuit
+  BrainCircuit, Youtube, Loader2, ListPlus, Search, X,
+  Target, FolderKanban, CheckSquare, CalendarDays, Flag,
+  Flame, Library, BookOpen, LayoutGrid
 } from 'lucide-react';
 import { NODE_REGISTRY } from '../../nodes/registry/nodeTypes';
 import { NodeDefinition } from '../../nodes/registry/types';
@@ -64,6 +65,9 @@ function NodeCard({ node, onDragStart }: {
 export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
+  const [brainDump, setBrainDump] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [loadingType, setLoadingType] = useState<'brain' | 'youtube' | null>(null);
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, nodeId: string) => {
     event.dataTransfer.setData('application/reactflow', nodeId);
@@ -92,6 +96,35 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
   }, [activeTab, filteredNodes, search]);
 
   const activeTabConfig = TABS.find((t) => t.id === activeTab)!;
+
+  const handleBrainDump = async () => {
+    if (!brainDump.trim()) return;
+    try {
+      setLoadingType('brain');
+      const res = await fetch('/api/brain-dump', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: brainDump }) });
+      if (!res.ok) throw new Error('Response failed');
+      const data = await res.json();
+      onAddNodes(data.nodes);
+      setBrainDump('');
+    } catch (e) { console.error(e); alert('Failed to process brain dump'); }
+    finally { setLoadingType(null); }
+  };
+
+  const handleYoutubeExtract = async () => {
+    if (!youtubeUrl.trim()) return;
+    try {
+      setLoadingType('youtube');
+      const res = await fetch('/api/youtube-extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: youtubeUrl }) });
+      if (!res.ok) throw new Error('Response failed');
+      const data = await res.json();
+      const nodes = data.nodes;
+      const edges = nodes.slice(0, -1).map((n: any, i: number) => ({ id: `edge-${n.id}-${nodes[i + 1].id}`, source: n.id, target: nodes[i + 1].id, animated: true }));
+      onAddNodes(nodes);
+      if (edges.length > 0) onAddEdges(edges);
+      setYoutubeUrl('');
+    } catch (e) { console.error(e); alert('Failed to extract youtube actions'); }
+    finally { setLoadingType(null); }
+  };
 
   return (
     <div className="w-72 h-full flex flex-col bg-[#13141c] border-r border-[#1e2030] shrink-0 shadow-2xl z-10 overflow-hidden">
@@ -197,6 +230,51 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
         )}
 
         <p className="text-[10px] text-gray-600 text-center pt-1 pb-2">Drag nodes to the canvas</p>
+      </div>
+
+      {/* ── AI Assistants ────────────────────────────────── */}
+      <div className="border-t border-[#1e2030] px-3 py-3 space-y-3 bg-[#0f1016] shrink-0">
+        <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">AI Assistants</p>
+
+        {/* Brain Dump */}
+        <div className="space-y-1.5">
+          <div className="flex items-center space-x-1.5">
+            <ListPlus className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-xs font-medium text-gray-400">Smart Brain-Dump</span>
+          </div>
+          <textarea
+            value={brainDump}
+            onChange={(e) => setBrainDump(e.target.value)}
+            className="w-full min-h-[60px] p-2 text-xs border border-[#1e2030] rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-none bg-[#1a1b23] text-gray-300 placeholder-gray-600 font-sans"
+            placeholder="Dump unstructured thoughts..."
+          />
+          <button
+            onClick={handleBrainDump}
+            disabled={loadingType !== null || !brainDump.trim()}
+            className="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          >
+            {loadingType === 'brain' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Extract to Matrix'}
+          </button>
+        </div>
+
+        {/* YouTube */}
+        <div className="space-y-1.5">
+          <div className="flex items-center space-x-1.5">
+            <Youtube className="w-3.5 h-3.5 text-red-500" />
+            <span className="text-xs font-medium text-gray-400">YouTube Actions</span>
+          </div>
+          <input
+            type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)}
+            className="w-full p-2 text-xs border border-[#1e2030] rounded-lg focus:ring-1 focus:ring-red-500 focus:border-red-500 focus:outline-none bg-[#1a1b23] text-gray-300 placeholder-gray-600"
+            placeholder="YouTube URL or topic..." />
+          <button
+            onClick={handleYoutubeExtract}
+            disabled={loadingType !== null || !youtubeUrl.trim()}
+            className="w-full py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+          >
+            {loadingType === 'youtube' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Extract Roadmap'}
+          </button>
+        </div>
       </div>
     </div>
   );

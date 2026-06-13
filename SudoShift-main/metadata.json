@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Visual Second Brain",
+  "description": "An infinite visual canvas where life goals are represented as visual nodes. Features smart brain-dumping and YouTube action-extractions mapping out to an Eisenhower matrix.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

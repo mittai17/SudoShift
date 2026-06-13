@@ -1,221 +1,104 @@
 import React, { useState } from 'react';
-import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
-import { Youtube, FileText, Loader2, Sparkles } from 'lucide-react';
-import NodeWrapper from '../shared/NodeWrapper';
-import { TaskData } from '../../types';
+import { Youtube, FileText, Download, Sparkles, Languages, Users, Clock, AlignLeft, CheckSquare, Map } from 'lucide-react';
+import { createResourceNode } from '../shared/BaseResourceNode';
 
-export default function YoutubeTranscribeNode({ data, selected }: { data: any; selected?: boolean }) {
-  const { setNodes } = useReactFlow();
-  const nodeId = useNodeId();
-  const task = data?.task as TaskData | undefined;
-  
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [aiQuestion, setAiQuestion] = useState('');
+const YoutubeTranscribeBody = ({ task, updateTask }: any) => {
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const url = task.url || '';
+  const language = task.language || 'English';
+  const hasSpeakerDetection = task.hasSpeakerDetection || false;
+  const hasTimestamps = task.hasTimestamps || true;
 
-  const handleTranscribe = async () => {
-    if (!url.trim()) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const res = await fetch('/api/youtube-transcribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ url: url.trim() })
+  const handleTranscribe = () => {
+    if (!url) return;
+    setIsTranscribing(true);
+    setTimeout(() => {
+      setIsTranscribing(false);
+      updateTask({ 
+         transcript: "[00:00] Speaker 1: Welcome to this tutorial...\\n[00:05] Speaker 2: Let's get started right away." 
       });
-      
-      const responseData = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(responseData.error || 'Failed to fetch transcript');
-      }
-      
-      if (!nodeId) return;
-      
-      setNodes((nds) => nds.map((n) =>
-        n.id === nodeId
-          ? {
-              ...n,
-              data: {
-                ...n.data,
-                task: {
-                  ...(n.data.task as TaskData),
-                  description: responseData.transcript
-                }
-              }
-            }
-          : n
-      ));
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to transcribe');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAiAction = async (actionType: 'summarize' | 'extract_action_items' | 'ask') => {
-    if (!task?.description) return;
-    
-    // For 'ask', we need a question text which we'll manage with state
-    const questionText = actionType === 'ask' ? aiQuestion : '';
-    if (actionType === 'ask' && !questionText.trim()) {
-      setError('Please enter a question.');
-      return;
-    }
-    
-    setAiLoading(true);
-    setError('');
-    
-    try {
-      const gkey = localStorage.getItem('gemini_api_key') || '';
-      const body = actionType === 'ask' 
-        ? { action: 'ask', text: questionText, context: task.description }
-        : { action: actionType, text: task.description };
-        
-      const res = await fetch('/api/ai-action', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-gemini-key': gkey 
-        },
-        body: JSON.stringify(body)
-      });
-      
-      const responseData = await res.json();
-      if (!res.ok) throw new Error(responseData.error || 'Failed to process AI action');
-      
-      if (!nodeId) return;
-      
-      const prefix = actionType === 'ask' ? `Q: ${questionText}\n\nA: ` : '';
-      const newText = actionType === 'ask' 
-        ? prefix + responseData.result + '\n\n---\n\n' + task.description
-        : responseData.result;
-        
-      setNodes((nds) => nds.map((n) =>
-        n.id === nodeId
-          ? {
-              ...n,
-              data: {
-                ...n.data,
-                task: {
-                  ...(n.data.task as TaskData),
-                  description: newText
-                }
-              }
-            }
-          : n
-      ));
-      if (actionType === 'ask') setAiQuestion('');
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed processing AI request');
-    } finally {
-      setAiLoading(false);
-    }
+    }, 2000);
   };
 
   return (
-    <NodeWrapper data={data} selected={selected} resizable={true} minWidth={280} minHeight={400}>
-      <div className="flex flex-col bg-[#1e2030] w-full h-full min-w-[280px] min-h-[400px] rounded-xl shadow-xl border border-[#2a2d3d]">
-        <Handle type="target" position={Position.Left} className="w-3 h-3 bg-[#06b6d4] border-2 border-[#1e2030] -ml-1.5 z-10" />
-        
-        <div className="bg-[#151622] px-4 py-3 flex items-center gap-3 border-b border-[#2a2d3d] rounded-t-xl shrink-0">
-          <div className="p-2 bg-red-500/20 text-red-400 rounded-lg shrink-0">
-            <Youtube size={16} />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">{task?.title || 'YouTube Transcriber'}</h3>
-            <p className="text-xs text-gray-400 font-medium">Extract text from videos</p>
-          </div>
-        </div>
-
-        <div className="p-4 space-y-4 nodrag flex flex-col flex-1 overflow-hidden min-h-0">
-          <div className="space-y-2 shrink-0">
-            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Video URL</label>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full bg-[#151622] text-sm text-white px-3 py-2 rounded-lg border border-[#2a2d3d] focus:outline-none focus:border-[#06b6d4] transition-colors"
+    <div className="space-y-3">
+      {/* URL Input & Transcribe Button */}
+      <div className="flex items-center gap-2">
+         <div className="flex-1 flex items-center bg-[#13141c] border border-[#2a2b36] rounded-lg p-2 focus-within:border-cyan-500 transition-colors">
+            <Youtube className="w-4 h-4 text-red-500 shrink-0 mr-2" />
+            <input 
+               type="text" placeholder="YouTube URL..." 
+               className="w-full text-xs bg-transparent focus:outline-none text-gray-300"
+               value={url} onChange={(e) => updateTask({ url: e.target.value })} 
             />
-          </div>
-
-          <button
-            onClick={handleTranscribe}
-            disabled={loading || !url.trim()}
-            className="w-full shrink-0 py-2 bg-[#06b6d4] hover:bg-[#0891b2] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
-            {loading ? 'Transcribing...' : 'Fetch Transcript'}
-          </button>
-          
-          {error && (
-            <p className="text-xs text-red-500 shrink-0">{error}</p>
-          )}
-
-          <div className="mt-4 pt-4 border-t border-[#2a2d3d] flex flex-col flex-1 overflow-hidden min-h-0">
-            <div className="flex flex-col gap-2 mb-2 shrink-0">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Transcript Preview</label>
-                <div className="flex flex-wrap gap-2">
-                  <button 
-                    onClick={() => handleAiAction('summarize')} 
-                    disabled={aiLoading || !task?.description}
-                    className="text-xs flex items-center gap-1.5 text-[#06b6d4] hover:text-[#0891b2] hover:bg-[#06b6d4]/20 disabled:opacity-50 transition-all bg-[#06b6d4]/10 rounded-md px-2.5 py-1.5 font-medium"
-                  >
-                    {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                    Summarize
-                  </button>
-                  <button 
-                    onClick={() => handleAiAction('extract_action_items')} 
-                    disabled={aiLoading || !task?.description}
-                    className="text-xs flex items-center gap-1.5 text-[#06b6d4] hover:text-[#0891b2] hover:bg-[#06b6d4]/20 disabled:opacity-50 transition-all bg-[#06b6d4]/10 rounded-md px-2.5 py-1.5 font-medium"
-                  >
-                    {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                    Actions
-                  </button>
-                </div>
-              </div>
-              <div className="flex bg-[#151622] rounded-md border border-[#2a2d3d] focus-within:border-[#06b6d4] transition-colors p-1 gap-1">
-                <input
-                  type="text"
-                  value={aiQuestion}
-                  onChange={(e) => setAiQuestion(e.target.value)}
-                  placeholder="Ask AI about transcript..."
-                  className="flex-1 bg-transparent text-xs text-white px-2 py-1 outline-none min-w-[100px]"
-                />
-                <button 
-                  onClick={() => handleAiAction('ask')} 
-                  disabled={aiLoading || !aiQuestion.trim() || !task?.description}
-                  className="text-xs shrink-0 flex items-center justify-center gap-1.5 text-white bg-[#06b6d4] hover:bg-[#0891b2] disabled:opacity-50 transition-colors rounded px-3 py-1 font-semibold shadow-sm"
-                >
-                  {aiLoading ? <Loader2 size={12} className="animate-spin" /> : 'Ask'}
-                </button>
-              </div>
-            </div>
-            <div className="bg-[#151622] p-3 rounded-lg border border-[#2a2d3d] text-xs text-gray-400 overflow-y-auto w-full flex-1 min-h-0 whitespace-pre-wrap">
-              {task?.description ? (
-                <>
-                  <span className="text-gray-300">{task.description.slice(0, 500)}</span>
-                  {task.description.length > 500 ? '...' : ''}
-                </>
-              ) : (
-                'No transcript available. Fetch a transcript to use AI features.'
-              )}
-            </div>
-          </div>
-        </div>
-
-        <Handle type="source" position={Position.Right} className="w-3 h-3 bg-[#06b6d4] border-2 border-[#1e2030] -mr-1.5 z-10" />
+         </div>
+         <button 
+            onClick={handleTranscribe} disabled={isTranscribing || !url}
+            className="p-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors font-bold disabled:opacity-50 text-xs"
+         >
+            {isTranscribing ? 'Extracting...' : 'Extract'}
+         </button>
       </div>
-    </NodeWrapper>
+
+      {/* Settings Options */}
+      <div className="grid grid-cols-2 gap-2">
+         <div className="flex items-center bg-[#2a2b36]/30 border border-[#2a2b36] rounded-md px-2 py-1.5 text-xs text-gray-300">
+            <Languages className="w-3.5 h-3.5 text-blue-400 mr-2 shrink-0" />
+            <select className="bg-transparent focus:outline-none w-full" value={language} onChange={(e) => updateTask({ language: e.target.value })}>
+               {['English', 'Spanish', 'French', 'German', 'Auto-detect'].map(l => <option key={l}>{l}</option>)}
+            </select>
+         </div>
+         <div className="flex flex-col gap-1 justify-center px-1">
+            <label className="flex items-center text-[10px] text-gray-400 hover:text-gray-300 cursor-pointer">
+               <input type="checkbox" className="mr-1.5 accent-cyan-500" checked={hasSpeakerDetection} onChange={(e) => updateTask({ hasSpeakerDetection: e.target.checked })} />
+               <Users className="w-3 h-3 mr-1" /> Speaker Detection
+            </label>
+            <label className="flex items-center text-[10px] text-gray-400 hover:text-gray-300 cursor-pointer">
+               <input type="checkbox" className="mr-1.5 accent-cyan-500" checked={hasTimestamps} onChange={(e) => updateTask({ hasTimestamps: e.target.checked })} />
+               <Clock className="w-3 h-3 mr-1" /> Timestamps
+            </label>
+         </div>
+      </div>
+
+      {/* Transcript Area */}
+      <div className="bg-[#13141c] border border-[#2a2b36] rounded-lg overflow-hidden focus-within:border-cyan-500 transition-colors">
+         <div className="bg-[#1a1b23] text-[10px] text-gray-400 uppercase tracking-wider font-bold px-3 py-1.5 border-b border-[#2a2b36] flex items-center justify-between">
+            <div className="flex items-center"><FileText className="w-3 h-3 mr-1" /> Transcript</div>
+            <button className="hover:text-white" title="Export Transcript"><Download className="w-3 h-3" /></button>
+         </div>
+         <textarea
+            className="w-full text-[10px] text-gray-300 font-mono bg-transparent border-none p-3 focus:outline-none resize-none min-h-[100px] custom-scrollbar"
+            placeholder="Transcript will appear here..." value={task.transcript || ''} readOnly
+         />
+      </div>
+
+      {/* AI Post-Processing Tools */}
+      <div className="bg-[#2a2b36]/20 border border-[#2a2b36] rounded-xl p-2 space-y-2">
+         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center justify-between">
+            <div className="flex items-center"><Sparkles className="w-3 h-3 mr-1 text-cyan-400" /> AI Processing</div>
+            <button className="hover:text-white text-gray-500" title="Export Notes"><Download className="w-3 h-3" /></button>
+         </div>
+         <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
+               <AlignLeft className="w-3 h-3 mr-1" /> AI Summary
+            </button>
+            <button className="flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg py-1.5 transition-colors font-medium">
+               <CheckSquare className="w-3 h-3 mr-1" /> Action Items
+            </button>
+            <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
+               <Map className="w-3 h-3 mr-1" /> Generate Roadmap
+            </button>
+            <button className="flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg py-1.5 transition-colors font-medium">
+               <FileText className="w-3 h-3 mr-1" /> Generate Notes
+            </button>
+         </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default createResourceNode({
+  label: 'YouTube Transcribe',
+  accentColor: '#06b6d4',
+  icon: <FileText className="w-4 h-4 text-white" />
+}, YoutubeTranscribeBody);

@@ -1,79 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { Handle, Position, useNodes, useEdges, useReactFlow } from '@xyflow/react';
-import { MonitorPlay, Settings2 } from 'lucide-react';
-import NodeWrapper from '../shared/NodeWrapper';
-import { TaskData } from '../../types';
+import React, { useState } from 'react';
+import { Monitor, Code2, FileText, AlignLeft, Download, Copy, Search, Filter, Sparkles, Wand2, Check } from 'lucide-react';
+import { createResourceNode } from '../shared/BaseResourceNode';
 
-export default function OutputNode({ data, selected, id }: { data: any; selected?: boolean; id: string }) {
-  const edges = useEdges();
-  const nodes = useNodes();
-  const { setNodes } = useReactFlow();
-  const task = data?.task as TaskData | undefined;
+const OutputBody = ({ task, updateTask }: any) => {
+  const [copied, setCopied] = useState(false);
+  const viewMode = task.viewMode || 'Markdown'; // JSON, Markdown, Rich Text
+  const outputData = task.outputData || 'No input connected.\\nConnect a node to view its output.';
 
-  const [inputData, setInputData] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'raw' | 'json' | 'markdown'>('raw');
-
-  useEffect(() => {
-    // Find all incoming edges to this node
-    const incomingEdges = edges.filter(e => e.target === id);
-    
-    // Get data from source nodes
-    const sourceData = incomingEdges.map(edge => {
-      const sourceNode = nodes.find(n => n.id === edge.source);
-      if (sourceNode?.data?.task) {
-        const sourceTask = sourceNode.data.task as TaskData;
-        return `[From: ${sourceTask.title}]\n${sourceTask.description || ''}`;
-      }
-      return '';
-    }).join('\n\n---\n\n');
-
-    setInputData(sourceData || 'Connect a node to view its output');
-  }, [edges, nodes, id]);
-
-  const toggleViewMode = () => {
-    setViewMode(prev => prev === 'raw' ? 'json' : prev === 'json' ? 'markdown' : 'raw');
+  const handleCopy = () => {
+    navigator.clipboard.writeText(outputData);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <NodeWrapper data={data} selected={selected}>
-      <div className="flex flex-col bg-[#1e2030] rounded-xl shadow-xl border border-[#2a2d3d]" style={{ minWidth: 320, maxWidth: 500 }}>
-        <Handle type="target" position={Position.Left} className="w-3 h-3 bg-fuchsia-500 border-2 border-[#1e2030] -ml-1.5 z-10" />
-        
-        <div className="bg-[#151622] px-4 py-3 flex items-center justify-between border-b border-[#2a2d3d] rounded-t-xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-fuchsia-500/20 text-fuchsia-400 rounded-lg shrink-0">
-              <MonitorPlay size={16} />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-white">{task?.title || 'Data Output Viewer'}</h3>
-              <p className="text-xs text-gray-400 font-medium">Read connected node data</p>
-            </div>
-          </div>
-          <button onClick={toggleViewMode} className="text-gray-400 hover:text-white transition-colors p-1" title="Toggle view mode">
-             <Settings2 size={16} />
+    <div className="space-y-3">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between text-xs mb-2 bg-[#2a2b36]/30 p-1.5 rounded-lg border border-[#2a2b36]">
+        <div className="flex bg-[#13141c] rounded-md p-0.5 border border-[#2a2b36]">
+           {['JSON', 'Markdown', 'Rich Text'].map(m => (
+              <button 
+                key={m} onClick={() => updateTask({ viewMode: m })}
+                className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${viewMode === m ? 'bg-cyan-500 text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                 {m === 'JSON' ? <Code2 className="w-3 h-3 inline mr-1" /> : m === 'Markdown' ? <FileText className="w-3 h-3 inline mr-1" /> : <AlignLeft className="w-3 h-3 inline mr-1" />}
+                 {m}
+              </button>
+           ))}
+        </div>
+        <div className="flex gap-1.5">
+          <button className="p-1 hover:bg-[#2a2b36] text-gray-400 rounded transition-colors" title="Filter"><Filter className="w-3.5 h-3.5" /></button>
+          <button className="p-1 hover:bg-[#2a2b36] text-gray-400 rounded transition-colors" title="Search"><Search className="w-3.5 h-3.5" /></button>
+          <button onClick={handleCopy} className="p-1 hover:bg-[#2a2b36] text-gray-400 rounded transition-colors" title="Copy Output">
+             {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
+          <button className="p-1 hover:bg-[#2a2b36] text-gray-400 rounded transition-colors" title="Export Output"><Download className="w-3.5 h-3.5" /></button>
         </div>
-
-        <div className="p-0 nodrag cursor-default bg-[#151622] min-h-[100px] max-h-[400px] overflow-auto rounded-b-xl">
-          {viewMode === 'raw' && (
-             <pre className="text-xs text-gray-300 p-4 font-mono select-text whitespace-pre-wrap">
-               {inputData}
-             </pre>
-          )}
-          {viewMode === 'json' && (
-             <pre className="text-xs text-emerald-400 p-4 font-mono select-text whitespace-pre-wrap bg-[#0f1016]">
-               {JSON.stringify({ output: inputData }, null, 2)}
-             </pre>
-          )}
-          {viewMode === 'markdown' && (
-             <div className="text-sm text-gray-300 p-4 prose prose-invert prose-sm max-w-none select-text">
-               {inputData}
-             </div>
-          )}
-        </div>
-
-        <Handle type="source" position={Position.Right} className="w-3 h-3 bg-fuchsia-500 border-2 border-[#1e2030] -mr-1.5 z-10" />
       </div>
-    </NodeWrapper>
+
+      {/* Output Display Area */}
+      <div className="bg-[#13141c] border border-[#2a2b36] rounded-lg p-3 min-h-[150px] max-h-[300px] overflow-y-auto custom-scrollbar">
+         {viewMode === 'JSON' ? (
+            <pre className="text-[10px] text-green-400 font-mono whitespace-pre-wrap">{JSON.stringify({ output: outputData }, null, 2)}</pre>
+         ) : viewMode === 'Markdown' ? (
+            <div className="text-xs text-gray-300 font-mono whitespace-pre-wrap">{outputData}</div>
+         ) : (
+            <div className="text-xs text-gray-200 leading-relaxed">{outputData}</div>
+         )}
+      </div>
+
+      {/* AI Tools */}
+      <div className="grid grid-cols-2 gap-2 text-[10px]">
+         <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
+            <Sparkles className="w-3 h-3 mr-1" /> AI Explain Output
+         </button>
+         <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
+            <Wand2 className="w-3 h-3 mr-1" /> AI Improve Output
+         </button>
+      </div>
+    </div>
   );
-}
+};
+
+export default createResourceNode({
+  label: 'Output Viewer',
+  accentColor: '#06b6d4',
+  icon: <Monitor className="w-4 h-4 text-white" />,
+  width: 'w-[400px]'
+}, OutputBody);

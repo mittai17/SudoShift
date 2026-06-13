@@ -5,18 +5,19 @@ import { v4 as uuidv4 } from 'uuid';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
 
-export interface NoteNodeConfig {
+export interface ResourceNodeConfig {
   label: string;
   accentColor: string;
   icon: React.ReactNode;
   width?: string;
 }
 
-export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{ task: TaskData, updateTask: (u: Partial<TaskData>) => void }>) {
-  const NoteComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
+export function createResourceNode(config: ResourceNodeConfig, BodyComponent: React.FC<{ task: TaskData, updateTask: (u: Partial<TaskData>) => void }>) {
+  const ResourceComponent = ({ data, selected }: { data: any, selected?: boolean }) => {
     const { task } = data;
     const { setNodes, setEdges, getNode } = useReactFlow();
     const nodeId = useNodeId();
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const updateTask = (updates: Partial<TaskData>) => {
       if (!nodeId) return;
@@ -31,11 +32,11 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
       const newId = uuidv4();
       const newNode = {
         id: newId,
-        type: 'noteNode',
+        type: 'resourceNoteNode',
         position: { x: currentNode.position.x + 350, y: currentNode.position.y },
-        data: { task: { id: newId, title: 'New Note', description: '', matrix: 'NOTE', deadline: null } }
+        data: { task: { id: newId, title: 'Resource Note', description: '', matrix: 'RESOURCE_NOTE', deadline: null } }
       };
-      const newEdge = { id: `edge-${nodeId}-${newId}`, source: nodeId!, target: newId, type: 'labeled-edge', data: { label: 'Links To' } };
+      const newEdge = { id: `edge-${nodeId}-${newId}`, source: nodeId!, target: newId, type: 'labeled-edge', data: { label: 'Notes' } };
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
     };
@@ -45,9 +46,9 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
     return (
       <NodeWrapper data={data} selected={selected}>
         <NodeResizer isVisible={!!task.isResizable} minWidth={250} minHeight={150} />
-        <div className={`flex flex-col ${config.width || 'w-80'} rounded-2xl shadow-xl bg-[#1a1b23] border ${selected ? 'border-violet-500 shadow-violet-500/20' : 'border-[#2a2b36] hover:border-gray-600'} transition-all group overflow-hidden`} style={{ width: task.width, height: task.height }}>
+        <div className={`flex flex-col ${config.width || 'w-80'} rounded-2xl shadow-xl bg-[#1a1b23] border ${selected ? 'border-cyan-500 shadow-cyan-500/20' : 'border-[#2a2b36] hover:border-gray-600'} transition-all group overflow-hidden`} style={{ width: task.width, height: task.height }}>
           
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-[#2a2b36] border-2 border-[#1a1b23] hover:w-6 hover:h-6 hover:bg-violet-500 transition-all -ml-2 z-10 flex items-center justify-center">
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-[#2a2b36] border-2 border-[#1a1b23] hover:w-6 hover:h-6 hover:bg-cyan-500 transition-all -ml-2 z-10 flex items-center justify-center">
              <Plus className="w-3 h-3 text-white opacity-0 hover:opacity-100" />
           </Handle>
 
@@ -72,6 +73,12 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
           </div>
 
           <div className="p-4 space-y-4">
+            <textarea
+              className="w-full text-sm text-gray-300 bg-[#13141c] border border-[#2a2b36] rounded-xl p-3 focus:outline-none focus:border-cyan-500 resize-none min-h-[80px] placeholder-gray-600 transition-colors"
+              placeholder="Description..."
+              value={task.description || ''}
+              onChange={(e) => updateTask({ description: e.target.value })}
+            />
             <BodyComponent task={task} updateTask={updateTask} />
           </div>
 
@@ -88,7 +95,7 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
              )}
           </div>
 
-          <Handle type="source" position={Position.Right} className="w-4 h-4 bg-[#2a2b36] border-2 border-[#1a1b23] hover:w-6 hover:h-6 hover:bg-violet-500 transition-all -mr-2 z-10 flex items-center justify-center">
+          <Handle type="source" position={Position.Right} className="w-4 h-4 bg-[#2a2b36] border-2 border-[#1a1b23] hover:w-6 hover:h-6 hover:bg-cyan-500 transition-all -mr-2 z-10 flex items-center justify-center">
              <button onClick={(e) => { e.stopPropagation(); handleQuickAdd(); }} className="w-full h-full flex items-center justify-center pointer-events-auto">
                <Plus className="w-3 h-3 text-white opacity-0 hover:opacity-100" />
              </button>
@@ -97,6 +104,6 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
       </NodeWrapper>
     );
   };
-  NoteComponent.displayName = `NoteNode_${config.label.replace(/\s/g, '')}`;
-  return NoteComponent;
+  ResourceComponent.displayName = `ResourceNode_${config.label.replace(/\s/g, '')}`;
+  return ResourceComponent;
 }

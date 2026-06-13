@@ -1,4 +1,91 @@
 import React from 'react';
-import { Link2 } from 'lucide-react';
-import { createLinkNode } from '../shared/BaseLinkNode';
-export default createLinkNode({ label: 'Resource Link', accentColor: '#8b5cf6', icon: <Link2 className="w-4 h-4" /> });
+import { Link as LinkIcon, ExternalLink, Bookmark, Clock, AlignLeft } from 'lucide-react';
+import { createResourceNode } from '../shared/BaseResourceNode';
+
+const ResourceLinkBody = ({ task, updateTask }: any) => {
+  const url = task.url || '';
+  const linkType = task.linkType || 'Article';
+  const isBookmarked = task.isBookmarked || false;
+  
+  const isValidUrl = url.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/);
+  
+  // Mock fetched metadata
+  const title = isValidUrl && url ? task.title || 'Understanding React Context under the hood' : '';
+  const description = isValidUrl && url ? task.description || 'A deep dive into how React Context actually works internally and when you should use it.' : '';
+  const readTime = isValidUrl && url ? task.readTime || '8 min read' : '';
+
+  const handleOpen = () => {
+    window.open(url.startsWith('http') ? url : `https://${url}`, '_blank');
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Header: Type & Bookmark */}
+      <div className="flex items-center gap-2">
+        <select 
+          className="text-xs bg-[#2a2b36] border border-[#3f3f46] rounded-md px-2 py-1.5 text-cyan-400 font-medium focus:outline-none focus:border-cyan-500 flex-1"
+          value={linkType} onChange={(e) => updateTask({ linkType: e.target.value })}
+        >
+          {['Article', 'Documentation', 'Blog', 'GitHub', 'Reference'].map(t => <option key={t}>{t}</option>)}
+        </select>
+        <button 
+           onClick={() => updateTask({ isBookmarked: !isBookmarked })}
+           className={`p-1.5 rounded-md border transition-colors ${isBookmarked ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30' : 'bg-[#2a2b36] text-gray-400 border-[#3f3f46] hover:bg-[#3f3f46]'}`}
+           title="Bookmark Link"
+        >
+           <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-current' : ''}`} />
+        </button>
+      </div>
+
+      {/* URL Input & Open Button */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 flex items-center bg-[#13141c] border border-[#2a2b36] rounded-lg p-2 focus-within:border-cyan-500 transition-colors">
+          {isValidUrl && url ? (
+            <img src={`https://www.google.com/s2/favicons?domain=${url}&sz=32`} alt="favicon" className="w-4 h-4 mr-2 rounded-sm" />
+          ) : (
+            <LinkIcon className="w-4 h-4 text-gray-500 mr-2" />
+          )}
+          <input 
+            type="text" placeholder="https://..." 
+            className="w-full bg-transparent focus:outline-none text-sm text-gray-300"
+            value={url} onChange={(e) => updateTask({ url: e.target.value })} 
+          />
+        </div>
+        <button 
+          className="p-2.5 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/20 rounded-lg transition-colors disabled:opacity-50"
+          onClick={handleOpen} disabled={!isValidUrl || !url} title="Open Link"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Auto-Fetched Link Preview */}
+      {isValidUrl && url && (
+         <div className="bg-[#2a2b36]/20 border border-[#2a2b36] rounded-xl p-3 space-y-2">
+            <h4 className="text-sm font-bold text-gray-200 line-clamp-2 leading-tight">{title}</h4>
+            <p className="text-xs text-gray-500 line-clamp-2">{description}</p>
+            <div className="flex items-center text-[10px] text-cyan-500/80 font-bold">
+               <Clock className="w-3 h-3 mr-1" /> {readTime}
+            </div>
+         </div>
+      )}
+
+      {/* Notes Section */}
+      <div className="bg-[#13141c] border border-[#2a2b36] rounded-lg overflow-hidden focus-within:border-cyan-500 transition-colors">
+         <div className="bg-[#1a1b23] text-[10px] text-gray-400 uppercase tracking-wider font-bold px-3 py-1.5 border-b border-[#2a2b36] flex items-center">
+            <AlignLeft className="w-3 h-3 mr-1" /> Notes
+         </div>
+         <textarea
+            className="w-full text-xs text-gray-300 bg-transparent border-none p-3 focus:outline-none resize-none min-h-[60px]"
+            placeholder="Add some context or notes..." value={task.notes || ''} onChange={(e) => updateTask({ notes: e.target.value })}
+         />
+      </div>
+    </div>
+  );
+};
+
+export default createResourceNode({
+  label: 'Resource Link',
+  accentColor: '#06b6d4',
+  icon: <LinkIcon className="w-4 h-4 text-white" />
+}, ResourceLinkBody);

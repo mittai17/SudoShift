@@ -799,30 +799,3 @@ export default function Editor() {
     </ReactFlowProvider>
   );
 }
-Close
-              </button >
-            </div >
-          </div >
-        </div >
-      )}
-
-{
-  showShareModal && (
-    <ShareModal
-      canvasId={canvasId}
-      canvasTitle={canvasTitle}
-      onClose={() => setShowShareModal(false)}
-    />
-  )
-}
-    </div >
-  );
-}
-
-export default function Editor() {
-  return (
-    <ReactFlowProvider>
-      <FlowEditor />
-    </ReactFlowProvider>
-  );
-}

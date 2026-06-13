@@ -24,10 +24,10 @@ export function createCodeNode(config: CodeConfig) {
     };
 
     return (
-      <NodeWrapper data={data} selected={selected}>
-        <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+      <NodeWrapper data={data} selected={selected} resizable={true} minWidth={280} minHeight={150}>
+        <div className="flex flex-col w-full h-full min-w-72 min-h-[150px] rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
-          <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
+          <div className="rounded-t-xl px-3 py-2 shrink-0 flex items-center justify-between text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
               <span className="opacity-80">{config.icon}</span>
               <h3 className="font-semibold text-sm">{config.label}</h3>
@@ -39,9 +39,9 @@ export function createCodeNode(config: CodeConfig) {
               ))}
             </select>
           </div>
-          <div className="p-0 bg-gray-900 rounded-b-xl">
+          <div className="p-0 bg-gray-900 rounded-b-xl flex flex-col flex-1 overflow-hidden min-h-0">
             <textarea
-              className="w-full bg-transparent text-green-400 font-mono text-xs p-3 focus:outline-none resize-none min-h-[100px] rounded-b-xl"
+              className="w-full h-full flex-1 bg-transparent text-green-400 font-mono text-xs p-3 focus:outline-none resize-none min-h-[100px] rounded-b-xl"
               spellCheck={false}
               placeholder={`// ${lang} code...`}
               defaultValue={task.description || ''}

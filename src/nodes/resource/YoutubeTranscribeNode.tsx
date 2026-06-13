@@ -122,11 +122,11 @@ export default function YoutubeTranscribeNode({ data, selected }: { data: any; s
   };
 
   return (
-    <NodeWrapper data={data} selected={selected}>
-      <div className="flex flex-col bg-[#1e2030] rounded-xl shadow-xl border border-[#2a2d3d]" style={{ minWidth: 280, maxWidth: 350 }}>
+    <NodeWrapper data={data} selected={selected} resizable={true} minWidth={280} minHeight={400}>
+      <div className="flex flex-col bg-[#1e2030] w-full h-full min-w-[280px] min-h-[400px] rounded-xl shadow-xl border border-[#2a2d3d]">
         <Handle type="target" position={Position.Left} className="w-3 h-3 bg-[#06b6d4] border-2 border-[#1e2030] -ml-1.5 z-10" />
         
-        <div className="bg-[#151622] px-4 py-3 flex items-center gap-3 border-b border-[#2a2d3d] rounded-t-xl">
+        <div className="bg-[#151622] px-4 py-3 flex items-center gap-3 border-b border-[#2a2d3d] rounded-t-xl shrink-0">
           <div className="p-2 bg-red-500/20 text-red-400 rounded-lg shrink-0">
             <Youtube size={16} />
           </div>
@@ -136,8 +136,8 @@ export default function YoutubeTranscribeNode({ data, selected }: { data: any; s
           </div>
         </div>
 
-        <div className="p-4 space-y-4 nodrag cursor-default">
-          <div className="space-y-2">
+        <div className="p-4 space-y-4 nodrag flex flex-col flex-1 overflow-hidden min-h-0">
+          <div className="space-y-2 shrink-0">
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Video URL</label>
             <input
               type="text"
@@ -151,18 +151,18 @@ export default function YoutubeTranscribeNode({ data, selected }: { data: any; s
           <button
             onClick={handleTranscribe}
             disabled={loading || !url.trim()}
-            className="w-full py-2 bg-[#06b6d4] hover:bg-[#0891b2] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full shrink-0 py-2 bg-[#06b6d4] hover:bg-[#0891b2] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
             {loading ? 'Transcribing...' : 'Fetch Transcript'}
           </button>
           
           {error && (
-            <p className="text-xs text-red-500">{error}</p>
+            <p className="text-xs text-red-500 shrink-0">{error}</p>
           )}
 
-          <div className="mt-4 pt-4 border-t border-[#2a2d3d]">
-            <div className="flex flex-col gap-2 mb-2">
+          <div className="mt-4 pt-4 border-t border-[#2a2d3d] flex flex-col flex-1 overflow-hidden min-h-0">
+            <div className="flex flex-col gap-2 mb-2 shrink-0">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Transcript Preview</label>
                 <div className="flex flex-wrap gap-2">
@@ -201,7 +201,7 @@ export default function YoutubeTranscribeNode({ data, selected }: { data: any; s
                 </button>
               </div>
             </div>
-            <div className="bg-[#151622] p-3 rounded-lg border border-[#2a2d3d] text-xs text-gray-400 max-h-40 overflow-y-auto w-[318px] whitespace-pre-wrap">
+            <div className="bg-[#151622] p-3 rounded-lg border border-[#2a2d3d] text-xs text-gray-400 overflow-y-auto w-full flex-1 min-h-0 whitespace-pre-wrap">
               {task?.description ? (
                 <>
                   <span className="text-gray-300">{task.description.slice(0, 500)}</span>

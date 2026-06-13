@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useReactFlow, useNodeId } from '@xyflow/react';
+import { useReactFlow, useNodeId, NodeResizer } from '@xyflow/react';
 import { X, Plus, Maximize2 } from 'lucide-react';
 import { NodeStyle, NodeSize, TaskData } from '../../types';
 import { ColorPicker } from '../../components/canvas/ColorPicker';
@@ -10,9 +10,12 @@ interface NodeWrapperProps {
   defaultColor?: string;
   data?: any;
   selected?: boolean;
+  resizable?: boolean;
+  minWidth?: number;
+  minHeight?: number;
 }
 
-export default function NodeWrapper({ children, defaultColor = '#64748b', data, selected }: NodeWrapperProps) {
+export default function NodeWrapper({ children, defaultColor = '#64748b', data, selected, resizable = false, minWidth = 200, minHeight = 100 }: NodeWrapperProps) {
   const { setNodes, updateNodeData } = useReactFlow();
   const nodeId = useNodeId();
   
@@ -43,14 +46,24 @@ export default function NodeWrapper({ children, defaultColor = '#64748b', data, 
 
   return (
     <div 
-      className={`relative group transition-all duration-300 ease-out`}
+      className={`relative group transition-all duration-300 ease-out w-full h-full`}
     >
+      {resizable && (
+        <NodeResizer 
+          minWidth={minWidth} 
+          minHeight={minHeight} 
+          isVisible={selected}
+          lineClassName="border-indigo-400"
+          handleClassName="h-2 w-2 bg-white border-2 border-indigo-500 rounded shadow-sm"
+        />
+      )}
+      
       {/* ── Visual Upgrade Wrapper ── */}
       <div 
-        className={`transition-all duration-300 rounded-xl ${selected ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}`}
+        className={`transition-all duration-300 rounded-xl w-full h-full ${selected ? 'ring-2 ring-indigo-500 ring-offset-2' : ''}`}
       >
         {/* Inject colored header variables using a CSS variable to children */}
-        <div style={{ '--node-color': currentColor } as React.CSSProperties}>
+        <div style={{ '--node-color': currentColor } as React.CSSProperties} className="w-full h-full">
           {children}
         </div>
       </div>

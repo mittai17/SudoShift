@@ -2,7 +2,7 @@ import express from "express";
 import "dotenv/config";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
+// vite is only used in development — imported dynamically below to avoid crashing in production
 import { GoogleGenAI } from "@google/genai";
 import { YoutubeTranscript } from 'youtube-transcript';
 import { randomUUID } from "crypto";
@@ -804,7 +804,7 @@ async function startServer() {
   // ── AI Dump Workflow Architect ──────────────────────────────────────────────
   app.post("/api/ai-dump", async (req, res) => {
     try {
-      const apiKey = process.env.VITE_AI_DUMP_GEMINI_KEY;
+      const apiKey = process.env.VITE_AI_DUMP_GEMINI_KEY || process.env.GEMINI_API_KEY;
       if (!apiKey) {
         return res.status(500).json({ error: "AI Dump API key not configured." });
       }
@@ -952,6 +952,7 @@ The connections array should list the node names in order of the workflow flow.`
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

@@ -1,13 +1,39 @@
 import { SiGithub } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Folder, Code2, FileText, User, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Folder, Code2, FileText, User, Type, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const GitHubNodeBody = ({ task, updateTask }: any) => {
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState('');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('github_pat') || '');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('github_api_key') || '');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'GITHUB_AUTH_SUCCESS') {
+        setApiKey(event.data.token);
+        localStorage.setItem('github_api_key', event.data.token);
+        setIsAuthenticating(false);
+      } else if (event.data?.type === 'GITHUB_AUTH_ERROR') {
+        setError(event.data.error || 'Authentication failed');
+        setIsAuthenticating(false);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticating(true);
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    window.open('/api/auth/github/login', 'GitHub Auth', `width=${width},height=${height},left=${left},top=${top}`);
+  };
   
 
   
@@ -45,20 +71,28 @@ const GitHubNodeBody = ({ task, updateTask }: any) => {
 
   return (
     <div className="space-y-3">
-      {/* Auth Input */}
-      <div className="flex items-center gap-2 bg-[#13141c] border border-[#2a2b36] rounded-lg p-2 focus-within:border-cyan-500 transition-colors">
-        <Key className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-        <input
-          type="password"
-          placeholder="Personal Access Token..."
-          className="w-full text-xs bg-transparent focus:outline-none text-gray-300"
-          value={apiKey}
-          onChange={(e) => {
-            setApiKey(e.target.value);
-            localStorage.setItem('github_pat', e.target.value);
-          }}
-        />
-      </div>
+      {/* Auth Input or Login Button */}
+      {!apiKey ? (
+        <button
+          onClick={handleLogin}
+          disabled={isAuthenticating}
+          className="w-full flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg py-2 transition-colors font-bold text-xs"
+        >
+          {isAuthenticating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <SiGithub className="w-4 h-4 mr-2" />}
+          {isAuthenticating ? 'Authenticating...' : 'Login with GitHub'}
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 bg-[#13141c] border border-green-500/30 rounded-lg p-2 transition-colors">
+          <Key className="w-3.5 h-3.5 text-green-500 shrink-0" />
+          <span className="w-full text-xs text-green-400">Authenticated</span>
+          <button 
+            onClick={() => { setApiKey(''); localStorage.removeItem('github_api_key'); }}
+            className="text-[10px] text-gray-500 hover:text-red-400 ml-auto"
+          >
+            Logout
+          </button>
+        </div>
+      )}
 
 
 

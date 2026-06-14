@@ -90,6 +90,7 @@ import LinearNode from '../integrations/LinearNode';
 import DiscordNode from '../integrations/DiscordNode';
 import MicrosoftNode from '../integrations/MicrosoftNode';
 import McpToolsNode from '../integrations/McpToolsNode';
+import BrowserNode from '../integrations/BrowserNode';
 
 export const NODE_REGISTRY: NodeDefinition[] = [
   // ── Goal ───────────────────────────────────────────────────────────────────
@@ -177,4 +178,5 @@ export const NODE_REGISTRY: NodeDefinition[] = [
   { id: 'integration-discord-node', label: 'Discord', category: 'integrations', icon: <SiDiscord />, component: DiscordNode, color: '#5865F2', defaultData: { title: 'Discord Integration', description: '', matrix: 'INTEGRATION_DISCORD', deadline: null } },
   { id: 'integration-microsoft-node', label: 'Microsoft', category: 'integrations', icon: <FaWindows />, component: MicrosoftNode, color: '#00A4EF', defaultData: { title: 'Microsoft Integration', description: '', matrix: 'INTEGRATION_MICROSOFT', deadline: null } },
   { id: 'integration-mcp-node', label: 'MCP Tools', category: 'integrations', icon: <TbPlugConnected />, component: McpToolsNode, color: '#FF6B35', defaultData: { title: 'MCP Tool Integration', description: '', matrix: 'INTEGRATION_MCP', deadline: null } },
+  { id: 'integration-browser-node', label: 'Web Browser', category: 'integrations', icon: <SiGooglechrome />, component: BrowserNode, color: '#4285F4', defaultData: { title: 'Web Browser', description: '', matrix: 'INTEGRATION_BROWSER', deadline: null } },
 ];

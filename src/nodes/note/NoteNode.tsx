@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Sparkles, Star, Clock, History, Paperclip, Share2, FileOutput, ListTodo, GraduationCap, Network, Link2 } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, Star, Clock, History, Paperclip, Share2, FileOutput, ListTodo, GraduationCap, Network, Link2 } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
 const NoteBody = ({ task, updateTask }: any) => {
@@ -63,9 +63,9 @@ const NoteBody = ({ task, updateTask }: any) => {
         />
       </div>
 
-      {/* AI Note Tools */}
+      {/* Note Tools */}
       <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-2 space-y-2">
-         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center"><Sparkles className="w-3 h-3 mr-1" /> AI Knowledge Assistant</div>
+         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center">Knowledge Assistant</div>
          <div className="grid grid-cols-3 gap-1.5 text-[10px]">
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1 transition-colors">
                <FileOutput className="w-3 h-3 mr-1" /> Summarize
@@ -74,7 +74,7 @@ const NoteBody = ({ task, updateTask }: any) => {
                <Type className="w-3 h-3 mr-1" /> Expand
             </button>
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1 transition-colors">
-               <Sparkles className="w-3 h-3 mr-1" /> Rewrite
+               Rewrite
             </button>
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1 transition-colors">
                <ListTodo className="w-3 h-3 mr-1" /> Gen Tasks

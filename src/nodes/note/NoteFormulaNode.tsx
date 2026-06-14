@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FunctionSquare, Calculator, History, Check, AlertCircle, Sparkles, BrainCircuit, Sigma } from 'lucide-react';
+import { FunctionSquare, Calculator, History, Check, AlertCircle, BrainCircuit, Sigma } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
 const NoteFormulaBody = ({ task, updateTask }: any) => {
@@ -77,9 +77,9 @@ const NoteFormulaBody = ({ task, updateTask }: any) => {
          </div>
       </div>
 
-      {/* AI Tools */}
+      {/* Math Tools */}
       <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-2 space-y-2">
-         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center"><Sparkles className="w-3 h-3 mr-1" /> AI Math Assistants</div>
+         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center">Math Assistants</div>
          <div className="grid grid-cols-3 gap-2 text-[10px]">
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
                <FunctionSquare className="w-3 h-3 mr-1 text-blue-400" /> Explain
@@ -88,7 +88,7 @@ const NoteFormulaBody = ({ task, updateTask }: any) => {
                <BrainCircuit className="w-3 h-3 mr-1 text-emerald-400" /> Solve
             </button>
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
-               <Sparkles className="w-3 h-3 mr-1 text-yellow-400" /> Generate
+               Generate
             </button>
          </div>
       </div>

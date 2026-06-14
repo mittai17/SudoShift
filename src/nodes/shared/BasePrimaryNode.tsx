@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
-import { Calendar, Loader2, Sparkles } from 'lucide-react';
+import { Calendar, Loader2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
@@ -31,7 +31,7 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
       setIsGenerating(true);
       try {
         const gkey = localStorage.getItem('gemini_api_key') || '';
-        const res = await fetch('/api/ai-action', {
+        const res = await fetch('/api/action', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -108,10 +108,10 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
               <button 
                 onClick={handleGenerateSubtasks} 
                 disabled={isGenerating || !task.title}
-                className="hover:bg-white/20 p-1.5 rounded transition-colors disabled:opacity-50 shrink-0" 
-                title="AI Generate Subtasks"
+                className="hover:bg-white/20 px-3 py-2 rounded transition-colors disabled:opacity-50 shrink-0" 
+                title="Generate Subtasks"
               >
-                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code2, Copy, Maximize2, Minimize2, Sparkles, Check, PlayCircle, History, FileCode } from 'lucide-react';
+import { Code2, Copy, Maximize2, Minimize2, Check, PlayCircle, History, FileCode } from 'lucide-react';
 import { createTaskNode } from '../shared/BaseTaskNode';
 
 const TaskCodeBody = ({ task, updateTask }: any) => {
@@ -72,13 +72,13 @@ const TaskCodeBody = ({ task, updateTask }: any) => {
          </div>
          <div className="flex items-center space-x-1.5">
            <button className="flex items-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-2 py-1 rounded transition-colors font-medium">
-             <Sparkles className="w-3 h-3 mr-1" /> Explain
+             Explain
            </button>
            <button className="flex items-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-2 py-1 rounded transition-colors font-medium">
-             <Sparkles className="w-3 h-3 mr-1" /> Refactor
+             Refactor
            </button>
            <button className="flex items-center bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-1 rounded transition-colors font-medium">
-             <Sparkles className="w-3 h-3 mr-1" /> Find Bugs
+             Find Bugs
            </button>
            <button className="flex items-center bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded transition-colors font-bold shadow-lg shadow-emerald-500/20"
              onClick={() => updateTask({ execStatus: 'Running' })}

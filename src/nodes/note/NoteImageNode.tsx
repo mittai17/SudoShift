@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image as ImageIcon, Upload, Maximize2, Type, Sparkles, Download, PenTool, Link2, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
+import { Image as ImageIcon, Upload, Maximize2, Type, Download, PenTool, Link2, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
 const NoteImageBody = ({ task, updateTask }: any) => {
@@ -80,16 +80,16 @@ const NoteImageBody = ({ task, updateTask }: any) => {
         value={caption} onChange={(e) => updateTask({ caption: e.target.value })} 
       />
 
-      {/* AI Tools */}
+      {/* Image Tools */}
       <div className="grid grid-cols-3 gap-2 text-[10px]">
          <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded-lg py-1.5 transition-colors">
             <Type className="w-3 h-3 mr-1 text-violet-400" /> Extract Text
          </button>
          <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded-lg py-1.5 transition-colors">
-            <Sparkles className="w-3 h-3 mr-1 text-violet-400" /> Describe
+            Describe
          </button>
          <button className="flex items-center justify-center bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 rounded-lg py-1.5 transition-colors font-bold">
-            <Sparkles className="w-3 h-3 mr-1" /> Gen Notes
+            Gen Notes
          </button>
       </div>
 

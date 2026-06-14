@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
 import { format, isPast, parseISO, isValid } from 'date-fns';
-import { Briefcase, AlertCircle, Play, Mail, Trash2, Sparkles, Loader2, Tag } from 'lucide-react';
+import { Briefcase, AlertCircle, Play, Mail, Trash2, Loader2, Tag } from 'lucide-react';
 import { NodeData, TaskData } from '../../types';
 
 const getMatrixStyles = (matrix: string) => {
@@ -27,7 +27,7 @@ export default function TaskNode({ data }: { data: NodeData }) {
   const nodeId = useNodeId();
   const [isTagging, setIsTagging] = useState(false);
   
-  // Safe date parsing to prevent app crash if AI gives invalid dates
+  // Safe date parsing to prevent app crash if generated dates are invalid
   const parsedDate = task.deadline ? parseISO(task.deadline) : null;
   const hasValidDate = parsedDate && isValid(parsedDate);
   const isOverdue = hasValidDate && isPast(parsedDate);
@@ -91,9 +91,9 @@ export default function TaskNode({ data }: { data: NodeData }) {
             onClick={handleAutoTag}
             disabled={isTagging || (!task.title && !task.description)}
             className="text-white hover:bg-white/20 p-1.5 rounded transition-colors disabled:opacity-50 flex items-center shrink-0 ml-2"
-            title="Auto-tag with AI"
+            title="Auto-tag"
           >
-            {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Tag'}
           </button>
         </div>
       

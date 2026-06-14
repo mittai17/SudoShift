@@ -10,7 +10,7 @@ const NoteLinkBody = ({ task, updateTask }: any) => {
   const isValidUrl = url.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/);
   
   // Mock fetched metadata
-  const title = isValidUrl && url ? task.title || 'The Future of AI Agents in 2026' : '';
+  const title = isValidUrl && url ? task.title || 'The Future of Agents in 2026' : '';
   const description = isValidUrl && url ? task.description || 'An exploration into how autonomous agents are reshaping software development.' : '';
   const readTime = isValidUrl && url ? task.readTime || '5 min read' : '';
 

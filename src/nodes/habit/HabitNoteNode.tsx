@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Sparkles, Smile, Meh, Frown, BookOpen, Calendar, History, TrendingUp } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, Smile, Meh, Frown, BookOpen, Calendar, History, TrendingUp } from 'lucide-react';
 import { createHabitNode } from '../shared/BaseHabitNode';
 
 const HabitNoteBody = ({ task, updateTask }: any) => {
@@ -35,9 +35,9 @@ const HabitNoteBody = ({ task, updateTask }: any) => {
         <Pin className="w-4 h-4" />
       </button>
 
-      {/* AI Habit Insights Banner */}
+      {/* Habit Insights Banner */}
       <div className="bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-lg p-2.5">
-         <div className="flex items-center text-[10px] text-orange-400 font-bold mb-1.5 uppercase tracking-wider"><Sparkles className="w-3 h-3 mr-1" /> AI Habit Insights</div>
+         <div className="flex items-center text-[10px] text-orange-400 font-bold mb-1.5 uppercase tracking-wider">Habit Insights</div>
          <div className="grid grid-cols-2 gap-1 text-[10px] text-gray-300">
             <span className="flex items-center"><TrendingUp className="w-3 h-3 mr-1 text-emerald-500" /> Best day: Tuesday</span>
             <span className="flex items-center"><History className="w-3 h-3 mr-1 text-blue-500" /> Current streak: 21 days</span>
@@ -92,7 +92,7 @@ const HabitNoteBody = ({ task, updateTask }: any) => {
           <Type className="w-3 h-3" /><span>{totalWords} words</span>
         </div>
         <button className="flex items-center text-orange-500 hover:text-orange-400 transition-colors font-medium">
-          <Sparkles className="w-3 h-3 mr-1" /> AI Reflect
+          Reflect
         </button>
       </div>
     </div>

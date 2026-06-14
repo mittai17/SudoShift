@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, Link as LinkIcon } from 'lucide-react';
 import { createEventNode } from '../shared/BaseEventNode';
 
 const EventNoteBody = ({ task, updateTask }: any) => {
@@ -60,7 +60,7 @@ const EventNoteBody = ({ task, updateTask }: any) => {
           <Type className="w-3 h-3" /><span>{wordCount} words</span>
         </div>
         <button className="flex items-center text-amber-500 hover:text-amber-400 transition-colors">
-          <Sparkles className="w-3 h-3 mr-1" /> AI Summarize
+          Summarize
         </button>
       </div>
     </div>

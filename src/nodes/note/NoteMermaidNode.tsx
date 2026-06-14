@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Network, Play, Download, Maximize2, Sparkles, AlertCircle, Palette, ZoomIn, ZoomOut, Check } from 'lucide-react';
+import { Network, Play, Download, Maximize2, AlertCircle, Palette, ZoomIn, ZoomOut, Check } from 'lucide-react';
 import mermaid from 'mermaid';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
@@ -75,13 +75,13 @@ const NoteMermaidBody = ({ task, updateTask }: any) => {
          </div>
       </div>
 
-      {/* AI Tools */}
+      {/* Diagram Tools */}
       <div className="grid grid-cols-2 gap-2 text-[10px]">
          <button className="flex items-center justify-center bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 rounded-lg py-2 transition-colors font-bold shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" /> AI Generate Diagram
+            Generate Diagram
          </button>
          <button className="flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg py-2 transition-colors font-bold shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 mr-1.5" /> AI Improve Layout
+            Improve Layout
          </button>
       </div>
     </div>

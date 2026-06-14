@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, Link as LinkIcon } from 'lucide-react';
 import { createMilestoneNode } from '../shared/BaseMilestoneNode';
 
 const MilestoneNoteBody = ({ task, updateTask }: any) => {
@@ -85,7 +85,7 @@ const MilestoneNoteBody = ({ task, updateTask }: any) => {
           <Type className="w-3 h-3" /><span>{totalWords} words</span>
         </div>
         <button className="flex items-center text-rose-500 hover:text-rose-400 transition-colors font-medium">
-          <Sparkles className="w-3 h-3 mr-1" /> AI Summarize
+          Summarize
         </button>
       </div>
     </div>

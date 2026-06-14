@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId } from '@xyflow/react';
-import { AlignLeft, Sparkles, Tag, Loader2 } from 'lucide-react';
+import { AlignLeft, Tag, Loader2 } from 'lucide-react';
 import { NodeData, TaskData } from '../../types';
 import NodeWrapper from './NodeWrapper';
 
@@ -62,9 +62,9 @@ export default function NoteNode({ data }: { data: NodeData }) {
           onClick={handleAutoTag}
           disabled={isTagging || !task.description}
           className="text-white hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50 flex items-center"
-          title="Auto-tag with AI"
+          title="Auto-tag"
         >
-          {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+          {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Tag'}
         </button>
       </div>
       

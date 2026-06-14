@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code2, Maximize2, Copy, Play, Check, Sparkles, AlignLeft, Search, History, Bug, Wand2, FileText } from 'lucide-react';
+import { Code2, Maximize2, Copy, Play, Check, AlignLeft, Search, History, Bug, Wand2, FileText } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
 const NoteCodeBody = ({ task, updateTask }: any) => {
@@ -50,12 +50,12 @@ const NoteCodeBody = ({ task, updateTask }: any) => {
          </button>
       </div>
 
-      {/* AI Post-Processing Tools */}
+      {/* Code Tools */}
       <div className="bg-violet-500/5 border border-violet-500/20 rounded-xl p-2 space-y-2">
-         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center"><Sparkles className="w-3 h-3 mr-1" /> AI Code Assistants</div>
+         <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest px-1 flex items-center">Code Assistants</div>
          <div className="grid grid-cols-2 gap-2 text-[10px]">
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
-               <Sparkles className="w-3 h-3 mr-1 text-blue-400" /> Explain Code
+               Explain Code
             </button>
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
                <Wand2 className="w-3 h-3 mr-1 text-emerald-400" /> Refactor

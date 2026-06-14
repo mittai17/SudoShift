@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Map, Sparkles, Target, Settings2, CheckSquare, Flag, Network, Zap, Clock, BrainCircuit } from 'lucide-react';
+import { Map, Target, Settings2, CheckSquare, Flag, Network, Zap, Clock, BrainCircuit } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const RoadmapMakerBody = ({ task, updateTask }: any) => {
@@ -87,11 +87,11 @@ const RoadmapMakerBody = ({ task, updateTask }: any) => {
          onClick={handleGenerate} disabled={isGenerating || !topic}
          className="w-full flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg py-2.5 transition-colors font-bold disabled:opacity-50 text-xs shadow-lg shadow-cyan-500/20"
       >
-         {isGenerating ? <><Sparkles className="w-4 h-4 mr-2 animate-spin" /> Generating Roadmap...</> : <><Map className="w-4 h-4 mr-2" /> Generate Roadmap</>}
+         {isGenerating ? <><Map className="w-4 h-4 mr-2 animate-spin" /> Generating Roadmap...</> : <><Map className="w-4 h-4 mr-2" /> Generate Roadmap</>}
       </button>
 
       <button className="w-full flex items-center justify-center bg-[#13141c] hover:bg-[#1a1b23] text-gray-300 border border-[#2a2b36] rounded-lg py-1.5 transition-colors text-[10px]">
-         <BrainCircuit className="w-3 h-3 mr-1" /> Get AI Path Suggestions First
+         <BrainCircuit className="w-3 h-3 mr-1" /> Get Path Suggestions First
       </button>
     </div>
   );

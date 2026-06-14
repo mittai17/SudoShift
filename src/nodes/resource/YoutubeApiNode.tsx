@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Search, Download, ListVideo, BarChart3, TrendingUp, BookOpen, Sparkles, Database, PlaySquare } from 'lucide-react';
+import { Youtube, Search, Download, ListVideo, BarChart3, TrendingUp, BookOpen, Database, PlaySquare } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const YoutubeApiBody = ({ task, updateTask }: any) => {
@@ -63,7 +63,7 @@ const YoutubeApiBody = ({ task, updateTask }: any) => {
             onClick={handleFetch} disabled={isFetching || !query}
             className="w-full flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg py-2 transition-colors font-bold disabled:opacity-50 text-xs shadow-lg shadow-red-500/20"
          >
-            {isFetching ? <><Sparkles className="w-4 h-4 mr-2 animate-spin" /> Fetching API Data...</> : <><Database className="w-4 h-4 mr-2" /> Fetch {actionType}</>}
+            {isFetching ? <><Database className="w-4 h-4 mr-2 animate-spin" /> Fetching API Data...</> : <><Database className="w-4 h-4 mr-2" /> Fetch {actionType}</>}
          </button>
       </div>
 
@@ -88,13 +88,13 @@ const YoutubeApiBody = ({ task, updateTask }: any) => {
          </div>
       </div>
 
-      {/* AI Tools */}
+      {/* Playlist Tools */}
       <div className="grid grid-cols-2 gap-2 text-[10px]">
          <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <ListVideo className="w-3 h-3 mr-1" /> AI Playlist Summary
+            <ListVideo className="w-3 h-3 mr-1" /> Playlist Summary
          </button>
          <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <Sparkles className="w-3 h-3 mr-1" /> Learning Recommendations
+            Learning Recommendations
          </button>
       </div>
     </div>

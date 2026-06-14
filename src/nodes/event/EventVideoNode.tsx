@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Clock, FileText, CheckSquare, Sparkles, Download } from 'lucide-react';
+import { Video, Clock, FileText, CheckSquare, Download } from 'lucide-react';
 import { createEventNode } from '../shared/BaseEventNode';
 
 const extractYoutubeId = (url: string) => {
@@ -41,10 +41,10 @@ const EventVideoBody = ({ task, updateTask }: any) => {
         </div>
       )}
 
-      {/* AI Actions */}
+      {/* Video Tools */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <button className="flex items-center justify-center bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 rounded-lg p-1.5 transition-colors">
-          <Sparkles className="w-3.5 h-3.5 mr-1.5" /> AI Summary
+          Summary
         </button>
         <button className="flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg p-1.5 transition-colors">
           <CheckSquare className="w-3.5 h-3.5 mr-1.5" /> Action Items

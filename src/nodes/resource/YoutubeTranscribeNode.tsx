@@ -72,15 +72,15 @@ const YoutubeTranscribeBody = ({ task, updateTask }: any) => {
          />
       </div>
 
-      {/* AI Post-Processing Tools */}
+      {/* Processing Tools */}
       <div className="bg-[#2a2b36]/20 border border-[#2a2b36] rounded-xl p-2 space-y-2">
          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center justify-between">
-            <div className="flex items-center"><Sparkles className="w-3 h-3 mr-1 text-cyan-400" /> AI Processing</div>
+            <div className="flex items-center"><Sparkles className="w-3 h-3 mr-1 text-cyan-400" /> Processing</div>
             <button className="hover:text-white text-gray-500" title="Export Notes"><Download className="w-3 h-3" /></button>
          </div>
          <div className="grid grid-cols-2 gap-2 text-[10px]">
             <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
-               <AlignLeft className="w-3 h-3 mr-1" /> AI Summary
+               <AlignLeft className="w-3 h-3 mr-1" /> Summary
             </button>
             <button className="flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg py-1.5 transition-colors font-medium">
                <CheckSquare className="w-3 h-3 mr-1" /> Action Items

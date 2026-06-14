@@ -327,7 +327,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/ai-action", async (req, res) => {
+  app.post("/api/action", async (req, res) => {
     try {
       const ai = getAIClient(req);
       const { action, text, context } = req.body;
@@ -353,7 +353,7 @@ async function startServer() {
       });
 
       const resultText = response.text;
-      if (!resultText) throw new Error("No response from AI");
+      if (!resultText) throw new Error("No response from the model");
 
       if (action === 'subtasks') {
         const parsed = parseJsonFromMarkdown(resultText);

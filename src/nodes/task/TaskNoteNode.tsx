@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Link as LinkIcon, Sparkles, CheckSquare, Paperclip } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, Link as LinkIcon, CheckSquare, Paperclip } from 'lucide-react';
 import { createTaskNode } from '../shared/BaseTaskNode';
 
 const TaskNoteBody = ({ task, updateTask }: any) => {
@@ -71,10 +71,10 @@ const TaskNoteBody = ({ task, updateTask }: any) => {
         </div>
         <div className="flex items-center space-x-2">
           <button className="flex items-center text-emerald-500 hover:text-emerald-400 transition-colors font-medium">
-            <Sparkles className="w-3 h-3 mr-1" /> Tasks
+            Tasks
           </button>
           <button className="flex items-center text-blue-500 hover:text-blue-400 transition-colors font-medium">
-            <Sparkles className="w-3 h-3 mr-1" /> Summary
+            Summary
           </button>
         </div>
       </div>

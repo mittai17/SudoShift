@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paperclip, Plus, CheckCircle, XCircle, Clock, Link2, FileImage, Sparkles, Upload } from 'lucide-react';
+import { Paperclip, Plus, CheckCircle, XCircle, Clock, Link2, FileImage, Upload } from 'lucide-react';
 import { createMilestoneNode } from '../shared/BaseMilestoneNode';
 
 interface EvidenceItem { id: string; title: string; type: string; status: string; date: string; url: string; }
@@ -72,7 +72,7 @@ const MilestoneEvidenceBody = ({ task, updateTask }: any) => {
                 Preview Evidence
               </button>
               <button className="flex-1 flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] py-1 rounded transition-colors border border-rose-500/20">
-                <Sparkles className="w-3 h-3 mr-1" /> AI Summary
+                Summary
               </button>
             </div>
           </div>

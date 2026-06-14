@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table as TableIcon, Plus, Download, Upload, FileText, Search, Filter, ArrowUpDown, FunctionSquare, Calculator, Sparkles, Sigma } from 'lucide-react';
+import { Table as TableIcon, Plus, Download, Upload, FileText, Search, Filter, ArrowUpDown, FunctionSquare, Calculator, Sigma } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
 
 interface Col { id: string; name: string; type: 'Text'|'Number'|'Date'|'Checkbox'; }
@@ -98,7 +98,7 @@ const NoteTableBody = ({ task, updateTask }: any) => {
             <FunctionSquare className="w-3 h-3 mr-1 text-violet-400" /> Formula Cells
          </button>
          <button className="flex items-center justify-center bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 rounded-lg py-1.5 transition-colors font-bold shadow-sm">
-            <Sparkles className="w-3 h-3 mr-1" /> AI Analyze Table
+            Analyze Table
          </button>
       </div>
     </div>

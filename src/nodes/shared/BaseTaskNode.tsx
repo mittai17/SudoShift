@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId, NodeResizer } from '@xyflow/react';
-import { Loader2, Sparkles, Plus, Clock, Edit3 } from 'lucide-react';
+import { Loader2, Plus, Clock, Edit3 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
@@ -31,12 +31,12 @@ export function createTaskNode(config: TaskNodeConfig, BodyComponent: React.FC<{
       setIsGenerating(true);
       try {
         const gkey = localStorage.getItem('gemini_api_key') || '';
-        const res = await fetch('/api/ai-action', {
+        const res = await fetch('/api/action', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-gemini-key': gkey },
           body: JSON.stringify({ action: 'subtasks', text: task.title + (task.description ? ' - ' + task.description : '') }),
         });
-        if (!res.ok) throw new Error('AI Error');
+        if (!res.ok) throw new Error('Request failed');
         const result = await res.json();
         const subtasks: string[] = result.result || [];
         
@@ -116,8 +116,8 @@ export function createTaskNode(config: TaskNodeConfig, BodyComponent: React.FC<{
                   />
                 </div>
               </div>
-              <button onClick={handleGenerateSubtasks} disabled={isGenerating || !task.title} className="hover:bg-white/20 p-2 rounded-xl transition-colors disabled:opacity-50 shrink-0 shadow-sm" title="AI Generate">
-                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              <button onClick={handleGenerateSubtasks} disabled={isGenerating || !task.title} className="hover:bg-white/20 px-3 py-2 rounded-xl transition-colors disabled:opacity-50 shrink-0 shadow-sm" title="Generate Subtasks">
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
               </button>
             </div>
           </div>

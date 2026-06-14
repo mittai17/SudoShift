@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Panel, useReactFlow } from '@xyflow/react';
-import { Edit2, Copy, Palette, Maximize2, Trash2, Sparkles, X } from 'lucide-react';
+import { Edit2, Copy, Palette, Maximize2, Trash2, X } from 'lucide-react';
 import { NodeSize, TaskData } from '../../types';
 import { ColorPicker } from './ColorPicker';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,7 +39,7 @@ export function FloatingToolbar() {
     });
   };
 
-  const handleAI = async () => {
+  const handleAutoTag = async () => {
     if (!singleNode || !task?.description) return;
     try {
       const res = await fetch('/api/auto-tag', {
@@ -58,7 +58,7 @@ export function FloatingToolbar() {
         });
       }
     } catch (e) {
-      console.error('AI failed', e);
+      console.error('Auto-tag failed', e);
     }
   };
 
@@ -93,8 +93,8 @@ export function FloatingToolbar() {
 
 
           {isNote && (
-            <button onClick={handleAI} className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl transition-colors group">
-              <Sparkles className="w-4 h-4" />
+            <button onClick={handleAutoTag} className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl transition-colors group">
+              Auto-tag
               <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">Auto-tag</span>
             </button>
           )}

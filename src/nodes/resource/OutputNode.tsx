@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Monitor, Code2, FileText, AlignLeft, Download, Copy, Search, Filter, Sparkles, Wand2, Check } from 'lucide-react';
+import { Monitor, Code2, FileText, AlignLeft, Download, Copy, Search, Filter, Wand2, Check } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const OutputBody = ({ task, updateTask }: any) => {
@@ -49,13 +49,13 @@ const OutputBody = ({ task, updateTask }: any) => {
          )}
       </div>
 
-      {/* AI Tools */}
+      {/* Output Tools */}
       <div className="grid grid-cols-2 gap-2 text-[10px]">
          <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <Sparkles className="w-3 h-3 mr-1" /> AI Explain Output
+            Explain Output
          </button>
          <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <Wand2 className="w-3 h-3 mr-1" /> AI Improve Output
+            <Wand2 className="w-3 h-3 mr-1" /> Improve Output
          </button>
       </div>
     </div>

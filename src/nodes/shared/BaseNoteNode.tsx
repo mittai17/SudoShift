@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow, useNodeId, NodeResizer } from '@xyflow/react';
-import { Loader2, Sparkles, Plus, Clock, Edit3 } from 'lucide-react';
+import { Loader2, Plus, Clock, Edit3 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import NodeWrapper from './NodeWrapper';
 import { TaskData } from '../../types';
@@ -65,9 +65,6 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
                   />
                 </div>
               </div>
-              <button className="hover:bg-white/20 p-2 rounded-xl transition-colors disabled:opacity-50 shrink-0 shadow-sm" title="AI Generate" onClick={() => {}}>
-                <Sparkles className="w-4 h-4" />
-              </button>
             </div>
           </div>
 

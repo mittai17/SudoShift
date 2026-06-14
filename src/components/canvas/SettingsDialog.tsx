@@ -58,10 +58,10 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 type="password"
                 value={geminiKey}
                 onChange={e => setGeminiKey(e.target.value)}
-                placeholder="AI Studio API Key"
+                placeholder="Studio API Key"
                 className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
               />
-              <p className="text-[10px] text-gray-500">Stored locally in your browser. Sent securely to the backend for AI tasks.</p>
+              <p className="text-[10px] text-gray-500">Stored locally in your browser. Sent securely to the backend for processing tasks.</p>
             </div>
           </div>
 

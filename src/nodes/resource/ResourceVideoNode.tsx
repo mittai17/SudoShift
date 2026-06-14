@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Clock, FileText, CheckSquare, Sparkles, Download, Youtube, FileOutput, Lightbulb, ListTodo } from 'lucide-react';
+import { Video, Clock, FileText, CheckSquare, Download, Youtube, FileOutput, Lightbulb, ListTodo } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const extractYoutubeId = (url: string) => {
@@ -60,12 +60,12 @@ const ResourceVideoBody = ({ task, updateTask }: any) => {
         </div>
       )}
 
-      {/* AI Actions */}
+      {/* Video Tools */}
       <div className="bg-[#2a2b36]/20 border border-[#2a2b36] rounded-xl p-2 space-y-2">
-         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center"><Sparkles className="w-3 h-3 mr-1 text-cyan-400" /> AI Video Tools</div>
+         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center">Video Tools</div>
          <div className="grid grid-cols-2 gap-2 text-[10px]">
             <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
-               <FileOutput className="w-3 h-3 mr-1" /> AI Summary
+               <FileOutput className="w-3 h-3 mr-1" /> Summary
             </button>
             <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
                <Lightbulb className="w-3 h-3 mr-1" /> Key Takeaways

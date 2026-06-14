@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Upload, ChevronLeft, ChevronRight, Search, Bookmark, Highlighter, Sparkles, GraduationCap, AlignLeft, Download } from 'lucide-react';
+import { FileText, Upload, ChevronLeft, ChevronRight, Search, Bookmark, Highlighter, GraduationCap, AlignLeft, Download } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const ResourcePdfBody = ({ task, updateTask }: any) => {
@@ -59,9 +59,9 @@ const ResourcePdfBody = ({ task, updateTask }: any) => {
          </div>
       )}
 
-      {/* AI Tools */}
+      {/* PDF Tools */}
       <div className="bg-[#2a2b36]/20 border border-[#2a2b36] rounded-xl p-2 space-y-2">
-         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center"><Sparkles className="w-3 h-3 mr-1 text-cyan-400" /> AI PDF Tools</div>
+         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1 flex items-center">PDF Tools</div>
          <div className="grid grid-cols-2 gap-2 text-[10px]">
             <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
                <AlignLeft className="w-3 h-3 mr-1" /> Document Summary
@@ -70,7 +70,7 @@ const ResourcePdfBody = ({ task, updateTask }: any) => {
                <AlignLeft className="w-3 h-3 mr-1" /> Chapter Summary
             </button>
             <button className="flex items-center justify-center bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 rounded-lg py-1.5 transition-colors font-medium">
-               <Sparkles className="w-3 h-3 mr-1" /> Generate Flashcards
+               Generate Flashcards
             </button>
             <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
                <GraduationCap className="w-3 h-3 mr-1" /> Generate Quiz

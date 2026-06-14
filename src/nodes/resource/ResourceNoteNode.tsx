@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Pin, Tag, Type, Sparkles, BookOpen, Highlighter, ListChecks, FileOutput, GraduationCap, CheckCircle2 } from 'lucide-react';
+import { StickyNote, Pin, Tag, Type, BookOpen, Highlighter, ListChecks, FileOutput, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const ResourceNoteBody = ({ task, updateTask }: any) => {
@@ -49,13 +49,13 @@ const ResourceNoteBody = ({ task, updateTask }: any) => {
         </div>
       </div>
 
-      {/* AI Tools */}
+      {/* Note Tools */}
       <div className="grid grid-cols-3 gap-2 text-[10px]">
          <button className="flex items-center justify-center bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <FileOutput className="w-3 h-3 mr-1" /> AI Summary
+            <FileOutput className="w-3 h-3 mr-1" /> Summary
          </button>
          <button className="flex items-center justify-center bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 rounded-lg py-1.5 transition-colors font-medium">
-            <Sparkles className="w-3 h-3 mr-1" /> Flashcards
+            Flashcards
          </button>
          <button className="flex items-center justify-center bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg py-1.5 transition-colors font-medium">
             <GraduationCap className="w-3 h-3 mr-1" /> Quiz Me

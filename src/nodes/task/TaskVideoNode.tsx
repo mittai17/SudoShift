@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, Clock, FileText, CheckSquare, Sparkles, Download, Layers } from 'lucide-react';
+import { Video, Clock, FileText, CheckSquare, Download, Layers } from 'lucide-react';
 import { createTaskNode } from '../shared/BaseTaskNode';
 
 const extractYoutubeId = (url: string) => {
@@ -54,10 +54,10 @@ const TaskVideoBody = ({ task, updateTask }: any) => {
         </div>
       )}
 
-      {/* AI Actions */}
+      {/* Video Tools */}
       <div className="grid grid-cols-2 gap-2 text-[10px]">
         <button className="flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 rounded-lg py-1.5 transition-colors font-medium">
-          <Sparkles className="w-3 h-3 mr-1" /> AI Summary
+          Summary
         </button>
         <button className="flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg py-1.5 transition-colors font-medium">
           <CheckSquare className="w-3 h-3 mr-1" /> Generate Steps

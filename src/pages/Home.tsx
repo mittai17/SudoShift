@@ -349,7 +349,6 @@ export default function Home() {
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600">
           <a href="#dashboard" className="hover:text-gray-900 transition-colors">My Canvases</a>
           <a href="#how-it-works" className="hover:text-gray-900 transition-colors">How it Works</a>
-          <RouterLink to="/community" className="hover:text-gray-900 transition-colors">Community</RouterLink>
         </div>
         <div className="flex items-center gap-2">
           {/* Linked Profile Page Circle */}
@@ -367,17 +366,13 @@ export default function Home() {
               <div className="text-[10px] text-gray-400 font-bold group-hover:text-indigo-500 transition-colors">Edit Profile</div>
             </div>
           </RouterLink>
-          <button onClick={createNewCanvas} className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">New Canvas</span>
-          </button>
           <button onClick={signOut} className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Sign out">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
+      <main className="max-w-6xl xl:max-w-[1200px] mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
         <section id="dashboard" className="mb-20">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Mobile Sidebar Toggle Header */}

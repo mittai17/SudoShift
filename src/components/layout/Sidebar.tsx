@@ -58,7 +58,7 @@ function NodeCard({ node, onDragStart, onClick }: {
       draggable
       title={node.id}
     >
-      <span className="text-base shrink-0 leading-none">{node.icon}</span>
+      <span className="text-base shrink-0 leading-none flex items-center justify-center w-5 h-5" style={{ color: node.color }}>{node.icon}</span>
       <span className="text-xs font-medium text-gray-300 leading-tight">{node.label}</span>
       <div className="ml-auto w-1.5 h-1.5 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: node.color }} />
     </div>

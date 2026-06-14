@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical, Edit2, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -136,6 +136,7 @@ function FlowEditor() {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [canvasName, setCanvasName] = useState('');
   const [isRenamingCanvas, setIsRenamingCanvas] = useState(false);
+  const [canvasDarkMode, setCanvasDarkMode] = useState(false);
 
   // Direct Messaging / Chat Enhancements
   const [activeChatTab, setActiveChatTab] = useState<'team' | 'dm'>('team');
@@ -820,7 +821,21 @@ function FlowEditor() {
         </button>
 
         <div className="flex-1 h-full relative p-1 sm:p-2 md:p-4 pb-0">
-          <div className="w-full h-full bg-white rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border border-gray-200 overflow-hidden relative" onDrop={onDrop} onDragOver={onDragOver} onPointerMove={handlePointerMove}>
+          <div
+            className={`w-full h-full rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border overflow-hidden relative transition-colors ${canvasDarkMode ? 'bg-slate-950 border-slate-700' : 'bg-white border-gray-200'}`}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onPointerMove={handlePointerMove}
+          >
+            <button
+              type="button"
+              onClick={() => setCanvasDarkMode((value) => !value)}
+              className={`absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold shadow-sm transition-colors ${canvasDarkMode ? 'bg-slate-900 text-amber-300 border-slate-700 hover:bg-slate-800' : 'bg-white text-slate-700 border-gray-200 hover:bg-slate-50'}`}
+              title={canvasDarkMode ? 'Switch canvas to light mode' : 'Switch canvas to dark mode'}
+            >
+              {canvasDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{canvasDarkMode ? 'Light' : 'Dark'}</span>
+            </button>
             <Canvas
               nodes={nodes}
               edges={edges}
@@ -836,6 +851,7 @@ function FlowEditor() {
               handleZoomOut={handleZoomOut}
               handleFitView={handleFitView}
               handleDeleteSelected={handleDeleteSelected}
+              isDarkMode={canvasDarkMode}
             />
 
             {/* Remote Cursors Overlay */}

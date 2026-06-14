@@ -2,19 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { 
   AlertCircle, 
-  AlignLeft, 
   BrainCircuit, 
-  CheckSquare, 
-  Clock, 
   LayoutDashboard, 
   LogOut, 
   Plus, 
-  Sigma, 
   Folder, 
   FolderOpen, 
-  FolderPlus, 
   Trash2, 
-  User, 
   ChevronRight,
   FolderTree,
   MoreVertical,
@@ -347,8 +341,8 @@ export default function Home() {
           <span className="font-bold text-lg tracking-tight">Visual Second Brain</span>
         </div>
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600">
-          <a href="#dashboard" className="hover:text-gray-900 transition-colors">My Canvases</a>
-          <a href="#how-it-works" className="hover:text-gray-900 transition-colors">How it Works</a>
+          <RouterLink to="/" className="hover:text-gray-900 transition-colors">My Canvases</RouterLink>
+          <RouterLink to="/how-it-works" className="hover:text-gray-900 transition-colors">How it Works</RouterLink>
         </div>
         <div className="flex items-center gap-2">
           {/* Linked Profile Page Circle */}
@@ -372,11 +366,11 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
+      <main className="w-full pb-20">
         <section id="dashboard" className="mb-20">
-          <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col md:flex-row">
             {/* Mobile Sidebar Toggle Header */}
-            <div className="md:hidden flex items-center justify-between bg-white border border-gray-200 rounded-3xl p-4 shadow-sm">
+            <div className="md:hidden mx-4 mt-8 flex items-center justify-between bg-white border border-gray-200 rounded-3xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
                   <FolderOpen className="w-4 h-4" />
@@ -396,11 +390,34 @@ export default function Home() {
               </button>
             </div>
 
+            {sidebarCollapsed && (
+              <div className="hidden md:flex w-16 shrink-0 border-r border-gray-200 bg-white min-h-[calc(100vh-73px)] sticky top-[73px] items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl transition-all shadow-sm active:scale-95"
+                  title="Open workspace panel"
+                >
+                  <FolderOpen className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
             {/* Sidebar Column */}
-            <aside className={`w-full md:w-72 shrink-0 bg-white border border-gray-200 rounded-3xl p-5 shadow-sm h-fit md:block md:-translate-x-10 lg:-translate-x-20 xl:-translate-x-24 ${sidebarCollapsed ? 'hidden' : 'block'}`}>
+            <aside className={`relative w-full md:w-80 shrink-0 bg-white border border-gray-200 md:border-l-0 md:border-y-0 md:border-r rounded-3xl md:rounded-none p-5 md:p-6 shadow-sm md:shadow-none h-fit md:min-h-[calc(100vh-73px)] md:sticky md:top-[73px] ${sidebarCollapsed ? 'hidden' : 'block'}`}>
               {/* Workspace Selector */}
               <div className="space-y-2.5 pb-5 border-b border-slate-100">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace</span>
+                  <button
+                    type="button"
+                    onClick={() => setSidebarCollapsed(true)}
+                    className="p-1.5 md:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 md:bg-white md:border md:border-gray-200 md:shadow-sm rounded-lg md:rounded-full transition-colors md:absolute md:-right-4 md:top-1/2 md:-translate-y-1/2 md:z-10"
+                    title="Close workspace panel"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <select
                     value={activeWorkspaceId || ''}
@@ -481,7 +498,8 @@ export default function Home() {
             </aside>
 
             {/* Canvases Grid Area */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 px-4 md:px-8 lg:px-12 mt-8 md:mt-12">
+              <div className="max-w-5xl">
               <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
@@ -704,44 +722,11 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="how-it-works" className="mt-32 border-t border-gray-200 pt-20">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">Clarity in the Working</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Visual Second Brain is a smart organizational canvas built around collaborative nodes.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6">
-                <Sigma className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-3">Formulas & Calculations</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">Calculate budgets, rates, or math right inside the canvas.</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
-                <AlignLeft className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-3">Rich Note Variations</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">Mix text notes, tables, markdown, code, images, video embeds, timers, and more.</p>
-            </div>
-
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mb-6">
-                <CheckSquare className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-3">Team Execution</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">Live cursors, chat, history, and role controls make the board usable with others.</p>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Workspace Creation Modal */}

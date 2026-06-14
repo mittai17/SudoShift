@@ -1474,7 +1474,7 @@ function FlowEditor() {
         setNodes={setNodes}
         setEdges={setEdges}
       />
-      <AiAssistantWidget />
+      <AiAssistantWidget canvasId={canvasId} nodes={nodes} setNodes={setNodes} setEdges={setEdges} />
     </div>
   );
 }

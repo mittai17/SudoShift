@@ -950,7 +950,293 @@ The connections array should list the node names in order of the workflow flow.`
     }
   });
 
-  // Vite middleware for development
+  // ── AI Chat (multi-turn, memory, canvas ops) ─────────────────────────────────
+  app.post("/api/ai-chat", async (req, res) => {
+    try {
+      const apiKey = process.env.VITE_AI_DUMP_GEMINI_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) return res.status(500).json({ error: "AI API key not configured." });
+
+      const { message, history = [], canvasContext } = req.body;
+      if (!message?.trim()) return res.status(400).json({ error: "Message is required." });
+
+      const ai = new GoogleGenAI({ apiKey });
+
+      const systemPrompt = `You are an AI Workflow Architect for Visual Second Brain — a visual canvas app where users create nodes (tasks, notes, goals, events, habits, resources, integrations) connected by edges.
+
+Your capabilities:
+1. PLAN workflows and give actionable step-by-step guidance
+2. CREATE canvas nodes by including "canvasOps" in your response JSON
+3. Answer questions about productivity, tools, and workflows
+4. Remember the conversation context
+
+Available node types: goal-node, project-node, task-node, event-node, milestone-node, habit-node, note-node, resource-node, task-checklist-node, task-timer-node, task-code-node, note-mermaid-node, note-table-node, resource-link-node, resource-video-node
+
+Canvas context: ${canvasContext ? `${canvasContext.nodeCount} nodes currently on canvas (types: ${canvasContext.nodeTypes.join(', ') || 'none'})` : 'Unknown'}
+
+ALWAYS respond with valid JSON in this exact format:
+{
+  "reply": "Your conversational response here",
+  "canvasOps": [
+    { "op": "addNode", "type": "task-node", "title": "Node Title", "description": "optional", "x": 100, "y": 100 },
+    { "op": "addEdge", "from": 0, "to": 1 }
+  ],
+  "workflow": null
+}
+
+Rules:
+- "canvasOps" is optional — only include when the user asks to CREATE something on the canvas
+- "from"/"to" in addEdge are 0-based indexes into the canvasOps array for newly created nodes
+- "workflow" is optional structured plan (goal, phases, connections, expectedOutcome)
+- Keep "reply" conversational and helpful
+- If just answering a question, canvasOps = [] and workflow = null`;
+
+      // Build conversation history for Gemini
+      const contents: any[] = [];
+      for (const msg of history.slice(-8)) {
+        contents.push({ role: msg.role === 'user' ? 'user' : 'model', parts: [{ text: msg.content }] });
+      }
+      contents.push({ role: 'user', parts: [{ text: message }] });
+
+      const result = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents,
+        config: { systemInstruction: systemPrompt }
+      });
+
+      const rawText = result.text || '';
+      let parsed: any;
+      try {
+        parsed = parseJsonFromMarkdown(rawText);
+      } catch {
+        parsed = { reply: rawText, canvasOps: [], workflow: null };
+      }
+
+      res.json({
+        reply: parsed.reply || parsed.message || rawText,
+        canvasOps: parsed.canvasOps || [],
+        workflow: parsed.workflow || null,
+      });
+    } catch (e: any) {
+      console.error("AI Chat Error:", e);
+      res.status(500).json({ error: e.message || "Failed to get AI response." });
+    }
+  });
+
+  // ── Integration Proxy Routes ──────────────────────────────────────────────────
+  // Notion
+  app.post("/api/integrations/notion", async (req, res) => {
+    try {
+      const { action, apiKey, query, title, content, databaseId, pageId } = req.body;
+      if (!apiKey) return res.status(400).json({ error: "API key required" });
+      const headers: any = { 'Authorization': `Bearer ${apiKey}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' };
+      if (action === 'search') {
+        const r = await fetch('https://api.notion.com/v1/search', { method: 'POST', headers, body: JSON.stringify({ query: query || '' }) });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'create') {
+        const r = await fetch('https://api.notion.com/v1/pages', { method: 'POST', headers, body: JSON.stringify({ parent: { type: 'workspace', workspace: true }, properties: { title: { title: [{ text: { content: title || 'New Page' } }] } }, children: content ? [{ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ text: { content } }] } }] : [] }) });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'database') {
+        const r = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, { method: 'POST', headers, body: JSON.stringify({}) });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // GitHub
+  app.post("/api/integrations/github", async (req, res) => {
+    try {
+      const { action, token, owner, repo, title, body: issueBody } = req.body;
+      if (!token) return res.status(400).json({ error: "Token required" });
+      const headers: any = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+      let url = ''; let method = 'GET'; let reqBody: any = undefined;
+      if (action === 'issues') { url = `https://api.github.com/repos/${owner}/${repo}/issues`; }
+      else if (action === 'create-issue') { url = `https://api.github.com/repos/${owner}/${repo}/issues`; method = 'POST'; reqBody = JSON.stringify({ title, body: issueBody }); }
+      else if (action === 'prs') { url = `https://api.github.com/repos/${owner}/${repo}/pulls`; }
+      else if (action === 'repo') { url = `https://api.github.com/repos/${owner}/${repo}`; }
+      else { return res.status(400).json({ error: 'Unknown action' }); }
+      const r = await fetch(url, { method, headers, body: reqBody });
+      const d = await r.json(); res.json(d);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Slack
+  app.post("/api/integrations/slack", async (req, res) => {
+    try {
+      const { action, token, channel, message } = req.body;
+      if (!token) return res.status(400).json({ error: "Token required" });
+      const headers: any = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+      if (action === 'post') {
+        const r = await fetch('https://slack.com/api/chat.postMessage', { method: 'POST', headers, body: JSON.stringify({ channel, text: message }) });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'channels') {
+        const r = await fetch('https://slack.com/api/conversations.list', { headers });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Airtable
+  app.post("/api/integrations/airtable", async (req, res) => {
+    try {
+      const { action, apiKey, baseId, tableName, fields, filterFormula } = req.body;
+      if (!apiKey) return res.status(400).json({ error: "API key required" });
+      const headers: any = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+      if (action === 'list') {
+        const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}${filterFormula ? `?filterByFormula=${encodeURIComponent(filterFormula)}` : ''}`;
+        const r = await fetch(url, { headers }); const d = await r.json(); res.json(d);
+      } else if (action === 'create') {
+        const r = await fetch(`https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`, { method: 'POST', headers, body: JSON.stringify({ fields }) });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Jira
+  app.post("/api/integrations/jira", async (req, res) => {
+    try {
+      const { action, email, token, domain, projectKey, summary, description, issueType, jql } = req.body;
+      if (!token || !email || !domain) return res.status(400).json({ error: "Email, token and domain required" });
+      const auth = Buffer.from(`${email}:${token}`).toString('base64');
+      const headers: any = { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' };
+      const base = `https://${domain}/rest/api/3`;
+      if (action === 'issues') {
+        const r = await fetch(`${base}/search?jql=${encodeURIComponent(jql || 'order by created DESC')}&maxResults=20`, { headers });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'create') {
+        const r = await fetch(`${base}/issue`, { method: 'POST', headers, body: JSON.stringify({ fields: { project: { key: projectKey }, summary, description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: description || '' }] }] }, issuetype: { name: issueType || 'Task' } } }) });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Trello
+  app.post("/api/integrations/trello", async (req, res) => {
+    try {
+      const { action, apiKey, token, boardId, listId, name, desc } = req.body;
+      if (!apiKey || !token) return res.status(400).json({ error: "API key and token required" });
+      const auth = `key=${apiKey}&token=${token}`;
+      if (action === 'boards') {
+        const r = await fetch(`https://api.trello.com/1/members/me/boards?${auth}`);
+        const d = await r.json(); res.json(d);
+      } else if (action === 'lists') {
+        const r = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?${auth}`);
+        const d = await r.json(); res.json(d);
+      } else if (action === 'cards') {
+        const r = await fetch(`https://api.trello.com/1/boards/${boardId}/cards?${auth}`);
+        const d = await r.json(); res.json(d);
+      } else if (action === 'create') {
+        const r = await fetch(`https://api.trello.com/1/cards?${auth}&idList=${listId}&name=${encodeURIComponent(name)}&desc=${encodeURIComponent(desc || '')}`, { method: 'POST' });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Linear
+  app.post("/api/integrations/linear", async (req, res) => {
+    try {
+      const { action, apiKey, teamId, title, description, priority } = req.body;
+      if (!apiKey) return res.status(400).json({ error: "API key required" });
+      const headers: any = { 'Authorization': apiKey, 'Content-Type': 'application/json' };
+      let query = ''; let variables: any = {};
+      if (action === 'issues') {
+        query = `query { issues(first: 20) { nodes { id title state { name } priority createdAt } } }`;
+      } else if (action === 'create') {
+        query = `mutation CreateIssue($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id title } } }`;
+        variables = { input: { teamId, title, description, priority: priority || 0 } };
+      } else if (action === 'myIssues') {
+        query = `query { viewer { assignedIssues(first: 20) { nodes { id title state { name } priority } } } }`;
+      } else { return res.status(400).json({ error: 'Unknown action' }); }
+      const r = await fetch('https://api.linear.app/graphql', { method: 'POST', headers, body: JSON.stringify({ query, variables }) });
+      const d = await r.json(); res.json(d);
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Google Sheets
+  app.post("/api/integrations/gsheets", async (req, res) => {
+    try {
+      const { action, apiKey, spreadsheetId, range, data } = req.body;
+      if (!apiKey || !spreadsheetId) return res.status(400).json({ error: "API key and spreadsheet ID required" });
+      if (action === 'read') {
+        const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range || 'Sheet1')}?key=${apiKey}`);
+        const d = await r.json(); res.json(d);
+      } else if (action === 'append') {
+        const rows = (data || '').split('\n').map((row: string) => row.split(','));
+        const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range || 'Sheet1')}:append?valueInputOption=USER_ENTERED&key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ values: rows }) });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Obsidian (proxy to local REST API plugin)
+  app.post("/api/integrations/obsidian", async (req, res) => {
+    try {
+      const { action, token, port, path: notePath, content, query } = req.body;
+      const baseUrl = `http://localhost:${port || 27123}`;
+      const headers: any = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+      if (action === 'read') {
+        const r = await fetch(`${baseUrl}/vault/${encodeURIComponent(notePath)}`, { headers });
+        const text = await r.text(); res.json({ content: text });
+      } else if (action === 'write') {
+        const r = await fetch(`${baseUrl}/vault/${encodeURIComponent(notePath)}`, { method: 'PUT', headers, body: content });
+        res.json({ success: r.ok });
+      } else if (action === 'list') {
+        const r = await fetch(`${baseUrl}/vault/`, { headers });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'search') {
+        const r = await fetch(`${baseUrl}/search/simple/?query=${encodeURIComponent(query || '')}`, { headers });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message + ' — Is Obsidian Local REST API plugin running?' }); }
+  });
+
+  // Microsoft Graph
+  app.post("/api/integrations/microsoft", async (req, res) => {
+    try {
+      const { action, token, fileId, sheet, range, resource } = req.body;
+      if (!token) return res.status(400).json({ error: "Access token required" });
+      const headers: any = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+      if (action === 'excel-read') {
+        const r = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${fileId}/workbook/worksheets/${sheet}/range(address='${range}')`, { headers });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'onedrive-list') {
+        const r = await fetch('https://graph.microsoft.com/v1.0/me/drive/root/children', { headers });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // Discord (bot token mode)
+  app.post("/api/integrations/discord", async (req, res) => {
+    try {
+      const { action, token, channelId, message, embeds } = req.body;
+      if (!token) return res.status(400).json({ error: "Bot token required" });
+      const headers: any = { 'Authorization': `Bot ${token}`, 'Content-Type': 'application/json' };
+      if (action === 'send') {
+        const r = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, { method: 'POST', headers, body: JSON.stringify({ content: message, embeds }) });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'channels') {
+        res.json({ message: 'Use Guild ID to fetch channels via GET /guilds/{id}/channels' });
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+  // MCP Tools proxy
+  app.post("/api/integrations/mcp", async (req, res) => {
+    try {
+      const { action, serverUrl, apiKey, toolName, params } = req.body;
+      if (!serverUrl) return res.status(400).json({ error: "Server URL required" });
+      const headers: any = { 'Content-Type': 'application/json', ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}) };
+      if (action === 'list') {
+        const r = await fetch(`${serverUrl}/tools`, { headers });
+        const d = await r.json(); res.json(d);
+      } else if (action === 'call') {
+        const r = await fetch(`${serverUrl}/tools/${toolName}`, { method: 'POST', headers, body: JSON.stringify(params || {}) });
+        const d = await r.json(); res.json(d);
+      } else { res.status(400).json({ error: 'Unknown action' }); }
+    } catch (e: any) { res.status(500).json({ error: e.message }); }
+  });
+
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({

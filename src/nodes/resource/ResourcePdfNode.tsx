@@ -6,7 +6,7 @@ const ResourcePdfBody = ({ task, updateTask }: any) => {
   const fileUrl = task.fileUrl || '';
   const fileName = task.fileName || '';
   const currentPage = task.currentPage || 1;
-  const totalPages = task.totalPages || 42; // mock
+  const totalPages = task.totalPages || 1;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +51,7 @@ const ResourcePdfBody = ({ task, updateTask }: any) => {
             {/* Mock Page Content */}
             <div className="aspect-[1/1.4] bg-white relative p-4 m-2 rounded shadow-sm opacity-90 flex flex-col items-center justify-center text-center">
                <FileText className="w-12 h-12 text-gray-300 mb-2" />
-               <p className="text-[10px] text-gray-400 max-w-[80%]">PDF rendering requires a heavy library like react-pdf. This is a visual mock of the reader interface.</p>
+                <p className="text-[10px] text-gray-400 max-w-[80%]">PDF rendering requires a heavy library like react-pdf. Upload a PDF to view its metadata.</p>
                <div className="absolute top-4 left-4 right-4 h-2 bg-yellow-200/50 rounded" />
                <div className="absolute top-8 left-4 w-3/4 h-2 bg-gray-200 rounded" />
                <div className="absolute top-12 left-4 w-5/6 h-2 bg-gray-200 rounded" />

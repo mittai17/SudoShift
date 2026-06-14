@@ -33,7 +33,6 @@ const TaskVideoBody = ({ task, updateTask }: any) => {
             <div className="absolute top-2 right-2 bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded flex items-center">
               <Clock className="w-3 h-3 mr-1 text-emerald-400" /> {duration}
             </div>
-            {/* Watch Progress Bar mock */}
             <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
               <div className="h-full bg-emerald-500" style={{ width: `${watchProgress}%` }} />
             </div>

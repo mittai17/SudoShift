@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Columns, Maximize2, ExternalLink, Network, LayoutTemplate, Search, Download, Upload, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const CanvasBody = ({ task, updateTask }: any) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const childNodeCount = task.childNodeCount || 0;
   const parentCanvas = task.parentCanvas || 'Root Canvas';
 
   const handleOpenNewView = () => {
-     // Mock opening the canvas in a full view
-     console.log('Opening nested canvas in new view');
+     const canvasId = task.id || task.canvasId;
+     if (canvasId) {
+       navigate(`/app?id=${canvasId}`);
+     }
   };
 
   return (

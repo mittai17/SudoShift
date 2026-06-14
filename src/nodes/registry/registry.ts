@@ -71,6 +71,22 @@ import NoteFormulaNode from '../note/NoteFormulaNode';
 import NoteTableNode from '../note/NoteTableNode';
 import NoteLinkNode from '../note/NoteLinkNode';
 
+// ── Integrations ──────────────────────────────────────────────────────────────────
+import NotionNode from '../integrations/NotionNode';
+import GitHubNode from '../integrations/GitHubNode';
+import SlackNode from '../integrations/SlackNode';
+import AirtableNode from '../integrations/AirtableNode';
+import JiraNode from '../integrations/JiraNode';
+import ZapierNode from '../integrations/ZapierNode';
+import MakeNode from '../integrations/MakeNode';
+import ObsidianNode from '../integrations/ObsidianNode';
+import GoogleSheetsNode from '../integrations/GoogleSheetsNode';
+import TrelloNode from '../integrations/TrelloNode';
+import LinearNode from '../integrations/LinearNode';
+import DiscordNode from '../integrations/DiscordNode';
+import MicrosoftNode from '../integrations/MicrosoftNode';
+import McpToolsNode from '../integrations/McpToolsNode';
+
 export const NODE_REGISTRY: NodeDefinition[] = [
   // ── Goal ───────────────────────────────────────────────────────────────────
   { id: 'goal-node', label: 'Goal', category: 'goal', icon: '🎯', component: GoalNode, color: '#06b6d4', defaultData: { title: 'My Goal', description: '', matrix: 'GOAL', deadline: null } },
@@ -141,4 +157,20 @@ export const NODE_REGISTRY: NodeDefinition[] = [
   { id: 'note-formula-node', label: 'Note Formula', category: 'note', icon: '∑', component: NoteFormulaNode, color: '#3b82f6', defaultData: { title: 'Note Formula', description: 'Budget = 5000\nSpend = 1200\nBudget - Spend', matrix: 'NOTE_FORMULA', deadline: null } },
   { id: 'note-table-node', label: 'Note Table', category: 'note', icon: '📊', component: NoteTableNode, color: '#10b981', defaultData: { title: 'Note Table', description: '', matrix: 'NOTE_TABLE', deadline: null } },
   { id: 'note-link-node', label: 'Note Link', category: 'note', icon: '🔗', component: NoteLinkNode, color: '#3b82f6', defaultData: { title: 'Note Link', description: '', matrix: 'NOTE_LINK', deadline: null } },
+
+  // ── Integrations ─────────────────────────────────────────────────────────────
+  { id: 'integration-notion-node', label: 'Notion', category: 'integrations', icon: '📓', component: NotionNode, color: '#000000', defaultData: { title: 'Notion Integration', description: '', matrix: 'INTEGRATION_NOTION', deadline: null } },
+  { id: 'integration-github-node', label: 'GitHub', category: 'integrations', icon: '🐙', component: GitHubNode, color: '#24292e', defaultData: { title: 'GitHub Integration', description: '', matrix: 'INTEGRATION_GITHUB', deadline: null } },
+  { id: 'integration-slack-node', label: 'Slack', category: 'integrations', icon: '💬', component: SlackNode, color: '#4A154B', defaultData: { title: 'Slack Integration', description: '', matrix: 'INTEGRATION_SLACK', deadline: null } },
+  { id: 'integration-airtable-node', label: 'Airtable', category: 'integrations', icon: '📊', component: AirtableNode, color: '#18BFFF', defaultData: { title: 'Airtable Integration', description: '', matrix: 'INTEGRATION_AIRTABLE', deadline: null } },
+  { id: 'integration-jira-node', label: 'Jira', category: 'integrations', icon: '📋', component: JiraNode, color: '#0052CC', defaultData: { title: 'Jira Integration', description: '', matrix: 'INTEGRATION_JIRA', deadline: null } },
+  { id: 'integration-zapier-node', label: 'Zapier', category: 'integrations', icon: '⚡', component: ZapierNode, color: '#FF4A00', defaultData: { title: 'Zapier Webhook', description: '', matrix: 'INTEGRATION_ZAPIER', deadline: null } },
+  { id: 'integration-make-node', label: 'Make.com', category: 'integrations', icon: '🟣', component: MakeNode, color: '#6D00CC', defaultData: { title: 'Make Webhook', description: '', matrix: 'INTEGRATION_MAKE', deadline: null } },
+  { id: 'integration-obsidian-node', label: 'Obsidian', category: 'integrations', icon: '💎', component: ObsidianNode, color: '#7C3AED', defaultData: { title: 'Obsidian Integration', description: '', matrix: 'INTEGRATION_OBSIDIAN', deadline: null } },
+  { id: 'integration-gsheets-node', label: 'Google Sheets', category: 'integrations', icon: '📗', component: GoogleSheetsNode, color: '#0F9D58', defaultData: { title: 'Google Sheets', description: '', matrix: 'INTEGRATION_GSHEETS', deadline: null } },
+  { id: 'integration-trello-node', label: 'Trello', category: 'integrations', icon: '🔷', component: TrelloNode, color: '#0052CC', defaultData: { title: 'Trello Integration', description: '', matrix: 'INTEGRATION_TRELLO', deadline: null } },
+  { id: 'integration-linear-node', label: 'Linear', category: 'integrations', icon: '📐', component: LinearNode, color: '#5E6AD2', defaultData: { title: 'Linear Integration', description: '', matrix: 'INTEGRATION_LINEAR', deadline: null } },
+  { id: 'integration-discord-node', label: 'Discord', category: 'integrations', icon: '🎮', component: DiscordNode, color: '#5865F2', defaultData: { title: 'Discord Integration', description: '', matrix: 'INTEGRATION_DISCORD', deadline: null } },
+  { id: 'integration-microsoft-node', label: 'Microsoft', category: 'integrations', icon: '🟦', component: MicrosoftNode, color: '#00A4EF', defaultData: { title: 'Microsoft Integration', description: '', matrix: 'INTEGRATION_MICROSOFT', deadline: null } },
+  { id: 'integration-mcp-node', label: 'MCP Tools', category: 'integrations', icon: '🔌', component: McpToolsNode, color: '#FF6B35', defaultData: { title: 'MCP Tool Integration', description: '', matrix: 'INTEGRATION_MCP', deadline: null } },
 ];

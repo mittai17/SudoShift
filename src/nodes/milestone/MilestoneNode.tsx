@@ -11,7 +11,6 @@ const MilestoneBody = ({ task, updateTask }: any) => {
   
   const daysLeft = task.deadline ? Math.ceil((new Date(task.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : null;
 
-  // Auto completion mock logic
   useEffect(() => {
     if (progress === 100 && status !== 'Completed') {
       updateTask({ status: 'Completed', completionDate: new Date().toISOString() });

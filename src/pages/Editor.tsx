@@ -564,7 +564,7 @@ function FlowEditor() {
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden">
       {/* Editor Header Navigation */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200 z-10 shadow-sm shrink-0">
+      <div className="flex items-center justify-between px-2 md:px-4 py-2 bg-white border-b border-gray-200 z-10 shadow-sm shrink-0">
         <div className="flex items-center space-x-3">
           <Link to="/" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
             <ArrowLeft className="w-4 h-4" />
@@ -679,13 +679,13 @@ function FlowEditor() {
             {moreMenuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMoreMenuOpen(false)} />
-                <div className="absolute right-0 mt-1.5 w-48 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
                   <button
                     onClick={() => {
                       setMembersModalOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                   >
                     <Users className="w-4 h-4" />
                     <span>Members</span>
@@ -696,7 +696,7 @@ function FlowEditor() {
                       handleShare();
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
                      <span>{copied ? 'Copied' : 'Share Link'}</span>
@@ -711,7 +711,7 @@ function FlowEditor() {
                         setSidebarOpen(false);
                       }
                     }}
-                    className={`w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold transition-colors ${historyOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                    className={`w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold transition-colors ${historyOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'}`}
                   >
                     <History className="w-4 h-4" />
                     <span>History</span>
@@ -722,7 +722,7 @@ function FlowEditor() {
                       setJsonTransportOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                   >
                     <Code className="w-4 h-4" />
                     <span>JSON Export</span>
@@ -733,7 +733,7 @@ function FlowEditor() {
                       setSettingsOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                   >
                     <Settings className="w-4 h-4" />
                     <span>Settings</span>
@@ -746,6 +746,14 @@ function FlowEditor() {
       </div>
 
       <div className="flex-1 flex overflow-hidden bg-[#f8fafc] font-sans text-gray-900 relative">
+        {/* Sidebar Backdrop Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         <div className={`
           ${sidebarOpen ? 'flex' : 'hidden'} 
           lg:flex absolute lg:static left-0 top-0 bottom-0 z-35 shrink-0 shadow-2xl lg:shadow-none h-full
@@ -758,7 +766,7 @@ function FlowEditor() {
           />
         </div>
 
-        <div className="flex-1 h-full relative p-2 md:p-4 pb-0">
+        <div className="flex-1 h-full relative p-1 sm:p-2 md:p-4 pb-0">
           <div className="w-full h-full bg-white rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border border-gray-200 overflow-hidden relative" onDrop={onDrop} onDragOver={onDragOver} onPointerMove={handlePointerMove}>
             <Canvas
               nodes={nodes}
@@ -799,9 +807,17 @@ function FlowEditor() {
           </div>
         </div>
 
+        {/* Chat Backdrop Overlay */}
+        {chatOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-15"
+            onClick={() => setChatOpen(false)}
+          />
+        )}
+
         {/* Chat Sidebar */}
         {chatOpen && (
-          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
+          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50 shrink-0">
               <div className="flex items-center space-x-2 text-slate-900 font-bold text-base">
@@ -1088,9 +1104,17 @@ function FlowEditor() {
           </div>
         )}
 
+        {/* History Backdrop Overlay */}
+        {historyOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-15"
+            onClick={() => setHistoryOpen(false)}
+          />
+        )}
+
         {/* History Sidebar */}
         {historyOpen && (
-          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
+          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
               <div className="flex items-center space-x-2 text-indigo-900 font-semibold">
                 <History className="w-5 h-5 text-indigo-500" />

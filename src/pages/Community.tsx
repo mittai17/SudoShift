@@ -90,7 +90,7 @@ export default function Community() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
           <div>
             <h2 className="text-2xl font-bold tracking-tight mb-1">Explore Templates</h2>

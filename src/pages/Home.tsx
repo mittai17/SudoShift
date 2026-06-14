@@ -302,7 +302,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-gray-900 font-sans selection:bg-[#6366f1] selection:text-white pb-20">
-      <nav className="flex items-center justify-between px-6 py-4 lg:px-12 border-b border-gray-200 bg-white sticky top-0 z-10">
+      <nav className="flex items-center justify-between px-4 md:px-6 lg:px-12 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="flex items-center space-x-2">
           <div className="p-2 bg-[#6366f1] text-white rounded-lg shadow-sm">
             <BrainCircuit className="w-5 h-5" />
@@ -340,7 +340,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 lg:px-12 mt-12">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
         <section id="dashboard" className="mb-20">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Mobile Sidebar Toggle Header */}

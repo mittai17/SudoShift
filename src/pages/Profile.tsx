@@ -261,7 +261,7 @@ export default function Profile() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-150/25 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Header Bar */}
-      <nav className="flex items-center justify-between px-6 py-4 lg:px-12 border-b border-slate-200/80 bg-white/70 backdrop-blur-md sticky top-0 z-10">
+      <nav className="flex items-center justify-between px-4 md:px-6 lg:px-12 py-4 border-b border-slate-200/80 bg-white/70 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center space-x-2.5">
           <Link to="/" className="p-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl shadow-sm block transition-all active:scale-95">
             <BrainCircuit className="w-5 h-5" />

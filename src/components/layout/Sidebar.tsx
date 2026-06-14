@@ -98,7 +98,7 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
   const activeTabConfig = TABS.find((t) => t.id === activeTab)!;
 
   return (
-    <div className="w-72 h-full flex flex-col bg-[#13141c] border-r border-[#1e2030] shrink-0 shadow-2xl z-10 overflow-hidden">
+    <div className="w-72 max-w-[85vw] h-full flex flex-col bg-[#13141c] border-r border-[#1e2030] shrink-0 shadow-2xl z-10 overflow-hidden">
       {/* ── Brand ─────────────────────────────────────────── */}
       <div className="px-4 py-3.5 flex items-center justify-between border-b border-[#1e2030] shrink-0">
         <div className="flex items-center space-x-2.5">

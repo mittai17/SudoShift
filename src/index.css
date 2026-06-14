@@ -13,3 +13,20 @@
   transform: scale(1.5);
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
 }
+
+/* Better mobile touch experience for canvas */
+.react-flow__pane {
+  touch-action: none;
+}
+
+/* Prevent zoom on input focus on mobile */
+input, select, textarea {
+  font-size: 16px;
+}
+
+/* Ensure modals scroll properly on small screens */
+@media (max-width: 640px) {
+  .react-flow__panel {
+    margin: 8px !important;
+  }
+}

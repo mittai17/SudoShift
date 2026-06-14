@@ -10,6 +10,7 @@ export default function Login() {
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -45,11 +46,29 @@ export default function Login() {
         if (signInError) throw signInError;
         navigate(from, { replace: true });
       } else {
+        const cleanUsername = username.trim().toLowerCase();
+        if (!cleanUsername) {
+          throw new Error('Username is required.');
+        }
+        
+        // 1. Check if username is already taken
+        const { data: existing, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', cleanUsername)
+          .maybeSingle();
+
+        if (existing) {
+          throw new Error('Username is already taken.');
+        }
+
+        // 2. Perform sign up
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
           options: {
             data: {
+              username: cleanUsername,
               full_name: fullName.trim() || cleanEmail.split('@')[0],
             },
           },
@@ -122,15 +141,27 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'signup' && (
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-700">Name</span>
-                  <input
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Ada Lovelace"
-                  />
-                </label>
+                <>
+                  <label className="block mb-3">
+                    <span className="text-sm font-medium text-slate-700">Username</span>
+                    <input
+                      required
+                      value={username}
+                      onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="e.g. adajoin"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Name</span>
+                    <input
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Ada Lovelace"
+                    />
+                  </label>
+                </>
               )}
 
               <label className="block">

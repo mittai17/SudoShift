@@ -18,7 +18,7 @@ async function startServer() {
   const io = new Server(server, {
     cors: { origin: "*" }
   });
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT || 3000);
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
   const baseSupabase = supabaseUrl && supabaseAnonKey

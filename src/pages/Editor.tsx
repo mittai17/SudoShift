@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -152,6 +152,13 @@ function FlowEditor() {
     }
   }, [chatOpen, activeChatTab, selectedDMUserId, messages]);
 
+  const currentUser = useMemo(() => ({
+    id: user?.id || '',
+    name: user?.user_metadata?.full_name || user?.email || 'User',
+    email: user?.email,
+    color: colorForUser(user?.id || 'user'),
+  }), [user]);
+
   const unreadTeamCount = useMemo(() => {
     if (chatOpen && activeChatTab === 'team') return 0;
     return messages.filter(m => !m.recipientId && new Date(m.timestamp).getTime() > lastReadTeamTime).length;
@@ -186,12 +193,7 @@ function FlowEditor() {
   }, []);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const skipSyncRef = useRef<boolean>(false);
-  const currentUser = useMemo(() => ({
-    id: user?.id || '',
-    name: user?.user_metadata?.full_name || user?.email || 'User',
-    email: user?.email,
-    color: colorForUser(user?.id || 'user'),
-  }), [user]);
+
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -1186,7 +1188,7 @@ function FlowEditor() {
               {/* Collaboration Link Section */}
               <div className="space-y-2.5 pt-2">
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Link className="w-3.5 h-3.5" />
+                  <LinkIcon className="w-3.5 h-3.5" />
                   Collaboration link
                 </h4>
                 <div className="flex items-center justify-between p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/40">

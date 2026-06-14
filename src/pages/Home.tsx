@@ -538,10 +538,18 @@ export default function Home() {
                 )}
 
                 {canvases.map(canvas => (
-                  <RouterLink
+                  <div
                     key={canvas.id}
-                    to={`/app?id=${canvas.id}`}
-                    className="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg rounded-2xl p-5 h-48 flex flex-col justify-between transition-all"
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => navigate(`/app?id=${canvas.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/app?id=${canvas.id}`);
+                      }
+                    }}
+                    className="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg rounded-2xl p-5 h-48 flex flex-col justify-between transition-all cursor-pointer"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-4">
@@ -549,9 +557,17 @@ export default function Home() {
                           <LayoutDashboard className="w-5 h-5" />
                         </div>
                         {/* Three Dot Button */}
-                        <div className="relative" onClick={e => e.preventDefault()}>
+                        <div
+                          className="relative"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
                           <button
+                            type="button"
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               setActiveMenuCanvasId(prev => prev === canvas.id ? null : canvas.id);
                             }}
@@ -564,9 +580,23 @@ export default function Home() {
                           {/* Dropdown Overlay */}
                           {activeMenuCanvasId === canvas.id && (
                             <>
-                              <div className="fixed inset-0 z-20" onClick={() => setActiveMenuCanvasId(null)} />
-                              <div className="absolute right-0 mt-1 w-32 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                              <div
+                                className="fixed inset-0 z-20"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveMenuCanvasId(null);
+                                }}
+                              />
+                              <div
+                                className="absolute right-0 mt-1 w-32 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                              >
                                 <button
+                                  type="button"
                                   onClick={(e) => {
                                     startRenameCanvas(canvas, e);
                                   }}
@@ -576,7 +606,9 @@ export default function Home() {
                                   <span>Rename</span>
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
                                     deleteCanvas(canvas.id, e);
                                     setActiveMenuCanvasId(null);
@@ -634,20 +666,17 @@ export default function Home() {
                       ) : (
                         <div className="space-y-3">
                           <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{canvas.name}</h3>
-                          <button
-                            type="button"
-                            onClick={(e) => startRenameCanvas(canvas, e)}
-                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-colors"
-                            title="Rename canvas"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                            <span>Rename</span>
-                          </button>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between mt-4" onClick={e => e.preventDefault()}>
+                    <div
+                      className="flex items-center justify-between mt-4"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
                       <div className="flex items-center space-x-2 shrink-0">
                         <Folder className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <select
@@ -677,7 +706,7 @@ export default function Home() {
                         </span>
                       </div>
                     </div>
-                  </RouterLink>
+                  </div>
                 ))}
               </div>
             </div>

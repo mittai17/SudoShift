@@ -18,7 +18,9 @@ import {
   ChevronRight,
   FolderTree,
   MoreVertical,
-  Edit2
+  Edit2,
+  Check,
+  X
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../auth/AuthContext';
@@ -275,6 +277,28 @@ export default function Home() {
 
   const [renamingInFlight, setRenamingInFlight] = useState(false);
 
+  const startRenameCanvas = (canvas: CanvasMeta, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    setRenamingCanvasId(canvas.id);
+    setRenameValue(canvas.name);
+    setActiveMenuCanvasId(null);
+    setSetupError('');
+  };
+
+  const cancelRenameCanvas = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    setRenamingCanvasId(null);
+    setRenameValue('');
+  };
+
   const handleRenameCanvas = async (canvasId: string, e?: React.SyntheticEvent) => {
     if (e) {
       e.preventDefault();
@@ -285,27 +309,28 @@ export default function Home() {
 
     const trimmed = renameValue.trim();
     if (!trimmed) {
-      setRenamingCanvasId(null);
+      cancelRenameCanvas();
       return;
     }
 
     setRenamingInFlight(true);
+    const now = new Date().toISOString();
     try {
       const { error } = await supabase
         .from('canvases')
-        .update({ name: trimmed })
+        .update({ name: trimmed, updated_at: now })
         .eq('id', canvasId);
 
       if (error) throw error;
 
       setCanvases(current =>
-        current.map(c => (c.id === canvasId ? { ...c, name: trimmed } : c))
+        current.map(c => (c.id === canvasId ? { ...c, name: trimmed, updated_at: now } : c))
       );
     } catch (err: any) {
       setSetupError(err.message || 'Failed to rename canvas.');
     } finally {
       setRenamingInFlight(false);
-      setRenamingCanvasId(null);
+      cancelRenameCanvas();
     }
   };
 
@@ -543,10 +568,7 @@ export default function Home() {
                               <div className="absolute right-0 mt-1 w-32 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation();
-                                    setRenamingCanvasId(canvas.id);
-                                    setRenameValue(canvas.name);
-                                    setActiveMenuCanvasId(null);
+                                    startRenameCanvas(canvas, e);
                                   }}
                                   className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                 >
@@ -571,22 +593,57 @@ export default function Home() {
                       </div>
 
                       {renamingCanvasId === canvas.id ? (
-                        <div onClick={e => e.preventDefault()}>
+                        <form
+                          onSubmit={(e) => handleRenameCanvas(canvas.id, e)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          className="space-y-2"
+                        >
                           <input
                             type="text"
                             value={renameValue}
                             onChange={e => setRenameValue(e.target.value)}
-                            onBlur={(e) => handleRenameCanvas(canvas.id, e)}
                             onKeyDown={e => {
-                              if (e.key === 'Enter') handleRenameCanvas(canvas.id, e);
-                              if (e.key === 'Escape') setRenamingCanvasId(null);
+                              if (e.key === 'Escape') cancelRenameCanvas(e);
                             }}
                             autoFocus
-                            className="w-full bg-slate-50 border border-indigo-500 rounded-lg px-2.5 py-1 text-sm font-bold focus:outline-none text-slate-800"
+                            className="w-full bg-slate-50 border border-indigo-500 rounded-lg px-2.5 py-1.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-100 text-slate-800"
                           />
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => handleRenameCanvas(canvas.id, e)}
+                              disabled={renamingInFlight || !renameValue.trim()}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{renamingInFlight ? 'Saving' : 'Save'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelRenameCanvas}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-[11px] font-bold hover:bg-slate-50 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Cancel</span>
+                            </button>
+                          </div>
+                        </form>
                       ) : (
-                        <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{canvas.name}</h3>
+                        <div className="space-y-3">
+                          <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{canvas.name}</h3>
+                          <button
+                            type="button"
+                            onClick={(e) => startRenameCanvas(canvas, e)}
+                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-colors"
+                            title="Rename canvas"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Rename</span>
+                          </button>
+                        </div>
                       )}
                     </div>
 

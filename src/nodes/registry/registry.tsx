@@ -1,5 +1,4 @@
-
-import { SiNotion, SiGithub, SiSlack, SiAirtable, SiJira, SiZapier, SiMake, SiObsidian, SiGooglesheets, SiTrello, SiLinear, SiDiscord } from 'react-icons/si';
+import { SiNotion, SiGithub, SiSlack, SiAirtable, SiJira, SiZapier, SiMake, SiObsidian, SiGooglesheets, SiTrello, SiLinear, SiDiscord, SiGooglechrome } from 'react-icons/si';
 import { FaWindows } from 'react-icons/fa';
 import { TbPlugConnected } from 'react-icons/tb';
 import React from 'react';

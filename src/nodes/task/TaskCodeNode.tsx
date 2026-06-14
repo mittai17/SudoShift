@@ -55,7 +55,6 @@ const TaskCodeBody = ({ task, updateTask }: any) => {
 
       {/* Editor Area */}
       <div className={`relative border border-[#2a2b36] rounded-b-lg overflow-hidden ${isExpanded ? 'h-96' : 'h-48'} transition-all`}>
-        {/* Line numbers mock bg */}
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#13141c] border-r border-[#2a2b36]" />
         <textarea
           className="w-full h-full bg-[#1a1b23] text-gray-300 font-mono text-[11px] p-4 pl-10 focus:outline-none resize-none leading-relaxed"

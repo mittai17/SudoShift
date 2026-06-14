@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   FolderKanban, CheckSquare, CalendarDays, Flag,
-  Flame, Library, BookOpen, LayoutGrid, Target, Search, X, BrainCircuit
+  Flame, Library, BookOpen, LayoutGrid, Target, Search, X, BrainCircuit, Blocks
 } from 'lucide-react';
 import { NODE_REGISTRY } from '../../nodes/registry/nodeTypes';
 import { NodeDefinition } from '../../nodes/registry/types';
@@ -33,11 +33,12 @@ const TABS: TabConfig[] = [
   { id: 'habit',     label: 'Habit',     icon: <Flame className="w-4 h-4" />,          color: '#f97316' },
   { id: 'resource',  label: 'Resource',  icon: <Library className="w-4 h-4" />,        color: '#8b5cf6' },
   { id: 'note',      label: 'Note',      icon: <BookOpen className="w-4 h-4" />,       color: '#ff6d5a' },
+  { id: 'integrations', label: 'Integrations', icon: <Blocks className="w-4 h-4" />, color: '#ec4899' },
 ];
 
 const CATEGORY_LABELS: Record<NodeCategory, string> = {
   goal: 'Goal', project: 'Project', task: 'Task', event: 'Event',
-  milestone: 'Milestone', habit: 'Habit', resource: 'Resource', note: 'Note',
+  milestone: 'Milestone', habit: 'Habit', resource: 'Resource', note: 'Note', integrations: 'Integrations'
 };
 
 // ── Node Card ─────────────────────────────────────────────────────────────────
@@ -57,7 +58,7 @@ function NodeCard({ node, onDragStart, onClick }: {
       draggable
       title={node.id}
     >
-      <span className="text-base shrink-0 leading-none">{node.icon}</span>
+      <span className="text-base shrink-0 leading-none flex items-center justify-center w-5 h-5" style={{ color: node.color }}>{node.icon}</span>
       <span className="text-xs font-medium text-gray-300 leading-tight">{node.label}</span>
       <div className="ml-auto w-1.5 h-1.5 rounded-full shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: node.color }} />
     </div>

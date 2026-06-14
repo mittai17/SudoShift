@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Map, Target, Settings2, CheckSquare, Flag, Network, Zap, Clock, BrainCircuit } from 'lucide-react';
+import { Map, Target, Settings2, CheckSquare, Flag, Network, Zap, Clock, BrainCircuit, AlertCircle, Loader2, FileText } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const RoadmapMakerBody = ({ task, updateTask }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
   const topic = task.topic || '';
   const roadmapType = task.roadmapType || 'Learning';
   const difficulty = task.difficulty || 'Intermediate';
@@ -15,10 +16,34 @@ const RoadmapMakerBody = ({ task, updateTask }: any) => {
   const genHabits = task.genHabits || false;
   const autoConnect = task.autoConnect !== false;
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!topic) return;
+    setError('');
     setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 2000);
+
+    try {
+      const res = await fetch('/api/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'subtasks',
+          text: `Create a ${timeframe} ${difficulty} ${roadmapType} roadmap for: ${topic}`,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Generation failed');
+      }
+
+      const steps = Array.isArray(data.result) ? data.result : [data.result || ''];
+      updateTask({ roadmap: steps.join('\n') });
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate roadmap');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -82,12 +107,32 @@ const RoadmapMakerBody = ({ task, updateTask }: any) => {
          </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+          <span className="text-[10px] text-red-300">{error}</span>
+        </div>
+      )}
+
+      {/* Roadmap Result */}
+      {task.roadmap && (
+        <div className="bg-[#13141c] border border-[#2a2b36] rounded-lg overflow-hidden">
+          <div className="bg-[#1a1b23] text-[10px] text-gray-400 uppercase tracking-wider font-bold px-3 py-1.5 border-b border-[#2a2b36] flex items-center">
+            <Map className="w-3 h-3 mr-1 text-cyan-400" /> Generated Roadmap
+          </div>
+          <div className="p-3 text-[10px] text-gray-300 font-mono whitespace-pre-wrap max-h-[150px] overflow-y-auto">
+            {task.roadmap}
+          </div>
+        </div>
+      )}
+
       {/* Primary Actions */}
       <button 
          onClick={handleGenerate} disabled={isGenerating || !topic}
          className="w-full flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg py-2.5 transition-colors font-bold disabled:opacity-50 text-xs shadow-lg shadow-cyan-500/20"
       >
-         {isGenerating ? <><Map className="w-4 h-4 mr-2 animate-spin" /> Generating Roadmap...</> : <><Map className="w-4 h-4 mr-2" /> Generate Roadmap</>}
+         {isGenerating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating Roadmap...</> : <><Map className="w-4 h-4 mr-2" /> Generate Roadmap</>}
       </button>
 
       <button className="w-full flex items-center justify-center bg-[#13141c] hover:bg-[#1a1b23] text-gray-300 border border-[#2a2b36] rounded-lg py-1.5 transition-colors text-[10px]">

@@ -233,20 +233,63 @@ async function startServer() {
     }
   }
 
-  async function getActiveMembers(canvasId: string): Promise<any[]> {
+  const COLORS = ['#ef4444', '#f97316', '#84cc16', '#0ea5e9', '#8b5cf6', '#d946ef'];
+  const colorForUser = (id: string) => COLORS[id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % COLORS.length];
+
+  async function getActiveMembers(canvasId: string, supabase: any, socketIdToExclude?: string): Promise<any[]> {
     const sockets = await io.in(canvasId).fetchSockets();
-    const membersMap = new Map<string, any>();
+    const activeMap = new Map<string, any>();
     for (const s of sockets) {
-      if (s.data.user) {
-        membersMap.set(s.data.user.id, {
-          user: s.data.user,
-          role: s.data.role || 'editor',
-          isOnline: true,
-          socketId: s.id
+      if (s.id !== socketIdToExclude && s.data.user) {
+        activeMap.set(s.data.user.id, {
+          socketId: s.id,
+          cursor: s.data.cursor || { x: 0, y: 0 }
         });
       }
     }
-    return Array.from(membersMap.values());
+
+    if (canvasId === 'default' || !supabase) {
+      const members: any[] = [];
+      for (const s of sockets) {
+        if (s.id !== socketIdToExclude && s.data.user) {
+          members.push({
+            user: s.data.user,
+            role: s.data.role || 'owner',
+            isOnline: true,
+            socketId: s.id
+          });
+        }
+      }
+      return members;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('get_canvas_members', { check_canvas_id: canvasId });
+      if (error) {
+        console.warn(`Failed to fetch canvas members via RPC for ${canvasId}:`, error.message);
+        return [];
+      }
+
+      const allMembers = (data || []).map((m: any) => {
+        const active = activeMap.get(m.user_id);
+        return {
+          user: {
+            id: m.user_id,
+            email: m.email,
+            name: m.name,
+            color: colorForUser(m.user_id)
+          },
+          role: m.role,
+          isOnline: active !== undefined,
+          socketId: active ? active.socketId : undefined
+        };
+      });
+
+      return allMembers;
+    } catch (err) {
+      console.error(`Error in getActiveMembers for ${canvasId}:`, err);
+      return [];
+    }
   }
 
   const createUserSupabase = (accessToken: string) => {
@@ -333,7 +376,7 @@ async function startServer() {
       socket.emit("versions_updated", canvasState.versions);
 
       // 4. Fetch all active members in the room and broadcast
-      const members = await getActiveMembers(canvasId);
+      const members = await getActiveMembers(canvasId, socket.data.supabase);
       io.to(canvasId).emit("members_updated", members);
 
       // 5. Fetch all cursors in the room and emit to this socket, and broadcast cursor change
@@ -347,6 +390,37 @@ async function startServer() {
         .filter(c => c.user !== undefined);
 
       io.to(canvasId).emit("cursors_update", cursors);
+    });
+
+    socket.on("add_member", async ({ email, role }) => {
+      const canvasId = socket.data.canvasId;
+      if (canvasId && socket.data.role === 'owner') {
+        if (socket.data.supabase && canvasId !== 'default') {
+          // 1. Look up user by email
+          const { data: userData, error: userError } = await socket.data.supabase.rpc('get_user_by_email', { email_to_find: email });
+          if (userError || !userData) {
+            socket.emit("add_member_error", "User not found with this email.");
+            return;
+          }
+
+          // 2. Insert into canvas_members
+          const { error: insertError } = await socket.data.supabase
+            .from('canvas_members')
+            .insert({ canvas_id: canvasId, user_id: userData.id, role });
+          
+          if (insertError) {
+            console.warn("Failed to add canvas member:", insertError.message);
+            socket.emit("add_member_error", "User is already a member of this canvas.");
+            return;
+          }
+
+          // 3. Broadcast updated members list
+          const members = await getActiveMembers(canvasId, socket.data.supabase);
+          io.to(canvasId).emit("members_updated", members);
+          
+          socket.emit("add_member_success");
+        }
+      }
     });
 
     socket.on("update_member_role", async ({ userId, role }) => {
@@ -377,7 +451,7 @@ async function startServer() {
               }
             }
 
-            const members = await getActiveMembers(canvasId);
+            const members = await getActiveMembers(canvasId, socket.data.supabase);
             io.to(canvasId).emit("members_updated", members);
           }
         }
@@ -414,7 +488,7 @@ async function startServer() {
           }
 
           // Broadcast updated member list and cursor list
-          const members = await getActiveMembers(canvasId);
+          const members = await getActiveMembers(canvasId, socket.data.supabase);
           io.to(canvasId).emit("members_updated", members);
 
           const sockets = await io.in(canvasId).fetchSockets();
@@ -525,21 +599,11 @@ async function startServer() {
       
       if (canvasId) {
         // 1. Broadcast updated members (excluding this socket)
-        const activeSockets = await io.in(canvasId).fetchSockets();
-        const membersMap = new Map<string, any>();
-        for (const s of activeSockets) {
-          if (s.id !== socket.id && s.data.user) {
-            membersMap.set(s.data.user.id, {
-              user: s.data.user,
-              role: s.data.role || 'editor',
-              isOnline: true,
-              socketId: s.id
-            });
-          }
-        }
-        io.to(canvasId).emit("members_updated", Array.from(membersMap.values()));
+        const members = await getActiveMembers(canvasId, socket.data.supabase, socket.id);
+        io.to(canvasId).emit("members_updated", members);
 
         // 2. Broadcast updated cursors (excluding this socket)
+        const activeSockets = await io.in(canvasId).fetchSockets();
         const cursors = activeSockets
           .filter(s => s.id !== socket.id && s.data.user !== undefined)
           .map(s => ({

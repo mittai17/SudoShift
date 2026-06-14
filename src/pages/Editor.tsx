@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -123,6 +123,11 @@ function FlowEditor() {
   const [members, setMembers] = useState<any[]>([]);
   const [membersModalOpen, setMembersModalOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('editor');
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jsonTransportOpen, setJsonTransportOpen] = useState(false);
@@ -178,6 +183,18 @@ function FlowEditor() {
       newSocket.on("new_message", (msg) => setMessages(prev => [...prev, msg]));
       newSocket.on("versions_updated", (vs) => setVersions(vs || []));
       newSocket.on("members_updated", (m) => setMembers(m || []));
+      newSocket.on("add_member_success", () => {
+        setInviteSuccess(true);
+        setInviteEmail('');
+        setInviteError('');
+        setIsInviting(false);
+        setTimeout(() => setInviteSuccess(false), 3000);
+      });
+      newSocket.on("add_member_error", (err) => {
+        setInviteError(err);
+        setInviteSuccess(false);
+        setIsInviting(false);
+      });
       newSocket.on("connect_error", (error) => {
         console.error("Collaboration connection failed:", error.message);
       });
@@ -395,6 +412,15 @@ function FlowEditor() {
     if (socket && window.confirm("Are you sure you want to remove this member from the canvas?")) {
       socket.emit("kick_member", userId);
     }
+  };
+
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim() || !socket) return;
+    setIsInviting(true);
+    setInviteError('');
+    setInviteSuccess(false);
+    socket.emit("add_member", { email: inviteEmail.trim().toLowerCase(), role: inviteRole });
   };
 
   const handleRestoreVersion = (versionId: string) => {
@@ -676,85 +702,238 @@ function FlowEditor() {
 
       {/* Members Modal */}
       {membersModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h3 className="font-semibold text-lg text-gray-900 flex items-center">
-                <Users className="w-5 h-5 mr-2 text-[#6366f1]" />
-                Manage Members
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-100 animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900">Share this canvas</h3>
+                  <p className="text-xs text-slate-500">Collaborate with others in real-time</p>
+                </div>
+              </div>
               <button
-                onClick={() => setMembersModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={() => {
+                  setMembersModalOpen(false);
+                  setInviteEmail('');
+                  setInviteError('');
+                  setInviteSuccess(false);
+                }}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all duration-200 active:scale-95"
               >
-                &times;
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6">
-              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                {members.map(member => {
-                  const isCurrentUser = member.user.id === currentUser.id;
-                  const currentUserRole = members.find((m: any) => m.user.id === currentUser.id)?.role;
-                  const canManage = currentUserRole === 'owner' && !isCurrentUser;
-
-                  return (
-                    <div key={member.user.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-gray-200 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold shadow-sm relative"
-                          style={{ backgroundColor: member.user.color, color: 'white' }}
-                        >
-                          {member.user.name.substring(0, 1).toUpperCase()}
-                          <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${member.isOnline ? 'bg-green-500' : 'bg-gray-300'}`} />
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-900 text-sm">
-                              {member.user.name} {isCurrentUser && <span className="text-gray-400 font-normal">(You)</span>}
-                            </span>
-                            {member.role === 'owner' && (
-                              <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded uppercase">Owner</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-500">{member.isOnline ? 'Active now' : 'Offline'}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        {canManage ? (
-                          <select
-                            value={member.role}
-                            onChange={(e) => handleUpdateRole(member.user.id, e.target.value)}
-                            className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded focus:ring-[#6366f1] focus:border-[#6366f1] p-1.5"
-                          >
-                            <option value="editor">Editor</option>
-                            <option value="viewer">Viewer</option>
-                          </select>
-                        ) : (
-                          member.role !== 'owner' && <span className="text-xs text-gray-500 capitalize">{member.role}</span>
-                        )}
-
-                        {canManage && (
-                          <button
-                            onClick={() => handleKickMember(member.user.id)}
-                            className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-md transition-colors"
-                            title="Remove member"
-                          >
-                            <span className="text-xs font-medium">Remove</span>
-                          </button>
-                        )}
+            <div className="p-6 flex-1 overflow-y-auto max-h-[70vh] space-y-6">
+              {/* Invite Form (Only visible to Owners) */}
+              {myRole === 'owner' && canvasId !== 'default' && (
+                <div className="space-y-2.5">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <UserPlus className="w-3.5 h-3.5 text-slate-500" />
+                    Invite new member
+                  </h4>
+                  <form onSubmit={handleAddMember} className="flex items-stretch gap-2">
+                    <div className="flex-1 relative flex items-center bg-slate-50 border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 rounded-xl px-3.5 transition-all">
+                      <Mail className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
+                      <input
+                        type="email"
+                        required
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder="Enter email address..."
+                        className="w-full bg-transparent border-0 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 p-0 h-[42px]"
+                      />
+                    </div>
+                    
+                    <div className="relative shrink-0">
+                      <select
+                        value={inviteRole}
+                        onChange={(e) => setInviteRole(e.target.value)}
+                        className="appearance-none bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-xl pl-3.5 pr-9 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer h-[44px] min-w-[110px]"
+                      >
+                        <option value="editor">Can edit</option>
+                        <option value="viewer">Can view</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                        </svg>
                       </div>
                     </div>
-                  );
-                })}
+
+                    <button
+                      type="submit"
+                      disabled={isInviting || !inviteEmail.trim()}
+                      className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:scale-100 shrink-0 h-[44px] flex items-center justify-center"
+                    >
+                      {isInviting ? 'Inviting...' : 'Invite'}
+                    </button>
+                  </form>
+                  {inviteError && (
+                    <p className="text-red-500 text-xs font-semibold flex items-center gap-1.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" /> {inviteError}
+                    </p>
+                  )}
+                  {inviteSuccess && (
+                    <p className="text-emerald-600 text-xs font-semibold flex items-center gap-1.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" /> Member added successfully!
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Members List */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  People with access ({members.length})
+                </h4>
+                
+                <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                  {members.map(member => {
+                    const isCurrentUser = member.user.id === currentUser.id;
+                    const canManage = myRole === 'owner' && !isCurrentUser && canvasId !== 'default';
+
+                    return (
+                      <div
+                        key={member.user.id}
+                        className="flex items-center justify-between p-3.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100/80 rounded-2xl transition-all duration-200"
+                      >
+                        <div className="flex items-center space-x-3.5 min-w-0">
+                          <div
+                            className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold shadow-sm relative shrink-0"
+                            style={{ backgroundColor: member.user.color, color: 'white' }}
+                          >
+                            {member.user.name.substring(0, 1).toUpperCase()}
+                            <div
+                              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white shadow-sm ${
+                                member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                              }`}
+                              title={member.isOnline ? 'Online' : 'Offline'}
+                            />
+                          </div>
+                          
+                          <div className="min-w-0">
+                            <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+                              <span className="font-bold text-slate-800 text-sm truncate max-w-[160px]">
+                                {member.user.name}
+                              </span>
+                              {isCurrentUser && (
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  (You)
+                                </span>
+                              )}
+                              {member.role === 'owner' && (
+                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-extrabold rounded-md uppercase tracking-wider border border-indigo-100">
+                                  Owner
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 truncate max-w-[190px] mt-0.5">{member.user.email}</p>
+                            <p className="text-[10px] font-bold flex items-center gap-1 mt-0.5">
+                              {member.isOnline ? (
+                                <span className="text-emerald-600 flex items-center gap-1">
+                                  <span className="w-1 h-1 rounded-full bg-emerald-500" /> Active now
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">Offline</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center shrink-0">
+                          {canManage ? (
+                            <div className="relative">
+                              <select
+                                value={member.role}
+                                onChange={(e) => {
+                                  if (e.target.value === 'remove') {
+                                    handleKickMember(member.user.id);
+                                  } else {
+                                    handleUpdateRole(member.user.id, e.target.value);
+                                  }
+                                }}
+                                className="appearance-none bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm"
+                              >
+                                <option value="editor">Can edit</option>
+                                <option value="viewer">Can view</option>
+                                <option value="remove" className="text-red-600 font-bold">Remove member</option>
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                </svg>
+                              </div>
+                            </div>
+                          ) : (
+                            member.role !== 'owner' && (
+                              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider px-2.5 py-1 bg-slate-100 border border-slate-200/60 rounded-lg">
+                                {member.role === 'editor' ? 'Can edit' : 'Can view'}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Collaboration Link Section */}
+              <div className="space-y-2.5 pt-2">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Link className="w-3.5 h-3.5" />
+                  Collaboration link
+                </h4>
+                <div className="flex items-center justify-between p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/40">
+                  <div className="flex items-center space-x-3 min-w-0 mr-4">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100/50">
+                      <Globe className="w-4.5 h-4.5 text-indigo-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-800">Anyone with the link</p>
+                      <p className="text-[11px] text-slate-500">Can view and edit this workspace</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleShare}
+                    className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border shrink-0 ${
+                      copied
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-none'
+                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm hover:shadow active:scale-95'
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Link Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Code className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Copy Link</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
               <button
-                onClick={() => setMembersModalOpen(false)}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => {
+                  setMembersModalOpen(false);
+                  setInviteEmail('');
+                  setInviteError('');
+                  setInviteSuccess(false);
+                }}
+                className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95"
               >
                 Close
               </button>

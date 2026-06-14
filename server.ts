@@ -30,6 +30,10 @@ async function startServer() {
     try {
       const pubClient = createRedisClient({ url: process.env.REDIS_URL });
       const subClient = pubClient.duplicate();
+      
+      pubClient.on('error', (err) => console.error('Redis Pub Client Error', err));
+      subClient.on('error', (err) => console.error('Redis Sub Client Error', err));
+
       await Promise.all([pubClient.connect(), subClient.connect()]);
       io.adapter(createAdapter(pubClient, subClient));
       console.log("Socket.IO Redis adapter enabled.");

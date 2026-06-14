@@ -2,7 +2,7 @@ import express from "express";
 import "dotenv/config";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
+// vite is only used in development — imported dynamically below to avoid crashing in production
 import { GoogleGenAI } from "@google/genai";
 import { YoutubeTranscript } from 'youtube-transcript';
 import { randomUUID } from "crypto";
@@ -952,6 +952,7 @@ The connections array should list the node names in order of the workflow flow.`
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

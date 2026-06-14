@@ -804,7 +804,7 @@ async function startServer() {
   // ── AI Dump Workflow Architect ──────────────────────────────────────────────
   app.post("/api/ai-dump", async (req, res) => {
     try {
-      const apiKey = process.env.VITE_AI_DUMP_GEMINI_KEY;
+      const apiKey = process.env.VITE_AI_DUMP_GEMINI_KEY || process.env.GEMINI_API_KEY;
       if (!apiKey) {
         return res.status(500).json({ error: "AI Dump API key not configured." });
       }

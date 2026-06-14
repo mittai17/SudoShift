@@ -17,13 +17,14 @@ async function startServer() {
   const io = new Server(server, {
     cors: { origin: "*" }
   });
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
   const baseSupabase = supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
 
+  let redisClient: any = null;
   if (process.env.REDIS_URL) {
     try {
       const pubClient = createRedisClient({ url: process.env.REDIS_URL });
@@ -31,6 +32,7 @@ async function startServer() {
       await Promise.all([pubClient.connect(), subClient.connect()]);
       io.adapter(createAdapter(pubClient, subClient));
       console.log("Socket.IO Redis adapter enabled.");
+      redisClient = pubClient;
     } catch (error) {
       console.warn("Redis adapter unavailable; continuing with single-process collaboration.", error);
     }
@@ -38,21 +40,213 @@ async function startServer() {
 
   app.use(express.json());
 
-  // Socket.io real-time collaboration Logic
-  // Using a simple in-memory store for canvases
-  const canvases = new Map<string, {
-    nodes: any[],
-    edges: any[],
-    versions: any[],
-    members: Record<string, { role: 'owner' | 'editor' | 'viewer', user: any, isOnline: boolean, socketId?: string }>
-  }>();
-
-  // Also store chat messages per canvas
-  const canvasChats = new Map<string, any[]>();
-
-  // Track cursor positions
-  const canvasCursors = new Map<string, Map<string, any>>();
+  // Stateless Collaboration Logic (Redis with local in-memory fallback)
+  const localCanvases = new Map<string, { nodes: any[], edges: any[], versions: any[] }>();
+  const localChats = new Map<string, any[]>();
   const saveTimers = new Map<string, NodeJS.Timeout>();
+
+  async function loadOrCreateCanvas(canvasId: string, supabase: any, safeUser: any): Promise<{ nodes: any[], edges: any[], versions: any[] }> {
+    if (redisClient) {
+      try {
+        const cached = await redisClient.get(`canvas:state:${canvasId}`);
+        if (cached) return JSON.parse(cached);
+      } catch (err) {
+        console.warn(`Redis get failed for canvas ${canvasId}:`, err);
+      }
+    } else {
+      const cached = localCanvases.get(canvasId);
+      if (cached) return cached;
+    }
+
+    let dbCanvas: any = null;
+    if (supabase && canvasId !== 'default') {
+      let result = await supabase
+        .from('canvases')
+        .select('nodes, edges, versions')
+        .eq('id', canvasId)
+        .maybeSingle();
+
+      if (!result.data) {
+        // Not a member yet or canvas doesn't exist. Try to join.
+        await supabase
+          .from('canvas_members')
+          .insert({ canvas_id: canvasId, user_id: safeUser.id, role: 'editor' });
+
+        // Try reading it again now that membership is established
+        result = await supabase
+          .from('canvases')
+          .select('nodes, edges, versions')
+          .eq('id', canvasId)
+          .maybeSingle();
+      }
+
+      if (result.error) {
+        console.warn(`Unable to load canvas ${canvasId} from Supabase:`, result.error.message);
+      }
+      dbCanvas = result.data;
+    }
+
+    const state = {
+      nodes: dbCanvas?.nodes || [],
+      edges: dbCanvas?.edges || [],
+      versions: dbCanvas?.versions || [],
+    };
+
+    // Cache the state
+    if (redisClient) {
+      try {
+        await redisClient.setEx(`canvas:state:${canvasId}`, 86400, JSON.stringify(state));
+      } catch (err) {
+        console.warn(`Redis set failed for canvas ${canvasId}:`, err);
+      }
+    } else {
+      localCanvases.set(canvasId, state);
+    }
+
+    return state;
+  }
+
+  async function getCanvasState(canvasId: string, supabase: any): Promise<{ nodes: any[], edges: any[], versions: any[] }> {
+    if (redisClient) {
+      try {
+        const cached = await redisClient.get(`canvas:state:${canvasId}`);
+        if (cached) return JSON.parse(cached);
+      } catch (err) {
+        console.warn(`Redis get failed for canvas ${canvasId}:`, err);
+      }
+    } else {
+      const cached = localCanvases.get(canvasId);
+      if (cached) return cached;
+    }
+
+    // Fall back to loading
+    return loadOrCreateCanvas(canvasId, supabase, { id: null });
+  }
+
+  async function setCanvasState(canvasId: string, updates: { nodes?: any[], edges?: any[], versions?: any[] }, supabase: any) {
+    const state = await getCanvasState(canvasId, supabase);
+    if (updates.nodes !== undefined) state.nodes = updates.nodes;
+    if (updates.edges !== undefined) state.edges = updates.edges;
+    if (updates.versions !== undefined) state.versions = updates.versions;
+
+    if (redisClient) {
+      try {
+        await redisClient.setEx(`canvas:state:${canvasId}`, 86400, JSON.stringify(state));
+      } catch (err) {
+        console.warn(`Redis set failed for canvas ${canvasId}:`, err);
+      }
+    } else {
+      localCanvases.set(canvasId, state);
+    }
+
+    if (!supabase || canvasId === 'default') return;
+
+    const existing = saveTimers.get(canvasId);
+    if (existing) clearTimeout(existing);
+
+    saveTimers.set(canvasId, setTimeout(async () => {
+      const latestState = await getCanvasState(canvasId, supabase);
+      const { error } = await supabase
+        .from('canvases')
+        .update({
+          nodes: latestState.nodes,
+          edges: latestState.edges,
+          versions: latestState.versions,
+        })
+        .eq('id', canvasId);
+
+      if (error) {
+        console.warn(`Failed to persist canvas ${canvasId} to Supabase:`, error.message);
+      }
+      saveTimers.delete(canvasId);
+    }, 600));
+  }
+
+  async function getCanvasChat(canvasId: string, supabase: any): Promise<any[]> {
+    if (canvasId === 'default') {
+      if (redisClient) {
+        try {
+          const cached = await redisClient.get(`canvas:chat:default`);
+          if (cached) return JSON.parse(cached);
+        } catch (err) {
+          console.warn("Redis get default chat failed:", err);
+        }
+      } else {
+        return localChats.get('default') || [];
+      }
+      return [];
+    }
+
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('canvas_messages')
+        .select('id, text, user_snapshot, created_at')
+        .eq('canvas_id', canvasId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) {
+        console.warn(`Unable to load chat for ${canvasId}:`, error.message);
+        return [];
+      }
+      return (data || []).map((msg: any) => ({
+        id: msg.id,
+        text: msg.text,
+        user: msg.user_snapshot,
+        timestamp: msg.created_at,
+      }));
+    }
+    return [];
+  }
+
+  async function addCanvasChatMessage(canvasId: string, msgObj: any, supabase: any) {
+    if (canvasId === 'default') {
+      const messages = await getCanvasChat('default', null);
+      messages.push(msgObj);
+      if (messages.length > 100) messages.shift();
+
+      if (redisClient) {
+        try {
+          await redisClient.setEx(`canvas:chat:default`, 86400, JSON.stringify(messages));
+        } catch (err) {
+          console.warn("Redis set default chat failed:", err);
+        }
+      } else {
+        localChats.set('default', messages);
+      }
+      return;
+    }
+
+    if (supabase) {
+      const { error } = await supabase.from('canvas_messages').insert({
+        id: msgObj.id,
+        canvas_id: canvasId,
+        user_id: msgObj.user.id,
+        user_snapshot: msgObj.user,
+        text: msgObj.text,
+        created_at: msgObj.timestamp,
+      });
+      if (error) {
+        console.warn(`Failed to save chat message for ${canvasId}:`, error.message);
+      }
+    }
+  }
+
+  async function getActiveMembers(canvasId: string): Promise<any[]> {
+    const sockets = await io.in(canvasId).fetchSockets();
+    const membersMap = new Map<string, any>();
+    for (const s of sockets) {
+      if (s.data.user) {
+        membersMap.set(s.data.user.id, {
+          user: s.data.user,
+          role: s.data.role || 'editor',
+          isOnline: true,
+          socketId: s.id
+        });
+      }
+    }
+    return Array.from(membersMap.values());
+  }
 
   const createUserSupabase = (accessToken: string) => {
     if (!supabaseUrl || !supabaseAnonKey) return null;
@@ -63,31 +257,6 @@ async function startServer() {
         },
       },
     });
-  };
-
-  const persistCanvasState = (canvasId: string, supabase: any) => {
-    if (!supabase || canvasId === 'default') return;
-    const canvas = canvases.get(canvasId);
-    if (!canvas) return;
-
-    const existing = saveTimers.get(canvasId);
-    if (existing) clearTimeout(existing);
-
-    saveTimers.set(canvasId, setTimeout(async () => {
-      const { error } = await supabase
-        .from('canvases')
-        .update({
-          nodes: canvas.nodes,
-          edges: canvas.edges,
-          versions: canvas.versions,
-        })
-        .eq('id', canvasId);
-
-      if (error) {
-        console.warn(`Failed to persist canvas ${canvasId}:`, error.message);
-      }
-      saveTimers.delete(canvasId);
-    }, 600));
   };
 
   io.use(async (socket, next) => {
@@ -123,136 +292,92 @@ async function startServer() {
       };
       socket.data.user = safeUser;
 
-      if (!canvases.has(canvasId)) {
-        let dbCanvas: any = null;
-        if (socket.data.supabase && canvasId !== 'default') {
-          let result = await socket.data.supabase
+      // 1. Fetch canvas state
+      const canvasState = await loadOrCreateCanvas(canvasId, socket.data.supabase, safeUser);
+
+      // 2. Fetch/Determine role
+      let role: 'owner' | 'editor' | 'viewer' = 'editor';
+      if (socket.data.supabase && canvasId !== 'default') {
+        const { data } = await socket.data.supabase
+          .from('canvas_members')
+          .select('role')
+          .eq('canvas_id', canvasId)
+          .eq('user_id', safeUser.id)
+          .maybeSingle();
+        if (data) {
+          role = data.role;
+        } else {
+          const { data: canvasData } = await socket.data.supabase
             .from('canvases')
-            .select('nodes, edges, versions')
+            .select('owner_id')
             .eq('id', canvasId)
             .maybeSingle();
-
-          if (!result.data) {
-            await socket.data.supabase
-              .from('canvas_members')
-              .insert({ canvas_id: canvasId, user_id: safeUser.id, role: 'editor' });
-
-            result = await socket.data.supabase
-              .from('canvases')
-              .select('nodes, edges, versions')
-              .eq('id', canvasId)
-              .maybeSingle();
+          if (canvasData && canvasData.owner_id === safeUser.id) {
+            role = 'owner';
           }
-
-          if (result.error) {
-            console.warn(`Unable to load canvas ${canvasId} from Supabase:`, result.error.message);
-          }
-          dbCanvas = result.data;
         }
-
-        canvases.set(canvasId, {
-          nodes: dbCanvas?.nodes || [],
-          edges: dbCanvas?.edges || [],
-          versions: dbCanvas?.versions || [],
-          members: {},
-        });
+      } else if (canvasId === 'default') {
+        role = 'owner';
       }
-      if (!canvasChats.has(canvasId)) {
-        if (socket.data.supabase && canvasId !== 'default') {
-          const { data, error } = await socket.data.supabase
-            .from('canvas_messages')
-            .select('id, text, user_snapshot, created_at')
-            .eq('canvas_id', canvasId)
-            .order('created_at', { ascending: true })
-            .limit(100);
+      socket.data.role = role;
 
-          if (error) {
-            console.warn(`Unable to load chat for ${canvasId}:`, error.message);
-            canvasChats.set(canvasId, []);
-          } else {
-            canvasChats.set(canvasId, (data || []).map((msg: any) => ({
-              id: msg.id,
-              text: msg.text,
-              user: msg.user_snapshot,
-              timestamp: msg.created_at,
-            })));
-          }
-        } else {
-          canvasChats.set(canvasId, []);
-        }
-      }
-      if (!canvasCursors.has(canvasId)) {
-        canvasCursors.set(canvasId, new Map());
-      }
+      // Initialize cursor position on this socket
+      socket.data.cursor = { x: 0, y: 0 };
 
-      const canvas = canvases.get(canvasId)!;
+      // 3. Emit initial state to this socket
+      socket.emit("init_canvas", canvasState);
 
-      // Determine if a user is joining for the first time
-      if (!canvas.members[safeUser.id]) {
-        // First member is automatically the owner
-        const isFirst = Object.keys(canvas.members).length === 0;
-        let role: 'owner' | 'editor' | 'viewer' = isFirst ? 'owner' : 'editor';
-        if (socket.data.supabase && canvasId !== 'default') {
-          const { data } = await socket.data.supabase
-            .from('canvas_members')
-            .select('role')
-            .eq('canvas_id', canvasId)
-            .eq('user_id', safeUser.id)
-            .maybeSingle();
-          role = data?.role || role;
-        }
+      const messages = await getCanvasChat(canvasId, socket.data.supabase);
+      socket.emit("init_chat", messages);
+      socket.emit("versions_updated", canvasState.versions);
 
-        canvas.members[safeUser.id] = {
-          role: isFirst ? 'owner' : 'editor',
-          user: safeUser,
-          isOnline: true,
-          socketId: socket.id
-        };
-        canvas.members[safeUser.id].role = role;
-      } else {
-        canvas.members[safeUser.id].isOnline = true;
-        canvas.members[safeUser.id].socketId = socket.id;
-        // Update user properties in case they changed
-        canvas.members[safeUser.id].user = safeUser;
-      }
+      // 4. Fetch all active members in the room and broadcast
+      const members = await getActiveMembers(canvasId);
+      io.to(canvasId).emit("members_updated", members);
 
-      const cursorsMap = canvasCursors.get(canvasId)!;
-      cursorsMap.set(socket.id, { user: safeUser, position: { x: 0, y: 0 } });
+      // 5. Fetch all cursors in the room and emit to this socket, and broadcast cursor change
+      const sockets = await io.in(canvasId).fetchSockets();
+      const cursors = sockets
+        .map(s => ({
+          id: s.id,
+          user: s.data.user,
+          position: s.data.cursor || { x: 0, y: 0 }
+        }))
+        .filter(c => c.user !== undefined);
 
-      // Send current state
-      socket.emit("init_canvas", canvas);
-      socket.emit("init_chat", canvasChats.get(canvasId));
-      socket.emit("versions_updated", canvas.versions);
-
-      // Broadcast updated members and cursors
-      io.to(canvasId).emit("members_updated", Object.values(canvas.members));
-      io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
+      io.to(canvasId).emit("cursors_update", cursors);
     });
 
     socket.on("update_member_role", async ({ userId, role }) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
-        // Check if requester is owner
-        const requesterId = socket.data.user.id;
-        if (canvas.members[requesterId]?.role === 'owner') {
-          if (canvas.members[userId]) {
-            // Ensure we don't remove the last owner unless it's handled, but for simplicity:
-            if (userId !== requesterId) {
-              if (socket.data.supabase && canvasId !== 'default') {
-                const { error } = await socket.data.supabase
-                  .from('canvas_members')
-                  .update({ role })
-                  .eq('canvas_id', canvasId)
-                  .eq('user_id', userId);
-                if (error) {
-                  console.warn(`Failed to update role for ${userId}:`, error.message);
-                  return;
-                }
+      if (canvasId) {
+        const requesterId = socket.data.user?.id;
+        const requesterRole = socket.data.role;
+
+        if (requesterRole === 'owner') {
+          if (userId !== requesterId) {
+            if (socket.data.supabase && canvasId !== 'default') {
+              const { error } = await socket.data.supabase
+                .from('canvas_members')
+                .update({ role })
+                .eq('canvas_id', canvasId)
+                .eq('user_id', userId);
+              if (error) {
+                console.warn(`Failed to update role for ${userId}:`, error.message);
+                return;
               }
-              canvas.members[userId].role = role;
-              io.to(canvasId).emit("members_updated", Object.values(canvas.members));
             }
+
+            // Update role on any active sockets for this user
+            const targetSockets = await io.in(canvasId).fetchSockets();
+            for (const s of targetSockets) {
+              if (s.data.user?.id === userId) {
+                s.data.role = role;
+              }
+            }
+
+            const members = await getActiveMembers(canvasId);
+            io.to(canvasId).emit("members_updated", members);
           }
         }
       }
@@ -260,40 +385,46 @@ async function startServer() {
 
     socket.on("kick_member", async (userId) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
-        const requesterId = socket.data.user.id;
-        if (canvas.members[requesterId]?.role === 'owner') {
-          if (canvas.members[userId] && userId !== requesterId) {
-            const targetSocketId = canvas.members[userId].socketId;
-            if (socket.data.supabase && canvasId !== 'default') {
-              const { error } = await socket.data.supabase
-                .from('canvas_members')
-                .delete()
-                .eq('canvas_id', canvasId)
-                .eq('user_id', userId);
-              if (error) {
-                console.warn(`Failed to remove member ${userId}:`, error.message);
-                return;
-              }
-            }
-            delete canvas.members[userId];
-            if (targetSocketId) {
-              const targetSocket = io.sockets.sockets.get(targetSocketId);
-              if (targetSocket) {
-                targetSocket.emit("kicked");
-                targetSocket.leave(canvasId);
-              }
-            }
-            io.to(canvasId).emit("members_updated", Object.values(canvas.members));
+      if (canvasId) {
+        const requesterId = socket.data.user?.id;
+        const requesterRole = socket.data.role;
 
-            // Also clean up cursor
-            const cursorsMap = canvasCursors.get(canvasId);
-            if (cursorsMap && targetSocketId) {
-              cursorsMap.delete(targetSocketId);
-              io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
+        if (requesterRole === 'owner' && userId !== requesterId) {
+          if (socket.data.supabase && canvasId !== 'default') {
+            const { error } = await socket.data.supabase
+              .from('canvas_members')
+              .delete()
+              .eq('canvas_id', canvasId)
+              .eq('user_id', userId);
+            if (error) {
+              console.warn(`Failed to remove member ${userId}:`, error.message);
+              return;
             }
           }
+
+          // Disconnect all sockets belonging to the kicked user in this room
+          const targetSockets = await io.in(canvasId).fetchSockets();
+          for (const s of targetSockets) {
+            if (s.data.user?.id === userId) {
+              s.emit("kicked");
+              s.leave(canvasId);
+              s.disconnect(true);
+            }
+          }
+
+          // Broadcast updated member list and cursor list
+          const members = await getActiveMembers(canvasId);
+          io.to(canvasId).emit("members_updated", members);
+
+          const sockets = await io.in(canvasId).fetchSockets();
+          const cursors = sockets
+            .map(s => ({
+              id: s.id,
+              user: s.data.user,
+              position: s.data.cursor || { x: 0, y: 0 }
+            }))
+            .filter(c => c.user !== undefined);
+          io.to(canvasId).emit("cursors_update", cursors);
         }
       }
     });
@@ -301,129 +432,122 @@ async function startServer() {
     socket.on("cursor_move", ({ x, y }) => {
       const canvasId = socket.data.canvasId;
       if (canvasId) {
-        const cursorsMap = canvasCursors.get(canvasId);
-        if (cursorsMap && cursorsMap.has(socket.id)) {
-          cursorsMap.get(socket.id)!.position = { x, y };
-          // Throttle broadcast slightly in a real app, but here simple broadcast
-          socket.to(canvasId).emit("cursor_moved", { id: socket.id, position: { x, y } });
-        }
+        socket.data.cursor = { x, y };
+        socket.to(canvasId).emit("cursor_moved", { id: socket.id, position: { x, y } });
       }
     });
 
-    socket.on("update_nodes", (nodes) => {
+    socket.on("update_nodes", async (nodes) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
-        const role = canvas.members[socket.data.user.id]?.role;
-        if (role === 'viewer') return;
-        canvases.get(canvasId)!.nodes = nodes;
-        persistCanvasState(canvasId, socket.data.supabase);
+      if (canvasId && socket.data.role !== 'viewer') {
+        await setCanvasState(canvasId, { nodes }, socket.data.supabase);
         socket.to(canvasId).emit("nodes_updated", nodes);
       }
     });
 
-    socket.on("update_edges", (edges) => {
+    socket.on("update_edges", async (edges) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
-        const role = canvas.members[socket.data.user.id]?.role;
-        if (role === 'viewer') return;
-        canvases.get(canvasId)!.edges = edges;
-        persistCanvasState(canvasId, socket.data.supabase);
+      if (canvasId && socket.data.role !== 'viewer') {
+        await setCanvasState(canvasId, { edges }, socket.data.supabase);
         socket.to(canvasId).emit("edges_updated", edges);
       }
     });
 
-    socket.on("save_version", (versionName) => {
+    socket.on("save_version", async (versionName) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
+      if (canvasId && socket.data.role !== 'viewer') {
+        const state = await getCanvasState(canvasId, socket.data.supabase);
         const newVersion = {
           id: randomUUID(),
           timestamp: new Date().toISOString(),
           author: socket.data.user,
-          name: versionName || `Version ${canvas.versions.length + 1}`,
-          nodes: JSON.parse(JSON.stringify(canvas.nodes)),
-          edges: JSON.parse(JSON.stringify(canvas.edges))
+          name: versionName || `Version ${state.versions.length + 1}`,
+          nodes: JSON.parse(JSON.stringify(state.nodes)),
+          edges: JSON.parse(JSON.stringify(state.edges))
         };
-        canvas.versions = [newVersion, ...canvas.versions];
-        persistCanvasState(canvasId, socket.data.supabase);
-        io.to(canvasId).emit("versions_updated", canvas.versions);
+        const updatedVersions = [newVersion, ...state.versions];
+        await setCanvasState(canvasId, { versions: updatedVersions }, socket.data.supabase);
+        io.to(canvasId).emit("versions_updated", updatedVersions);
       }
     });
 
-    socket.on("restore_version", (versionId) => {
+    socket.on("restore_version", async (versionId) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvases.has(canvasId)) {
-        const canvas = canvases.get(canvasId)!;
-        const version = canvas.versions.find((v: any) => v.id === versionId);
+      if (canvasId && socket.data.role !== 'viewer') {
+        const state = await getCanvasState(canvasId, socket.data.supabase);
+        const version = state.versions.find((v: any) => v.id === versionId);
         if (version) {
-          canvas.nodes = JSON.parse(JSON.stringify(version.nodes));
-          canvas.edges = JSON.parse(JSON.stringify(version.edges));
-          io.to(canvasId).emit("nodes_updated", canvas.nodes);
-          io.to(canvasId).emit("edges_updated", canvas.edges);
-          // Add a restore marker
+          const restoredNodes = JSON.parse(JSON.stringify(version.nodes));
+          const restoredEdges = JSON.parse(JSON.stringify(version.edges));
+          
+          // Create restore version marker
           const newVersion = {
             id: randomUUID(),
             timestamp: new Date().toISOString(),
             author: socket.data.user,
             name: `Restored to ${version.name}`,
-            nodes: JSON.parse(JSON.stringify(canvas.nodes)),
-            edges: JSON.parse(JSON.stringify(canvas.edges))
+            nodes: restoredNodes,
+            edges: restoredEdges
           };
-          canvas.versions = [newVersion, ...canvas.versions];
-          persistCanvasState(canvasId, socket.data.supabase);
-          io.to(canvasId).emit("versions_updated", canvas.versions);
+          const updatedVersions = [newVersion, ...state.versions];
+          
+          await setCanvasState(canvasId, {
+            nodes: restoredNodes,
+            edges: restoredEdges,
+            versions: updatedVersions
+          }, socket.data.supabase);
+
+          io.to(canvasId).emit("nodes_updated", restoredNodes);
+          io.to(canvasId).emit("edges_updated", restoredEdges);
+          io.to(canvasId).emit("versions_updated", updatedVersions);
         }
       }
     });
 
     socket.on("send_message", async (message) => {
       const canvasId = socket.data.canvasId;
-      if (canvasId && canvasChats.has(canvasId)) {
+      if (canvasId) {
         const msgObj = {
           id: randomUUID(),
           user: socket.data.user,
           text: message,
           timestamp: new Date().toISOString()
         };
-        if (socket.data.supabase && canvasId !== 'default') {
-          const { error } = await socket.data.supabase.from('canvas_messages').insert({
-            id: msgObj.id,
-            canvas_id: canvasId,
-            user_id: socket.data.user.id,
-            user_snapshot: socket.data.user,
-            text: message,
-            created_at: msgObj.timestamp,
-          });
-          if (error) {
-            console.warn(`Failed to save chat message for ${canvasId}:`, error.message);
-          }
-        }
-        canvasChats.get(canvasId)!.push(msgObj);
+        await addCanvasChatMessage(canvasId, msgObj, socket.data.supabase);
         io.to(canvasId).emit("new_message", msgObj);
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       const canvasId = socket.data.canvasId;
+      console.log("Client disconnected:", socket.id);
+      
       if (canvasId) {
-        const cursorsMap = canvasCursors.get(canvasId);
-        if (cursorsMap) {
-          cursorsMap.delete(socket.id);
-          io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
-        }
-
-        const canvas = canvases.get(canvasId);
-        if (canvas && socket.data.user?.id) {
-          const member = canvas.members[socket.data.user.id];
-          if (member && member.socketId === socket.id) {
-            member.isOnline = false;
-            io.to(canvasId).emit("members_updated", Object.values(canvas.members));
+        // 1. Broadcast updated members (excluding this socket)
+        const activeSockets = await io.in(canvasId).fetchSockets();
+        const membersMap = new Map<string, any>();
+        for (const s of activeSockets) {
+          if (s.id !== socket.id && s.data.user) {
+            membersMap.set(s.data.user.id, {
+              user: s.data.user,
+              role: s.data.role || 'editor',
+              isOnline: true,
+              socketId: s.id
+            });
           }
         }
+        io.to(canvasId).emit("members_updated", Array.from(membersMap.values()));
+
+        // 2. Broadcast updated cursors (excluding this socket)
+        const cursors = activeSockets
+          .filter(s => s.id !== socket.id && s.data.user !== undefined)
+          .map(s => ({
+            id: s.id,
+            user: s.data.user,
+            position: s.data.cursor || { x: 0, y: 0 }
+          }));
+        io.to(canvasId).emit("cursors_update", cursors);
       }
-      console.log("Client disconnected:", socket.id);
     });
   });
 

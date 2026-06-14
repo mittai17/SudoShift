@@ -1,3 +1,4 @@
+import { SiDiscord } from 'react-icons/si';
 import React, { useState } from 'react';
 import { MessageSquare, Hash, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -143,6 +144,6 @@ const DiscordNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'DiscordNode',
   accentColor: '#5865F2',
-  icon: <MessageSquare className="w-4 h-4 text-white" />,
+  icon: <SiDiscord className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, DiscordNodeBody);

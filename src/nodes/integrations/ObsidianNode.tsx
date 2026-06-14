@@ -1,3 +1,4 @@
+import { SiObsidian } from 'react-icons/si';
 import React, { useState } from 'react';
 import { File, Terminal, Search, FileText, BookMarked, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -177,6 +178,6 @@ const ObsidianNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'ObsidianNode',
   accentColor: '#7C3AED',
-  icon: <BookMarked className="w-4 h-4 text-white" />,
+  icon: <SiObsidian className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, ObsidianNodeBody);

@@ -1,3 +1,4 @@
+import { SiTrello } from 'react-icons/si';
 import React, { useState } from 'react';
 import { List, FileText, LayoutGrid, Layout, Type, Key, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -186,6 +187,6 @@ const TrelloNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'TrelloNode',
   accentColor: '#0052CC',
-  icon: <LayoutGrid className="w-4 h-4 text-white" />,
+  icon: <SiTrello className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, TrelloNodeBody);

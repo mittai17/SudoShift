@@ -1,3 +1,7 @@
+
+import { SiNotion, SiGithub, SiSlack, SiAirtable, SiJira, SiZapier, SiMake, SiObsidian, SiGooglesheets, SiTrello, SiLinear, SiDiscord } from 'react-icons/si';
+import { FaWindows } from 'react-icons/fa';
+import { TbPlugConnected } from 'react-icons/tb';
 import React from 'react';
 import { NodeDefinition } from './types';
 
@@ -159,18 +163,18 @@ export const NODE_REGISTRY: NodeDefinition[] = [
   { id: 'note-link-node', label: 'Note Link', category: 'note', icon: '🔗', component: NoteLinkNode, color: '#3b82f6', defaultData: { title: 'Note Link', description: '', matrix: 'NOTE_LINK', deadline: null } },
 
   // ── Integrations ─────────────────────────────────────────────────────────────
-  { id: 'integration-notion-node', label: 'Notion', category: 'integrations', icon: '📓', component: NotionNode, color: '#000000', defaultData: { title: 'Notion Integration', description: '', matrix: 'INTEGRATION_NOTION', deadline: null } },
-  { id: 'integration-github-node', label: 'GitHub', category: 'integrations', icon: '🐙', component: GitHubNode, color: '#24292e', defaultData: { title: 'GitHub Integration', description: '', matrix: 'INTEGRATION_GITHUB', deadline: null } },
-  { id: 'integration-slack-node', label: 'Slack', category: 'integrations', icon: '💬', component: SlackNode, color: '#4A154B', defaultData: { title: 'Slack Integration', description: '', matrix: 'INTEGRATION_SLACK', deadline: null } },
-  { id: 'integration-airtable-node', label: 'Airtable', category: 'integrations', icon: '📊', component: AirtableNode, color: '#18BFFF', defaultData: { title: 'Airtable Integration', description: '', matrix: 'INTEGRATION_AIRTABLE', deadline: null } },
-  { id: 'integration-jira-node', label: 'Jira', category: 'integrations', icon: '📋', component: JiraNode, color: '#0052CC', defaultData: { title: 'Jira Integration', description: '', matrix: 'INTEGRATION_JIRA', deadline: null } },
-  { id: 'integration-zapier-node', label: 'Zapier', category: 'integrations', icon: '⚡', component: ZapierNode, color: '#FF4A00', defaultData: { title: 'Zapier Webhook', description: '', matrix: 'INTEGRATION_ZAPIER', deadline: null } },
-  { id: 'integration-make-node', label: 'Make.com', category: 'integrations', icon: '🟣', component: MakeNode, color: '#6D00CC', defaultData: { title: 'Make Webhook', description: '', matrix: 'INTEGRATION_MAKE', deadline: null } },
-  { id: 'integration-obsidian-node', label: 'Obsidian', category: 'integrations', icon: '💎', component: ObsidianNode, color: '#7C3AED', defaultData: { title: 'Obsidian Integration', description: '', matrix: 'INTEGRATION_OBSIDIAN', deadline: null } },
-  { id: 'integration-gsheets-node', label: 'Google Sheets', category: 'integrations', icon: '📗', component: GoogleSheetsNode, color: '#0F9D58', defaultData: { title: 'Google Sheets', description: '', matrix: 'INTEGRATION_GSHEETS', deadline: null } },
-  { id: 'integration-trello-node', label: 'Trello', category: 'integrations', icon: '🔷', component: TrelloNode, color: '#0052CC', defaultData: { title: 'Trello Integration', description: '', matrix: 'INTEGRATION_TRELLO', deadline: null } },
-  { id: 'integration-linear-node', label: 'Linear', category: 'integrations', icon: '📐', component: LinearNode, color: '#5E6AD2', defaultData: { title: 'Linear Integration', description: '', matrix: 'INTEGRATION_LINEAR', deadline: null } },
-  { id: 'integration-discord-node', label: 'Discord', category: 'integrations', icon: '🎮', component: DiscordNode, color: '#5865F2', defaultData: { title: 'Discord Integration', description: '', matrix: 'INTEGRATION_DISCORD', deadline: null } },
-  { id: 'integration-microsoft-node', label: 'Microsoft', category: 'integrations', icon: '🟦', component: MicrosoftNode, color: '#00A4EF', defaultData: { title: 'Microsoft Integration', description: '', matrix: 'INTEGRATION_MICROSOFT', deadline: null } },
-  { id: 'integration-mcp-node', label: 'MCP Tools', category: 'integrations', icon: '🔌', component: McpToolsNode, color: '#FF6B35', defaultData: { title: 'MCP Tool Integration', description: '', matrix: 'INTEGRATION_MCP', deadline: null } },
+  { id: 'integration-notion-node', label: 'Notion', category: 'integrations', icon: <SiNotion />, component: NotionNode, color: '#000000', defaultData: { title: 'Notion Integration', description: '', matrix: 'INTEGRATION_NOTION', deadline: null } },
+  { id: 'integration-github-node', label: 'GitHub', category: 'integrations', icon: <SiGithub />, component: GitHubNode, color: '#24292e', defaultData: { title: 'GitHub Integration', description: '', matrix: 'INTEGRATION_GITHUB', deadline: null } },
+  { id: 'integration-slack-node', label: 'Slack', category: 'integrations', icon: <SiSlack />, component: SlackNode, color: '#4A154B', defaultData: { title: 'Slack Integration', description: '', matrix: 'INTEGRATION_SLACK', deadline: null } },
+  { id: 'integration-airtable-node', label: 'Airtable', category: 'integrations', icon: <SiAirtable />, component: AirtableNode, color: '#18BFFF', defaultData: { title: 'Airtable Integration', description: '', matrix: 'INTEGRATION_AIRTABLE', deadline: null } },
+  { id: 'integration-jira-node', label: 'Jira', category: 'integrations', icon: <SiJira />, component: JiraNode, color: '#0052CC', defaultData: { title: 'Jira Integration', description: '', matrix: 'INTEGRATION_JIRA', deadline: null } },
+  { id: 'integration-zapier-node', label: 'Zapier', category: 'integrations', icon: <SiZapier />, component: ZapierNode, color: '#FF4A00', defaultData: { title: 'Zapier Webhook', description: '', matrix: 'INTEGRATION_ZAPIER', deadline: null } },
+  { id: 'integration-make-node', label: 'Make.com', category: 'integrations', icon: <SiMake />, component: MakeNode, color: '#6D00CC', defaultData: { title: 'Make Webhook', description: '', matrix: 'INTEGRATION_MAKE', deadline: null } },
+  { id: 'integration-obsidian-node', label: 'Obsidian', category: 'integrations', icon: <SiObsidian />, component: ObsidianNode, color: '#7C3AED', defaultData: { title: 'Obsidian Integration', description: '', matrix: 'INTEGRATION_OBSIDIAN', deadline: null } },
+  { id: 'integration-gsheets-node', label: 'Google Sheets', category: 'integrations', icon: <SiGooglesheets />, component: GoogleSheetsNode, color: '#0F9D58', defaultData: { title: 'Google Sheets', description: '', matrix: 'INTEGRATION_GSHEETS', deadline: null } },
+  { id: 'integration-trello-node', label: 'Trello', category: 'integrations', icon: <SiTrello />, component: TrelloNode, color: '#0052CC', defaultData: { title: 'Trello Integration', description: '', matrix: 'INTEGRATION_TRELLO', deadline: null } },
+  { id: 'integration-linear-node', label: 'Linear', category: 'integrations', icon: <SiLinear />, component: LinearNode, color: '#5E6AD2', defaultData: { title: 'Linear Integration', description: '', matrix: 'INTEGRATION_LINEAR', deadline: null } },
+  { id: 'integration-discord-node', label: 'Discord', category: 'integrations', icon: <SiDiscord />, component: DiscordNode, color: '#5865F2', defaultData: { title: 'Discord Integration', description: '', matrix: 'INTEGRATION_DISCORD', deadline: null } },
+  { id: 'integration-microsoft-node', label: 'Microsoft', category: 'integrations', icon: <FaWindows />, component: MicrosoftNode, color: '#00A4EF', defaultData: { title: 'Microsoft Integration', description: '', matrix: 'INTEGRATION_MICROSOFT', deadline: null } },
+  { id: 'integration-mcp-node', label: 'MCP Tools', category: 'integrations', icon: <TbPlugConnected />, component: McpToolsNode, color: '#FF6B35', defaultData: { title: 'MCP Tool Integration', description: '', matrix: 'INTEGRATION_MCP', deadline: null } },
 ];

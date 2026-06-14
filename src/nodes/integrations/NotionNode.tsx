@@ -1,3 +1,4 @@
+import { SiNotion } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Database, Search, FileText, BookOpen, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -167,6 +168,6 @@ const NotionNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'NotionNode',
   accentColor: '#000000',
-  icon: <BookOpen className="w-4 h-4 text-white" />,
+  icon: <SiNotion className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, NotionNodeBody);

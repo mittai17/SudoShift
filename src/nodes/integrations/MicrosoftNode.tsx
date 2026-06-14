@@ -1,3 +1,4 @@
+import { FaWindows } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { Maximize, FileText, File, Table, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -152,6 +153,6 @@ const MicrosoftNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'MicrosoftNode',
   accentColor: '#00A4EF',
-  icon: <FileText className="w-4 h-4 text-white" />,
+  icon: <FaWindows className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, MicrosoftNodeBody);

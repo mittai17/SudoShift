@@ -1,3 +1,4 @@
+import { SiLinear } from 'react-icons/si';
 import React, { useState } from 'react';
 import { FileText, Users, GitBranch, AlertCircle, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -171,6 +172,6 @@ const LinearNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'LinearNode',
   accentColor: '#5E6AD2',
-  icon: <GitBranch className="w-4 h-4 text-white" />,
+  icon: <SiLinear className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, LinearNodeBody);

@@ -1,3 +1,4 @@
+import { TbPlugConnected } from 'react-icons/tb';
 import React, { useState } from 'react';
 import { Code, Terminal, Globe, Wrench, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -156,6 +157,6 @@ const McpToolsNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'McpToolsNode',
   accentColor: '#FF6B35',
-  icon: <Terminal className="w-4 h-4 text-white" />,
+  icon: <TbPlugConnected className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, McpToolsNodeBody);

@@ -1,3 +1,4 @@
+import { SiGooglesheets } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Maximize, FileSpreadsheet, FileText, Table, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -156,6 +157,6 @@ const GoogleSheetsNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'GoogleSheetsNode',
   accentColor: '#0F9D58',
-  icon: <Table className="w-4 h-4 text-white" />,
+  icon: <SiGooglesheets className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, GoogleSheetsNodeBody);

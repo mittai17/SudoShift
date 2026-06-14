@@ -1,3 +1,4 @@
+import { SiJira } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Mail, Briefcase, Search, FileText, Globe, Layers, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -189,6 +190,6 @@ const JiraNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'JiraNode',
   accentColor: '#0052CC',
-  icon: <Layers className="w-4 h-4 text-white" />,
+  icon: <SiJira className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, JiraNodeBody);

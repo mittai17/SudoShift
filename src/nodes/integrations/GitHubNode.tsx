@@ -1,3 +1,4 @@
+import { SiGithub } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Folder, Code2, FileText, User, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -173,6 +174,6 @@ const GitHubNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'GitHubNode',
   accentColor: '#24292e',
-  icon: <Code2 className="w-4 h-4 text-white" />,
+  icon: <SiGithub className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, GitHubNodeBody);

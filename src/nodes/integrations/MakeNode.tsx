@@ -1,3 +1,4 @@
+import { SiMake } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Share2, Code, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -128,6 +129,6 @@ const MakeNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'MakeNode',
   accentColor: '#6D00CC',
-  icon: <Share2 className="w-4 h-4 text-white" />,
+  icon: <SiMake className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, MakeNodeBody);

@@ -1,3 +1,4 @@
+import { SiZapier } from 'react-icons/si';
 import React, { useState } from 'react';
 import { Code, Zap, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
@@ -128,6 +129,6 @@ const ZapierNodeBody = ({ task, updateTask }: any) => {
 export default createResourceNode({
   label: 'ZapierNode',
   accentColor: '#FF4A00',
-  icon: <Zap className="w-4 h-4 text-white" />,
+  icon: <SiZapier className="w-4 h-4 text-white" />,
   width: 'w-[360px]'
 }, ZapierNodeBody);

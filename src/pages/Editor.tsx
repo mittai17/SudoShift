@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -31,6 +31,7 @@ import Sidebar from '../components/layout/Sidebar';
 import { Canvas } from '../components/canvas/Canvas';
 import { SettingsDialog } from '../components/canvas/SettingsDialog';
 import { JsonTransportDialog } from '../components/canvas/JsonTransportDialog';
+import { AiAssistantWidget } from '../components/canvas/AiAssistantWidget';
 import { TaskData } from '../types';
 import { getInitialData } from '../data/initialData';
 import { nodeTypes as registryNodeTypes, nodeColorMap, NODE_REGISTRY } from '../nodes/registry/nodeTypes';
@@ -133,6 +134,8 @@ function FlowEditor() {
   const [jsonTransportOpen, setJsonTransportOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [canvasName, setCanvasName] = useState('');
+  const [isRenamingCanvas, setIsRenamingCanvas] = useState(false);
 
   // Direct Messaging / Chat Enhancements
   const [activeChatTab, setActiveChatTab] = useState<'team' | 'dm'>('team');
@@ -153,6 +156,25 @@ function FlowEditor() {
       }
     }
   }, [chatOpen, activeChatTab, selectedDMUserId, messages]);
+
+  useEffect(() => {
+    if (canvasId && canvasId !== 'default') {
+      supabase.from('canvases').select('name').eq('id', canvasId).single().then(({ data }) => {
+        if (data && data.name) setCanvasName(data.name);
+      });
+    } else {
+      setCanvasName('Local Workspace');
+    }
+  }, [canvasId]);
+
+  const handleRenameCanvas = async () => {
+    if (!canvasName.trim() || canvasId === 'default') {
+      setIsRenamingCanvas(false);
+      return;
+    }
+    await supabase.from('canvases').update({ name: canvasName.trim() }).eq('id', canvasId);
+    setIsRenamingCanvas(false);
+  };
 
   const currentUser = useMemo(() => ({
     id: user?.id || '',
@@ -582,7 +604,28 @@ function FlowEditor() {
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
-          <h2 className="font-semibold text-sm hidden sm:block">Workspace</h2>
+          
+          <div className="hidden sm:flex items-center space-x-2">
+            {isRenamingCanvas ? (
+              <input
+                autoFocus
+                type="text"
+                value={canvasName}
+                onChange={e => setCanvasName(e.target.value)}
+                onBlur={handleRenameCanvas}
+                onKeyDown={e => { if (e.key === 'Enter') handleRenameCanvas(); }}
+                className="font-semibold text-sm px-1 py-0.5 border border-indigo-300 rounded outline-none focus:ring-2 focus:ring-indigo-500/20 w-48"
+              />
+            ) : (
+              <div 
+                className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-gray-100 cursor-text transition-colors group"
+                onClick={() => setIsRenamingCanvas(true)}
+              >
+                <h2 className="font-semibold text-sm truncate max-w-[200px]">{canvasName || 'Workspace'}</h2>
+                <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -756,7 +799,7 @@ function FlowEditor() {
 
         <div className={`
           ${sidebarOpen ? 'flex' : 'hidden'} 
-          lg:flex absolute lg:static left-0 top-0 bottom-0 z-35 shrink-0 shadow-2xl lg:shadow-none h-full
+          absolute lg:static left-0 top-0 bottom-0 z-35 shrink-0 shadow-2xl lg:shadow-none h-full
         `}>
           <Sidebar 
             onAddNodes={handleAddTasks} 
@@ -765,6 +808,16 @@ function FlowEditor() {
             onClose={() => setSidebarOpen(false)}
           />
         </div>
+
+        {/* Desktop Sidebar Toggle Arrow */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="hidden lg:flex absolute top-1/2 -translate-y-1/2 z-40 bg-white border border-gray-200 shadow-sm p-1.5 rounded-r-lg hover:bg-gray-50 transition-all duration-300"
+          style={{ left: sidebarOpen ? '288px' : '0px' }}
+          title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+        >
+          {sidebarOpen ? <ChevronLeft className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+        </button>
 
         <div className="flex-1 h-full relative p-1 sm:p-2 md:p-4 pb-0">
           <div className="w-full h-full bg-white rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border border-gray-200 overflow-hidden relative" onDrop={onDrop} onDragOver={onDragOver} onPointerMove={handlePointerMove}>
@@ -1413,7 +1466,15 @@ function FlowEditor() {
         </div>
       )}
       <SettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <JsonTransportDialog isOpen={jsonTransportOpen} onClose={() => setJsonTransportOpen(false)} />
+      <JsonTransportDialog
+        isOpen={jsonTransportOpen}
+        onClose={() => setJsonTransportOpen(false)}
+        nodes={nodes}
+        edges={edges}
+        setNodes={setNodes}
+        setEdges={setEdges}
+      />
+      <AiAssistantWidget />
     </div>
   );
 }

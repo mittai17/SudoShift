@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { YoutubeTranscript } from 'youtube-transcript';
@@ -726,9 +727,27 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false }));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      try {
+        const indexPath = path.join(distPath, "index.html");
+        let html = fs.readFileSync(indexPath, "utf-8");
+        
+        // Inject runtime environment variables into window.ENV
+        const envScript = `
+          <script>
+            window.ENV = {
+              VITE_SUPABASE_URL: "${process.env.VITE_SUPABASE_URL || ''}",
+              VITE_SUPABASE_ANON_KEY: "${process.env.VITE_SUPABASE_ANON_KEY || ''}"
+            };
+          </script>
+        `;
+        html = html.replace("</head>", `${envScript}</head>`);
+        res.send(html);
+      } catch (err) {
+        console.error("Error reading index.html for injection:", err);
+        res.status(500).send("Internal Server Error");
+      }
     });
   }
 

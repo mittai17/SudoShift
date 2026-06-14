@@ -372,7 +372,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="max-w-6xl xl:max-w-[1200px] mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 lg:px-12 mt-8 md:mt-12">
         <section id="dashboard" className="mb-20">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Mobile Sidebar Toggle Header */}
@@ -397,7 +397,7 @@ export default function Home() {
             </div>
 
             {/* Sidebar Column */}
-            <aside className={`w-full md:w-64 shrink-0 bg-white border border-gray-200 rounded-3xl p-5 shadow-sm h-fit md:block ${sidebarCollapsed ? 'hidden' : 'block'}`}>
+            <aside className={`w-full md:w-72 shrink-0 bg-white border border-gray-200 rounded-3xl p-5 shadow-sm h-fit md:block md:-translate-x-10 lg:-translate-x-20 xl:-translate-x-24 ${sidebarCollapsed ? 'hidden' : 'block'}`}>
               {/* Workspace Selector */}
               <div className="space-y-2.5 pb-5 border-b border-slate-100">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace</span>

@@ -181,7 +181,7 @@ async function startServer() {
     if (supabase) {
       const { data, error } = await supabase
         .from('canvas_messages')
-        .select('id, text, user_snapshot, created_at')
+        .select('id, text, user_snapshot, created_at, recipient_id')
         .eq('canvas_id', canvasId)
         .order('created_at', { ascending: true })
         .limit(100);
@@ -195,6 +195,7 @@ async function startServer() {
         text: msg.text,
         user: msg.user_snapshot,
         timestamp: msg.created_at,
+        recipientId: msg.recipient_id,
       }));
     }
     return [];
@@ -226,6 +227,7 @@ async function startServer() {
         user_snapshot: msgObj.user,
         text: msgObj.text,
         created_at: msgObj.timestamp,
+        recipient_id: msgObj.recipientId || null,
       });
       if (error) {
         console.warn(`Failed to save chat message for ${canvasId}:`, error.message);
@@ -579,17 +581,34 @@ async function startServer() {
       }
     });
 
-    socket.on("send_message", async (message) => {
+    socket.on("send_message", async (data) => {
       const canvasId = socket.data.canvasId;
       if (canvasId) {
+        const isObject = typeof data === 'object' && data !== null;
+        const text = isObject ? data.text : data;
+        const recipientId = isObject ? data.recipientId : null;
+
         const msgObj = {
           id: randomUUID(),
           user: socket.data.user,
-          text: message,
-          timestamp: new Date().toISOString()
+          text,
+          timestamp: new Date().toISOString(),
+          recipientId
         };
         await addCanvasChatMessage(canvasId, msgObj, socket.data.supabase);
-        io.to(canvasId).emit("new_message", msgObj);
+        
+        if (recipientId) {
+          // Private DM: send only to sender and recipient active connections
+          const targetSockets = await io.in(canvasId).fetchSockets();
+          for (const s of targetSockets) {
+            if (s.data.user?.id === recipientId || s.data.user?.id === socket.data.user?.id) {
+              s.emit("new_message", msgObj);
+            }
+          }
+        } else {
+          // Public message: broadcast to the whole room
+          io.to(canvasId).emit("new_message", msgObj);
+        }
       }
     });
 

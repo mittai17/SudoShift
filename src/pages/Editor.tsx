@@ -131,6 +131,59 @@ function FlowEditor() {
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jsonTransportOpen, setJsonTransportOpen] = useState(false);
+
+  // Direct Messaging / Chat Enhancements
+  const [activeChatTab, setActiveChatTab] = useState<'team' | 'dm'>('team');
+  const [selectedDMUserId, setSelectedDMUserId] = useState<string | null>(null);
+  const [lastReadDMTime, setLastReadDMTime] = useState<Record<string, number>>({});
+  const [lastReadTeamTime, setLastReadTeamTime] = useState<number>(Date.now());
+
+  // Update last read times
+  useEffect(() => {
+    if (chatOpen) {
+      if (activeChatTab === 'team') {
+        setLastReadTeamTime(Date.now());
+      } else if (activeChatTab === 'dm' && selectedDMUserId) {
+        setLastReadDMTime(prev => ({
+          ...prev,
+          [selectedDMUserId]: Date.now()
+        }));
+      }
+    }
+  }, [chatOpen, activeChatTab, selectedDMUserId, messages]);
+
+  const unreadTeamCount = useMemo(() => {
+    if (chatOpen && activeChatTab === 'team') return 0;
+    return messages.filter(m => !m.recipientId && new Date(m.timestamp).getTime() > lastReadTeamTime).length;
+  }, [messages, lastReadTeamTime, chatOpen, activeChatTab]);
+
+  const unreadDMCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    messages.forEach(m => {
+      if (m.recipientId === currentUser.id) {
+        const senderId = m.user.id;
+        if (chatOpen && activeChatTab === 'dm' && selectedDMUserId === senderId) return;
+        const lastRead = lastReadDMTime[senderId] || 0;
+        if (new Date(m.timestamp).getTime() > lastRead) {
+          counts[senderId] = (counts[senderId] || 0) + 1;
+        }
+      }
+    });
+    return counts;
+  }, [messages, lastReadDMTime, currentUser.id, chatOpen, activeChatTab, selectedDMUserId]);
+
+  const totalUnreadDMCount = useMemo(() => {
+    return Object.values(unreadDMCounts).reduce((sum, c) => sum + c, 0);
+  }, [unreadDMCounts]);
+
+  const formatTime = useCallback((isoString: string) => {
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return '';
+    }
+  }, []);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const skipSyncRef = useRef<boolean>(false);
   const currentUser = useMemo(() => ({
@@ -180,7 +233,9 @@ function FlowEditor() {
       });
 
       newSocket.on("init_chat", (msgs) => setMessages(msgs || []));
-      newSocket.on("new_message", (msg) => setMessages(prev => [...prev, msg]));
+      newSocket.on("new_message", (msg) => {
+        setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
+      });
       newSocket.on("versions_updated", (vs) => setVersions(vs || []));
       newSocket.on("members_updated", (m) => setMembers(m || []));
       newSocket.on("add_member_success", () => {
@@ -391,7 +446,12 @@ function FlowEditor() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !socket) return;
-    socket.emit("send_message", chatInput.trim());
+    
+    if (activeChatTab === 'dm' && selectedDMUserId) {
+      socket.emit("send_message", { text: chatInput.trim(), recipientId: selectedDMUserId });
+    } else {
+      socket.emit("send_message", chatInput.trim());
+    }
     setChatInput('');
   };
 
@@ -518,10 +578,15 @@ function FlowEditor() {
 
           <button
             onClick={() => { setChatOpen(!chatOpen); setHistoryOpen(false); }}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors relative ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
           >
             <MessageSquare className="w-4 h-4" />
             <span>Chat</span>
+            {(unreadTeamCount + totalUnreadDMCount) > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold px-1 shadow-sm">
+                {unreadTeamCount + totalUnreadDMCount}
+              </span>
+            )}
           </button>
 
           <button
@@ -589,55 +654,289 @@ function FlowEditor() {
         {/* Chat Sidebar */}
         {chatOpen && (
           <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full animate-in slide-in-from-right-8 duration-200">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
-              <div className="flex items-center space-x-2 text-indigo-900 font-semibold">
-                <Users className="w-5 h-5 text-indigo-500" />
-                <span>Team Chat</span>
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50 shrink-0">
+              <div className="flex items-center space-x-2 text-slate-900 font-bold text-base">
+                <MessageSquare className="w-5 h-5 text-indigo-600" />
+                <span>Workspace Chat</span>
               </div>
-              <button onClick={() => setChatOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">&times;</button>
+              <button 
+                onClick={() => setChatOpen(false)} 
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 ? (
-                <div className="text-center text-gray-400 text-sm mt-10">
-                  No messages yet. Start collaborating!
-                </div>
+            {/* Tabs Selector */}
+            <div className="flex border-b border-slate-150 shrink-0 bg-slate-50/50 p-1">
+              <button
+                onClick={() => { setActiveChatTab('team'); setSelectedDMUserId(null); }}
+                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${
+                  activeChatTab === 'team'
+                    ? 'bg-white text-indigo-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Team Chat</span>
+                {unreadTeamCount > 0 && (
+                  <span className="w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveChatTab('dm')}
+                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${
+                  activeChatTab === 'dm'
+                    ? 'bg-white text-indigo-600 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>DMs</span>
+                {totalUnreadDMCount > 0 && (
+                  <span className="bg-red-500 text-white text-[9px] font-extrabold rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                    {totalUnreadDMCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Chat Body */}
+            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+              {activeChatTab === 'team' ? (
+                /* Team Chat Thread */
+                messages.filter(m => !m.recipientId).length === 0 ? (
+                  <div className="text-center text-slate-400 text-xs mt-10">
+                    No team messages yet. Start collaborating!
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {messages.filter(m => !m.recipientId).map((msg, index, arr) => {
+                      const isMe = msg.user.id === currentUser.id;
+                      const prevMsg = index > 0 ? arr[index - 1] : null;
+                      const showSenderHeader = !prevMsg || prevMsg.user.id !== msg.user.id;
+                      
+                      return (
+                        <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${showSenderHeader ? 'mt-3' : 'mt-1'}`}>
+                          {showSenderHeader && !isMe && (
+                            <span className="text-[10px] text-slate-500 font-bold mb-1 ml-9">
+                              {msg.user.name}
+                            </span>
+                          )}
+                          <div className={`flex items-end space-x-2 max-w-[85%] ${isMe ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}>
+                            {!isMe && (
+                              <div 
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${
+                                  showSenderHeader ? 'visible' : 'invisible'
+                                }`}
+                                style={{ backgroundColor: msg.user.color }}
+                              >
+                                {msg.user.name.substring(0, 1).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="flex flex-col group">
+                              <div 
+                                className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${
+                                  isMe 
+                                    ? 'bg-indigo-600 text-white rounded-tr-none' 
+                                    : msg.text.includes(`@${currentUser.name}`) 
+                                      ? 'bg-amber-50 border border-amber-200 text-amber-900 rounded-tl-none font-medium'
+                                      : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
+                                }`}
+                              >
+                                {msg.text.split(' ').map((word: string, i: number) => {
+                                  if (word.startsWith('@')) {
+                                    return (
+                                      <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-indigo-600 bg-indigo-50/50 px-1 py-0.5 rounded'}`}>
+                                        {word}{' '}
+                                      </span>
+                                    );
+                                  }
+                                  return word + ' ';
+                                })}
+                              </div>
+                              <span className={`text-[9px] text-slate-400 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
+                                {formatTime(msg.timestamp)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
               ) : (
-                messages.map(msg => {
-                  const isMe = msg.user.id === currentUser.id;
-                  return (
-                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      {!isMe && <span className="text-[10px] text-gray-500 font-semibold mb-1 ml-1">{msg.user.name}</span>}
-                      <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm shadow-sm ${isMe ? 'bg-[#6366f1] text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'}`}>
-                        {/* Basic mention highlight matching */}
-                        {msg.text.split(' ').map((word: string, i: number) => {
-                          if (word.startsWith('@')) {
-                            return <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-indigo-600'}`}>{word} </span>
-                          }
-                          return word + ' ';
-                        })}
+                /* Direct Messages (DMs) */
+                selectedDMUserId === null ? (
+                  /* Member list to choose DM recipient */
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-1">
+                      Direct Message collaborators
+                    </span>
+                    {members.filter(m => m.user.id !== currentUser.id).length === 0 ? (
+                      <div className="text-center text-slate-400 text-xs mt-10">
+                        Invite members to start private chatting!
                       </div>
-                    </div>
-                  );
-                })
+                    ) : (
+                      members.filter(m => m.user.id !== currentUser.id).map(member => {
+                        const unreadCount = unreadDMCounts[member.user.id] || 0;
+                        return (
+                          <button
+                            key={member.user.id}
+                            onClick={() => setSelectedDMUserId(member.user.id)}
+                            className="w-full flex items-center justify-between p-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-200 text-left active:scale-95 group"
+                          >
+                            <div className="flex items-center space-x-3 min-w-0">
+                              <div
+                                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold shadow-sm relative shrink-0"
+                                style={{ backgroundColor: member.user.color, color: 'white' }}
+                              >
+                                {member.user.name.substring(0, 1).toUpperCase()}
+                                <div
+                                  className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                                    member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                                  }`}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="font-bold text-slate-800 text-xs group-hover:text-indigo-600 transition-colors block truncate">
+                                  {member.user.name}
+                                </span>
+                                <span className="text-[10px] text-slate-400 truncate block">
+                                  {member.isOnline ? 'Active now' : 'Offline'}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {unreadCount > 0 && (
+                              <span className="bg-red-500 text-white text-[9px] font-extrabold rounded-full px-1.5 py-0.5 min-w-[16px] text-center shadow-sm">
+                                {unreadCount}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                ) : (
+                  /* DM Chat Thread with selected user */
+                  (() => {
+                    const selectedMember = members.find(m => m.user.id === selectedDMUserId);
+                    const dmMessages = messages.filter(m => 
+                      (m.user.id === currentUser.id && m.recipientId === selectedDMUserId) ||
+                      (m.user.id === selectedDMUserId && m.recipientId === currentUser.id)
+                    );
+                    
+                    return (
+                      <div className="space-y-4">
+                        {/* DM Thread Subheader */}
+                        <div className="flex items-center space-x-2.5 pb-2 border-b border-slate-100 shrink-0">
+                          <button
+                            onClick={() => setSelectedDMUserId(null)}
+                            className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                            title="Back to DMs"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+                          
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white relative shrink-0 shadow-sm"
+                            style={{ backgroundColor: selectedMember?.user.color || '#94a3b8' }}
+                          >
+                            {selectedMember?.user.name.substring(0, 1).toUpperCase() || '?'}
+                            <div
+                              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                                selectedMember?.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                              }`}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-bold text-slate-800 text-xs block truncate leading-tight">
+                              {selectedMember?.user.name || 'Collaborator'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 leading-none">
+                              {selectedMember?.isOnline ? 'Active now' : 'Offline'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* DM Message history list */}
+                        {dmMessages.length === 0 ? (
+                          <div className="text-center text-slate-400 text-xs mt-10">
+                            No private messages yet. Send a DM to start chatting!
+                          </div>
+                        ) : (
+                          dmMessages.map((msg, index, arr) => {
+                            const isMe = msg.user.id === currentUser.id;
+                            const prevMsg = index > 0 ? arr[index - 1] : null;
+                            const showSenderHeader = !prevMsg || prevMsg.user.id !== msg.user.id;
+                            
+                            return (
+                              <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${showSenderHeader ? 'mt-2' : 'mt-1'}`}>
+                                <div className={`flex items-end space-x-2 max-w-[85%] ${isMe ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}>
+                                  {!isMe && (
+                                    <div 
+                                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${
+                                        showSenderHeader ? 'visible' : 'invisible'
+                                      }`}
+                                      style={{ backgroundColor: msg.user.color }}
+                                    >
+                                      {msg.user.name.substring(0, 1).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div className="flex flex-col group">
+                                    <div 
+                                      className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${
+                                        isMe 
+                                          ? 'bg-indigo-600 text-white rounded-tr-none' 
+                                          : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
+                                      }`}
+                                    >
+                                      {msg.text}
+                                    </div>
+                                    <span className={`text-[9px] text-slate-400 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
+                                      {formatTime(msg.timestamp)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    );
+                  })()
+                )
               )}
               <div ref={chatBottomRef} />
             </div>
 
-            <div className="p-3 border-t border-gray-200 bg-white shrink-0">
-              <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  placeholder="Type a message or @mention..."
-                  className="flex-1 bg-gray-50 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
-                />
-                <button type="submit" disabled={!chatInput.trim()} className="bg-[#6366f1] text-white p-2 rounded-full hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
-                  <Send className="w-4 h-4 ml-0.5" />
-                </button>
-              </form>
-            </div>
+            {/* Input form - only visible if in team tab or if a user is selected in DMs */}
+            {!(activeChatTab === 'dm' && selectedDMUserId === null) && (
+              <div className="p-3.5 border-t border-gray-200 bg-white shrink-0">
+                <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    placeholder={
+                      activeChatTab === 'team'
+                        ? "Type a message or @mention..."
+                        : `Message ${members.find(m => m.user.id === selectedDMUserId)?.user.name || 'member'}...`
+                    }
+                    className="flex-1 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-slate-400 text-slate-800"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={!chatInput.trim()} 
+                    className="bg-[#6366f1] text-white p-2.5 rounded-2xl hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm hover:shadow"
+                  >
+                    <Send className="w-3.5 h-3.5 ml-0.5" />
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         )}
 

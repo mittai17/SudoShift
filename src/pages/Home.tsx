@@ -16,7 +16,9 @@ import {
   Trash2, 
   User, 
   ChevronRight,
-  FolderTree
+  FolderTree,
+  MoreVertical,
+  Edit2
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../auth/AuthContext';
@@ -47,6 +49,11 @@ export default function Home() {
   const [newFolderName, setNewFolderName] = useState('');
   const [workspaceModalOpen, setWorkspaceModalOpen] = useState(false);
   const [folderModalOpen, setFolderModalOpen] = useState(false);
+
+  // Dropdown & Rename states
+  const [activeMenuCanvasId, setActiveMenuCanvasId] = useState<string | null>(null);
+  const [renamingCanvasId, setRenamingCanvasId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const loadWorkspaces = async () => {
     try {
@@ -259,6 +266,30 @@ export default function Home() {
     }
   };
 
+  const handleRenameCanvas = async (canvasId: string) => {
+    if (!renameValue.trim()) {
+      setRenamingCanvasId(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('canvases')
+        .update({ name: renameValue.trim() })
+        .eq('id', canvasId);
+
+      if (error) throw error;
+
+      setCanvases(current =>
+        current.map(c => (c.id === canvasId ? { ...c, name: renameValue.trim() } : c))
+      );
+    } catch (err: any) {
+      setSetupError(err.message || 'Failed to rename canvas.');
+    } finally {
+      setRenamingCanvasId(null);
+    }
+  };
+
   const activeWorkspaceName = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Personal Workspace';
   const activeFolderName = folders.find(f => f.id === activeFolderId)?.name || '';
 
@@ -445,10 +476,75 @@ export default function Home() {
                     className="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg rounded-2xl p-5 h-48 flex flex-col justify-between transition-all"
                   >
                     <div>
-                      <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-4">
-                        <LayoutDashboard className="w-5 h-5" />
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+                          <LayoutDashboard className="w-5 h-5" />
+                        </div>
+                        {/* Three Dot Button */}
+                        <div className="relative" onClick={e => e.preventDefault()}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuCanvasId(prev => prev === canvas.id ? null : canvas.id);
+                            }}
+                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                            title="Options"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+
+                          {/* Dropdown Overlay */}
+                          {activeMenuCanvasId === canvas.id && (
+                            <>
+                              <div className="fixed inset-0 z-20" onClick={() => setActiveMenuCanvasId(null)} />
+                              <div className="absolute right-0 mt-1 w-32 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setRenamingCanvasId(canvas.id);
+                                    setRenameValue(canvas.name);
+                                    setActiveMenuCanvasId(null);
+                                  }}
+                                  className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                  <span>Rename</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteCanvas(canvas.id, e);
+                                    setActiveMenuCanvasId(null);
+                                  }}
+                                  className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{canvas.name}</h3>
+
+                      {renamingCanvasId === canvas.id ? (
+                        <div onClick={e => e.preventDefault()}>
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={e => setRenameValue(e.target.value)}
+                            onBlur={() => handleRenameCanvas(canvas.id)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRenameCanvas(canvas.id);
+                              if (e.key === 'Escape') setRenamingCanvasId(null);
+                            }}
+                            autoFocus
+                            className="w-full bg-slate-50 border border-indigo-500 rounded-lg px-2.5 py-1 text-sm font-bold focus:outline-none text-slate-800"
+                          />
+                        </div>
+                      ) : (
+                        <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2">{canvas.name}</h3>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between mt-4" onClick={e => e.preventDefault()}>
@@ -479,13 +575,6 @@ export default function Home() {
                         <span className="text-[10px] text-gray-400 font-bold block sm:hidden md:block">
                           {new Date(canvas.updated_at).toLocaleDateString()}
                         </span>
-                        <button
-                          onClick={(event) => deleteCanvas(canvas.id, event)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-md transition-all shrink-0"
-                          title="Delete Canvas"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 1 2 2 2v2"></path></svg>
-                        </button>
                       </div>
                     </div>
                   </RouterLink>

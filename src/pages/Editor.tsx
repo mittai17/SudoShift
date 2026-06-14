@@ -24,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { useAuth } from '../auth/AuthContext';
+import { supabase } from '../lib/supabase';
 
 import Sidebar from '../components/layout/Sidebar';
 import { Canvas } from '../components/canvas/Canvas';
@@ -51,11 +53,7 @@ import FormulaNodeLegacy from '../components/nodes/FormulaNode';
 
 // Constants
 const COLORS = ['#ef4444', '#f97316', '#84cc16', '#0ea5e9', '#8b5cf6', '#d946ef'];
-const generateUser = () => ({
-  id: uuidv4(),
-  name: `User_${Math.floor(Math.random() * 1000)}`,
-  color: COLORS[Math.floor(Math.random() * COLORS.length)]
-});
+const colorForUser = (id: string) => COLORS[id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % COLORS.length];
 
 // Detect conflicts: deadlines within 24 hours of each other
 const detectConflicts = (nodes: Node[]): { conflictingNodeIds: Set<string>, conflictEdges: Edge[] } => {
@@ -106,6 +104,7 @@ const defaultEdgeOptions = {
 };
 
 function FlowEditor() {
+  const { user } = useAuth();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition, zoomIn, zoomOut, fitView, getViewport, setViewport, flowToScreenPosition, deleteElements } = useReactFlow();
@@ -124,12 +123,17 @@ function FlowEditor() {
   const [members, setMembers] = useState<any[]>([]);
   const [membersModalOpen, setMembersModalOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
-  const [currentUser] = useState(generateUser());
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jsonTransportOpen, setJsonTransportOpen] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const skipSyncRef = useRef<boolean>(false);
+  const currentUser = useMemo(() => ({
+    id: user?.id || '',
+    name: user?.user_metadata?.full_name || user?.email || 'User',
+    email: user?.email,
+    color: colorForUser(user?.id || 'user'),
+  }), [user]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -139,67 +143,86 @@ function FlowEditor() {
 
   // Setup Socket.IO
   useEffect(() => {
-    const newSocket = io();
-    setSocket(newSocket);
+    let mounted = true;
+    let newSocket: Socket | null = null;
 
-    newSocket.on("connect", () => {
-      newSocket.emit("join_canvas", { canvasId, user: currentUser });
-    });
+    const connectSocket = async () => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token || !mounted) return;
 
-    newSocket.on("init_canvas", (data) => {
-      skipSyncRef.current = true;
-      if (data && data.nodes && data.nodes.length > 0) {
-        setNodes(data.nodes);
-        setEdges(data.edges);
-      } else if (canvasId === 'default') {
-        // Fallback to initial data just for default
-        const init = getInitialData();
-        setNodes(init.initialNodes);
-        setEdges(init.initialEdges);
-      }
-      setTimeout(() => skipSyncRef.current = false, 500);
-    });
+      newSocket = io({ auth: { token } });
+      setSocket(newSocket);
 
-    newSocket.on("init_chat", (msgs) => setMessages(msgs || []));
-    newSocket.on("new_message", (msg) => setMessages(prev => [...prev, msg]));
-    newSocket.on("versions_updated", (vs) => setVersions(vs || []));
-    newSocket.on("members_updated", (m) => setMembers(m || []));
-    newSocket.on("kicked", () => {
-      alert("You have been removed from this canvas.");
-      window.location.href = "/";
-    });
+      newSocket.on("connect", () => {
+        newSocket?.emit("join_canvas", { canvasId, user: currentUser });
+      });
 
-    newSocket.on("cursors_update", (curs: any[]) => {
-      const cmap: Record<string, any> = {};
-      curs.filter(c => c.id !== newSocket.id).forEach(c => cmap[c.id] = c);
-      setCursors(cmap);
-    });
-
-    newSocket.on("cursor_moved", (data) => {
-      setCursors(prev => ({
-        ...prev,
-        [data.id]: {
-          ...prev[data.id],
-          position: data.position
+      newSocket.on("init_canvas", (data) => {
+        skipSyncRef.current = true;
+        if (data && Array.isArray(data.nodes) && data.nodes.length > 0) {
+          setNodes(data.nodes);
+          setEdges(data.edges || []);
+        } else if (data && Array.isArray(data.nodes)) {
+          setNodes(data.nodes);
+          setEdges(data.edges || []);
+        } else if (canvasId === 'default') {
+          const init = getInitialData();
+          setNodes(init.initialNodes);
+          setEdges(init.initialEdges);
         }
-      }));
-    });
+        setTimeout(() => skipSyncRef.current = false, 500);
+      });
 
-    newSocket.on("nodes_updated", (nds) => {
-      skipSyncRef.current = true;
-      setNodes(nds);
-      setTimeout(() => skipSyncRef.current = false, 100);
-    });
+      newSocket.on("init_chat", (msgs) => setMessages(msgs || []));
+      newSocket.on("new_message", (msg) => setMessages(prev => [...prev, msg]));
+      newSocket.on("versions_updated", (vs) => setVersions(vs || []));
+      newSocket.on("members_updated", (m) => setMembers(m || []));
+      newSocket.on("connect_error", (error) => {
+        console.error("Collaboration connection failed:", error.message);
+      });
+      newSocket.on("kicked", () => {
+        alert("You have been removed from this canvas.");
+        window.location.href = "/";
+      });
 
-    newSocket.on("edges_updated", (eds) => {
-      skipSyncRef.current = true;
-      setEdges(eds);
-      setTimeout(() => skipSyncRef.current = false, 100);
-    });
+      newSocket.on("cursors_update", (curs: any[]) => {
+        const cmap: Record<string, any> = {};
+        curs.filter(c => c.id !== newSocket?.id).forEach(c => cmap[c.id] = c);
+        setCursors(cmap);
+      });
 
-    return () => { newSocket.disconnect(); }
+      newSocket.on("cursor_moved", (data) => {
+        setCursors(prev => ({
+          ...prev,
+          [data.id]: {
+            ...prev[data.id],
+            position: data.position
+          }
+        }));
+      });
+
+      newSocket.on("nodes_updated", (nds) => {
+        skipSyncRef.current = true;
+        setNodes(nds);
+        setTimeout(() => skipSyncRef.current = false, 100);
+      });
+
+      newSocket.on("edges_updated", (eds) => {
+        skipSyncRef.current = true;
+        setEdges(eds);
+        setTimeout(() => skipSyncRef.current = false, 100);
+      });
+    };
+
+    connectSocket();
+
+    return () => {
+      mounted = false;
+      newSocket?.disconnect();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasId]);
+  }, [canvasId, currentUser.id]);
 
   // Sync to server
   useEffect(() => {
@@ -320,7 +343,7 @@ function FlowEditor() {
 
       setNodes((nds) => nds.concat(newNode));
     },
-    [screenToFlowPosition, setNodes, handleNoteChange]
+    [screenToFlowPosition, setNodes, handleNoteChange, myRole]
   );
 
   const handleAddTasks = (newTasks: TaskData[]) => {

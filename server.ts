@@ -1,4 +1,5 @@
 import express from "express";
+import "dotenv/config";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
@@ -6,6 +7,9 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import { randomUUID } from "crypto";
 import http from "http";
 import { Server } from "socket.io";
+import { createClient } from "@supabase/supabase-js";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient as createRedisClient } from "redis";
 
 async function startServer() {
   const app = express();
@@ -14,6 +18,23 @@ async function startServer() {
     cors: { origin: "*" }
   });
   const PORT = 3000;
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const baseSupabase = supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
+
+  if (process.env.REDIS_URL) {
+    try {
+      const pubClient = createRedisClient({ url: process.env.REDIS_URL });
+      const subClient = pubClient.duplicate();
+      await Promise.all([pubClient.connect(), subClient.connect()]);
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log("Socket.IO Redis adapter enabled.");
+    } catch (error) {
+      console.warn("Redis adapter unavailable; continuing with single-process collaboration.", error);
+    }
+  }
 
   app.use(express.json());
 
@@ -31,21 +52,134 @@ async function startServer() {
 
   // Track cursor positions
   const canvasCursors = new Map<string, Map<string, any>>();
+  const saveTimers = new Map<string, NodeJS.Timeout>();
+
+  const createUserSupabase = (accessToken: string) => {
+    if (!supabaseUrl || !supabaseAnonKey) return null;
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    });
+  };
+
+  const persistCanvasState = (canvasId: string, supabase: any) => {
+    if (!supabase || canvasId === 'default') return;
+    const canvas = canvases.get(canvasId);
+    if (!canvas) return;
+
+    const existing = saveTimers.get(canvasId);
+    if (existing) clearTimeout(existing);
+
+    saveTimers.set(canvasId, setTimeout(async () => {
+      const { error } = await supabase
+        .from('canvases')
+        .update({
+          nodes: canvas.nodes,
+          edges: canvas.edges,
+          versions: canvas.versions,
+        })
+        .eq('id', canvasId);
+
+      if (error) {
+        console.warn(`Failed to persist canvas ${canvasId}:`, error.message);
+      }
+      saveTimers.delete(canvasId);
+    }, 600));
+  };
+
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token || !baseSupabase) {
+      return next(new Error("Authentication required"));
+    }
+
+    const { data, error } = await baseSupabase.auth.getUser(token);
+    if (error || !data.user) {
+      return next(new Error("Invalid session"));
+    }
+
+    socket.data.authUser = data.user;
+    socket.data.accessToken = token;
+    socket.data.supabase = createUserSupabase(token);
+    next();
+  });
 
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
 
     // Join a canvas room
-    socket.on("join_canvas", ({ canvasId, user }) => {
+    socket.on("join_canvas", async ({ canvasId, user }) => {
       socket.join(canvasId);
       socket.data.canvasId = canvasId;
-      socket.data.user = user;
+      const authUser = socket.data.authUser;
+      const safeUser = {
+        id: authUser.id,
+        email: authUser.email,
+        name: user?.name || authUser.user_metadata?.full_name || authUser.email || 'User',
+        color: user?.color || '#6366f1',
+      };
+      socket.data.user = safeUser;
 
       if (!canvases.has(canvasId)) {
-        canvases.set(canvasId, { nodes: [], edges: [], versions: [], members: {} });
+        let dbCanvas: any = null;
+        if (socket.data.supabase && canvasId !== 'default') {
+          let result = await socket.data.supabase
+            .from('canvases')
+            .select('nodes, edges, versions')
+            .eq('id', canvasId)
+            .maybeSingle();
+
+          if (!result.data) {
+            await socket.data.supabase
+              .from('canvas_members')
+              .insert({ canvas_id: canvasId, user_id: safeUser.id, role: 'editor' });
+
+            result = await socket.data.supabase
+              .from('canvases')
+              .select('nodes, edges, versions')
+              .eq('id', canvasId)
+              .maybeSingle();
+          }
+
+          if (result.error) {
+            console.warn(`Unable to load canvas ${canvasId} from Supabase:`, result.error.message);
+          }
+          dbCanvas = result.data;
+        }
+
+        canvases.set(canvasId, {
+          nodes: dbCanvas?.nodes || [],
+          edges: dbCanvas?.edges || [],
+          versions: dbCanvas?.versions || [],
+          members: {},
+        });
       }
       if (!canvasChats.has(canvasId)) {
-        canvasChats.set(canvasId, []);
+        if (socket.data.supabase && canvasId !== 'default') {
+          const { data, error } = await socket.data.supabase
+            .from('canvas_messages')
+            .select('id, text, user_snapshot, created_at')
+            .eq('canvas_id', canvasId)
+            .order('created_at', { ascending: true })
+            .limit(100);
+
+          if (error) {
+            console.warn(`Unable to load chat for ${canvasId}:`, error.message);
+            canvasChats.set(canvasId, []);
+          } else {
+            canvasChats.set(canvasId, (data || []).map((msg: any) => ({
+              id: msg.id,
+              text: msg.text,
+              user: msg.user_snapshot,
+              timestamp: msg.created_at,
+            })));
+          }
+        } else {
+          canvasChats.set(canvasId, []);
+        }
       }
       if (!canvasCursors.has(canvasId)) {
         canvasCursors.set(canvasId, new Map());
@@ -54,24 +188,36 @@ async function startServer() {
       const canvas = canvases.get(canvasId)!;
 
       // Determine if a user is joining for the first time
-      if (!canvas.members[user.id]) {
+      if (!canvas.members[safeUser.id]) {
         // First member is automatically the owner
         const isFirst = Object.keys(canvas.members).length === 0;
-        canvas.members[user.id] = {
+        let role: 'owner' | 'editor' | 'viewer' = isFirst ? 'owner' : 'editor';
+        if (socket.data.supabase && canvasId !== 'default') {
+          const { data } = await socket.data.supabase
+            .from('canvas_members')
+            .select('role')
+            .eq('canvas_id', canvasId)
+            .eq('user_id', safeUser.id)
+            .maybeSingle();
+          role = data?.role || role;
+        }
+
+        canvas.members[safeUser.id] = {
           role: isFirst ? 'owner' : 'editor',
-          user: user,
+          user: safeUser,
           isOnline: true,
           socketId: socket.id
         };
+        canvas.members[safeUser.id].role = role;
       } else {
-        canvas.members[user.id].isOnline = true;
-        canvas.members[user.id].socketId = socket.id;
+        canvas.members[safeUser.id].isOnline = true;
+        canvas.members[safeUser.id].socketId = socket.id;
         // Update user properties in case they changed
-        canvas.members[user.id].user = user;
+        canvas.members[safeUser.id].user = safeUser;
       }
 
       const cursorsMap = canvasCursors.get(canvasId)!;
-      cursorsMap.set(socket.id, { user, position: { x: 0, y: 0 } });
+      cursorsMap.set(socket.id, { user: safeUser, position: { x: 0, y: 0 } });
 
       // Send current state
       socket.emit("init_canvas", canvas);
@@ -83,7 +229,7 @@ async function startServer() {
       io.to(canvasId).emit("cursors_update", Array.from(cursorsMap.entries()).map(([id, data]) => ({ id, ...data })));
     });
 
-    socket.on("update_member_role", ({ userId, role }) => {
+    socket.on("update_member_role", async ({ userId, role }) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvases.has(canvasId)) {
         const canvas = canvases.get(canvasId)!;
@@ -93,6 +239,17 @@ async function startServer() {
           if (canvas.members[userId]) {
             // Ensure we don't remove the last owner unless it's handled, but for simplicity:
             if (userId !== requesterId) {
+              if (socket.data.supabase && canvasId !== 'default') {
+                const { error } = await socket.data.supabase
+                  .from('canvas_members')
+                  .update({ role })
+                  .eq('canvas_id', canvasId)
+                  .eq('user_id', userId);
+                if (error) {
+                  console.warn(`Failed to update role for ${userId}:`, error.message);
+                  return;
+                }
+              }
               canvas.members[userId].role = role;
               io.to(canvasId).emit("members_updated", Object.values(canvas.members));
             }
@@ -101,7 +258,7 @@ async function startServer() {
       }
     });
 
-    socket.on("kick_member", (userId) => {
+    socket.on("kick_member", async (userId) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvases.has(canvasId)) {
         const canvas = canvases.get(canvasId)!;
@@ -109,6 +266,17 @@ async function startServer() {
         if (canvas.members[requesterId]?.role === 'owner') {
           if (canvas.members[userId] && userId !== requesterId) {
             const targetSocketId = canvas.members[userId].socketId;
+            if (socket.data.supabase && canvasId !== 'default') {
+              const { error } = await socket.data.supabase
+                .from('canvas_members')
+                .delete()
+                .eq('canvas_id', canvasId)
+                .eq('user_id', userId);
+              if (error) {
+                console.warn(`Failed to remove member ${userId}:`, error.message);
+                return;
+              }
+            }
             delete canvas.members[userId];
             if (targetSocketId) {
               const targetSocket = io.sockets.sockets.get(targetSocketId);
@@ -145,7 +313,11 @@ async function startServer() {
     socket.on("update_nodes", (nodes) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvases.has(canvasId)) {
+        const canvas = canvases.get(canvasId)!;
+        const role = canvas.members[socket.data.user.id]?.role;
+        if (role === 'viewer') return;
         canvases.get(canvasId)!.nodes = nodes;
+        persistCanvasState(canvasId, socket.data.supabase);
         socket.to(canvasId).emit("nodes_updated", nodes);
       }
     });
@@ -153,7 +325,11 @@ async function startServer() {
     socket.on("update_edges", (edges) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvases.has(canvasId)) {
+        const canvas = canvases.get(canvasId)!;
+        const role = canvas.members[socket.data.user.id]?.role;
+        if (role === 'viewer') return;
         canvases.get(canvasId)!.edges = edges;
+        persistCanvasState(canvasId, socket.data.supabase);
         socket.to(canvasId).emit("edges_updated", edges);
       }
     });
@@ -171,6 +347,7 @@ async function startServer() {
           edges: JSON.parse(JSON.stringify(canvas.edges))
         };
         canvas.versions = [newVersion, ...canvas.versions];
+        persistCanvasState(canvasId, socket.data.supabase);
         io.to(canvasId).emit("versions_updated", canvas.versions);
       }
     });
@@ -195,12 +372,13 @@ async function startServer() {
             edges: JSON.parse(JSON.stringify(canvas.edges))
           };
           canvas.versions = [newVersion, ...canvas.versions];
+          persistCanvasState(canvasId, socket.data.supabase);
           io.to(canvasId).emit("versions_updated", canvas.versions);
         }
       }
     });
 
-    socket.on("send_message", (message) => {
+    socket.on("send_message", async (message) => {
       const canvasId = socket.data.canvasId;
       if (canvasId && canvasChats.has(canvasId)) {
         const msgObj = {
@@ -209,6 +387,19 @@ async function startServer() {
           text: message,
           timestamp: new Date().toISOString()
         };
+        if (socket.data.supabase && canvasId !== 'default') {
+          const { error } = await socket.data.supabase.from('canvas_messages').insert({
+            id: msgObj.id,
+            canvas_id: canvasId,
+            user_id: socket.data.user.id,
+            user_snapshot: socket.data.user,
+            text: message,
+            created_at: msgObj.timestamp,
+          });
+          if (error) {
+            console.warn(`Failed to save chat message for ${canvasId}:`, error.message);
+          }
+        }
         canvasChats.get(canvasId)!.push(msgObj);
         io.to(canvasId).emit("new_message", msgObj);
       }

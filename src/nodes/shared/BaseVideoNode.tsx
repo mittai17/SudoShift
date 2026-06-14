@@ -31,7 +31,7 @@ export function createVideoNode(config: VideoConfig) {
     const ytId = getYouTubeId(url);
 
     return (
-      <NodeWrapper data={data} selected={selected} resizable={true} minWidth={288} minHeight={200}>
+      <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor} resizable={true} minWidth={288} minHeight={200}>
         <div className="flex flex-col w-full h-full min-w-72 min-h-[200px] rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white shrink-0" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>

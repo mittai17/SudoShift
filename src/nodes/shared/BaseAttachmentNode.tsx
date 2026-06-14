@@ -35,7 +35,7 @@ export function createAttachmentNode(config: AttachmentConfig) {
     };
 
     return (
-      <NodeWrapper data={data} selected={selected}>
+      <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor}>
         <div className="flex flex-col w-64 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           <div className="rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>

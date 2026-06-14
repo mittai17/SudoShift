@@ -888,6 +888,28 @@ async function startServer() {
     }
   });
 
+  app.post("/api/evaluate-formula", async (req, res) => {
+    try {
+      const ai = getAIClient(req);
+      const { text } = req.body;
+      
+      const prompt = `Evaluate the following mathematical formula, instructions, or expression. Provide ONLY the final result or direct output. Be extremely concise. Do not include any explanations.\n\n${text}`;
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          maxOutputTokens: 100,
+        }
+      });
+
+      res.json({ result: response.text });
+    } catch (e: any) {
+      console.error("Formula Eval Error:", e);
+      res.status(500).json({ error: e.message || "Failed to evaluate formula." });
+    }
+  });
+
   app.post("/api/auto-tag", async (req, res) => {
     try {
       const ai = getAIClient(req);

@@ -87,7 +87,7 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
     const extraFields = config.fields || [];
 
     return (
-      <NodeWrapper data={data} selected={selected}>
+      <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor}>
         <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           {/* Header */}

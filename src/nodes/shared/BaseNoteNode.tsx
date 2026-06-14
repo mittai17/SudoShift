@@ -43,7 +43,7 @@ export function createNoteNode(config: NoteNodeConfig, BodyComponent: React.FC<{
     const createdDate = task.createdDate || new Date().toISOString();
 
     return (
-      <NodeWrapper data={data} selected={selected}>
+      <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor}>
         <NodeResizer isVisible={!!task.isResizable} minWidth={250} minHeight={150} />
         <div className={`flex flex-col ${config.width || 'w-80'} rounded-2xl shadow-xl bg-[#1a1b23] border ${selected ? 'border-violet-500 shadow-violet-500/20' : 'border-[#2a2b36] hover:border-gray-600'} transition-all group overflow-hidden`} style={{ width: task.width, height: task.height }}>
           

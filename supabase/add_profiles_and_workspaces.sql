@@ -3,6 +3,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique not null,
   full_name text,
+  avatar_color text,
   updated_at timestamptz not null default now()
 );
 
@@ -205,7 +206,8 @@ begin
       'role', cm.role,
       'email', u.email,
       'name', coalesce(p.full_name, p.username, u.email),
-      'username', p.username
+      'username', p.username,
+      'avatar_color', p.avatar_color
     )
   )
   into members_list

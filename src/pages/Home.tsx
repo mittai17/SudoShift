@@ -31,6 +31,12 @@ interface CanvasMeta {
   folder_id: string | null;
 }
 
+const PALETTE = [
+  '#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6',
+  '#06b6d4', '#d946ef', '#14b8a6', '#0ea5e9', '#64748b'
+];
+const colorForUser = (id: string) => PALETTE[id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % PALETTE.length];
+
 export default function Home() {
   const [canvases, setCanvases] = useState<CanvasMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -310,7 +316,10 @@ export default function Home() {
         <div className="flex items-center gap-2">
           {/* Linked Profile Page Circle */}
           <RouterLink to="/profile" className="hidden sm:flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
-            <div className="w-8 h-8 rounded-full bg-indigo-50 group-hover:bg-indigo-100 border border-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold shadow-sm transition-colors shrink-0">
+            <div 
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0 border border-white"
+              style={{ backgroundColor: user?.user_metadata?.avatar_color || colorForUser(user?.id || 'user') }}
+            >
               {user?.user_metadata?.full_name?.substring(0, 1).toUpperCase() || user?.email?.substring(0, 1).toUpperCase() || 'U'}
             </div>
             <div className="text-left">

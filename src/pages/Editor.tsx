@@ -156,7 +156,7 @@ function FlowEditor() {
     id: user?.id || '',
     name: user?.user_metadata?.full_name || user?.email || 'User',
     email: user?.email,
-    color: colorForUser(user?.id || 'user'),
+    color: user?.user_metadata?.avatar_color || colorForUser(user?.id || 'user'),
   }), [user]);
 
   const unreadTeamCount = useMemo(() => {

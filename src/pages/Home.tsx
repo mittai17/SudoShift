@@ -278,11 +278,16 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           {/* Linked Profile Page Circle */}
-          <RouterLink to="/profile" className="hidden sm:block text-right mr-3 hover:opacity-85 transition-opacity group">
-            <div className="text-xs font-bold text-gray-700 max-w-40 truncate group-hover:text-indigo-600 transition-colors">
-              {user?.user_metadata?.full_name || user?.email}
+          <RouterLink to="/profile" className="hidden sm:flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
+            <div className="w-8 h-8 rounded-full bg-indigo-50 group-hover:bg-indigo-100 border border-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold shadow-sm transition-colors shrink-0">
+              {user?.user_metadata?.full_name?.substring(0, 1).toUpperCase() || user?.email?.substring(0, 1).toUpperCase() || 'U'}
             </div>
-            <div className="text-[10px] text-gray-400 font-bold group-hover:text-indigo-500 transition-colors">Edit Profile</div>
+            <div className="text-left">
+              <div className="text-xs font-bold text-gray-700 max-w-40 truncate group-hover:text-indigo-600 transition-colors">
+                {user?.user_metadata?.full_name || user?.email}
+              </div>
+              <div className="text-[10px] text-gray-400 font-bold group-hover:text-indigo-500 transition-colors">Edit Profile</div>
+            </div>
           </RouterLink>
           <button onClick={createNewCanvas} className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center space-x-2">
             <Plus className="w-4 h-4" />

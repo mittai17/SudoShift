@@ -539,9 +539,9 @@ function FlowEditor() {
 
         <div className="flex items-center space-x-3">
           <div className="flex -space-x-2 mr-2">
-            <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-100 text-[10px] font-bold shadow-sm" style={{ backgroundColor: currentUser.color, color: 'white' }}>
+            <Link to="/profile" className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm hover:scale-110 hover:shadow-md transition-all cursor-pointer block" style={{ backgroundColor: currentUser.color, color: 'white' }} title="Edit Profile">
               YOU
-            </div>
+            </Link>
             {Object.values(cursors).slice(0, 3).map((c: any) => (
               <div key={c.user.id} className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-100 text-[10px] font-bold shadow-sm" style={{ backgroundColor: c.user.color, color: 'white' }} title={c.user.name}>
                 {c.user.name.substring(0, 1).toUpperCase()}

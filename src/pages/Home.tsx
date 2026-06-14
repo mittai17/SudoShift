@@ -60,6 +60,7 @@ export default function Home() {
   const [activeMenuCanvasId, setActiveMenuCanvasId] = useState<string | null>(null);
   const [renamingCanvasId, setRenamingCanvasId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const loadWorkspaces = async () => {
     try {
@@ -315,14 +316,14 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           {/* Linked Profile Page Circle */}
-          <RouterLink to="/profile" className="hidden sm:flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
+          <RouterLink to="/profile" className="flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
             <div 
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0 border border-white"
               style={{ backgroundColor: user?.user_metadata?.avatar_color || colorForUser(user?.id || 'user') }}
             >
               {user?.user_metadata?.full_name?.substring(0, 1).toUpperCase() || user?.email?.substring(0, 1).toUpperCase() || 'U'}
             </div>
-            <div className="text-left">
+            <div className="text-left hidden sm:block">
               <div className="text-xs font-bold text-gray-700 max-w-40 truncate group-hover:text-indigo-600 transition-colors">
                 {user?.user_metadata?.full_name || user?.email}
               </div>
@@ -331,7 +332,7 @@ export default function Home() {
           </RouterLink>
           <button onClick={createNewCanvas} className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center space-x-2">
             <Plus className="w-4 h-4" />
-            <span>New Canvas</span>
+            <span className="hidden sm:inline">New Canvas</span>
           </button>
           <button onClick={signOut} className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Sign out">
             <LogOut className="w-4 h-4" />
@@ -342,8 +343,29 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6 lg:px-12 mt-12">
         <section id="dashboard" className="mb-20">
           <div className="flex flex-col md:flex-row gap-8">
+            {/* Mobile Sidebar Toggle Header */}
+            <div className="md:hidden flex items-center justify-between bg-white border border-gray-200 rounded-3xl p-4 shadow-sm">
+              <div className="flex items-center space-x-2 min-w-0">
+                <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+                  <FolderOpen className="w-4 h-4" />
+                </div>
+                <div className="truncate text-left">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Scope</span>
+                  <span className="text-xs font-bold text-slate-700 truncate block">
+                    {activeWorkspaceName} {activeFolderName ? `/ ${activeFolderName}` : ''}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 rounded-xl transition-all shrink-0 active:scale-95 shadow-sm"
+              >
+                {sidebarCollapsed ? 'Show Folders' : 'Hide Folders'}
+              </button>
+            </div>
+
             {/* Sidebar Column */}
-            <aside className="w-full md:w-64 shrink-0 bg-white border border-gray-200 rounded-3xl p-5 shadow-sm h-fit">
+            <aside className={`w-full md:w-64 shrink-0 bg-white border border-gray-200 rounded-3xl p-5 shadow-sm h-fit md:block ${sidebarCollapsed ? 'hidden' : 'block'}`}>
               {/* Workspace Selector */}
               <div className="space-y-2.5 pb-5 border-b border-slate-100">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace</span>

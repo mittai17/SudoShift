@@ -266,12 +266,12 @@ export default function Profile() {
           <Link to="/" className="p-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl shadow-sm block transition-all active:scale-95">
             <BrainCircuit className="w-5 h-5" />
           </Link>
-          <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-slate-900 to-slate-800 bg-clip-text text-transparent">Visual Second Brain</span>
+          <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-slate-900 to-slate-800 bg-clip-text text-transparent hidden sm:inline">Visual Second Brain</span>
         </div>
         <div className="flex items-center">
           <Link to="/" className="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-50 hover:bg-slate-100/80 px-3.5 py-2 rounded-xl transition-all border border-slate-200/50 flex items-center gap-1.5 active:scale-95">
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Dashboard</span>
+            <span className="hidden sm:inline">Back to Dashboard</span>
           </Link>
         </div>
       </nav>

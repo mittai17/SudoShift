@@ -10,6 +10,8 @@ import { NodeCategory } from '../../types';
 interface SidebarProps {
   onAddNodes: (nodes: any[]) => void;
   onAddEdges: (edges: any[]) => void;
+  onAddNodeClick?: (type: string) => void;
+  onClose?: () => void;
 }
 
 type TabId = NodeCategory | 'all';
@@ -39,9 +41,10 @@ const CATEGORY_LABELS: Record<NodeCategory, string> = {
 };
 
 // ── Node Card ─────────────────────────────────────────────────────────────────
-function NodeCard({ node, onDragStart }: {
+function NodeCard({ node, onDragStart, onClick }: {
   node: NodeDefinition;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+  onClick?: () => void;
   key?: React.Key;
 }) {
   return (
@@ -50,6 +53,7 @@ function NodeCard({ node, onDragStart }: {
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = node.color + '80')}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
       onDragStart={(e) => onDragStart(e, node.id)}
+      onClick={onClick}
       draggable
       title={node.id}
     >
@@ -61,7 +65,7 @@ function NodeCard({ node, onDragStart }: {
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
-export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
+export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClose }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
 
@@ -96,14 +100,25 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
   return (
     <div className="w-72 h-full flex flex-col bg-[#13141c] border-r border-[#1e2030] shrink-0 shadow-2xl z-10 overflow-hidden">
       {/* ── Brand ─────────────────────────────────────────── */}
-      <div className="px-4 py-3.5 flex items-center space-x-2.5 border-b border-[#1e2030] shrink-0">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6d5a, #f59e0b)' }}>
-          <BrainCircuit className="w-5 h-5 text-white" />
+      <div className="px-4 py-3.5 flex items-center justify-between border-b border-[#1e2030] shrink-0">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6d5a, #f59e0b)' }}>
+            <BrainCircuit className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-sm text-white leading-tight tracking-tight">Visual Second Brain</h1>
+            <p className="text-[10px] text-gray-500">LifeOS Canvas</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-sm text-white leading-tight tracking-tight">Visual Second Brain</h1>
-          <p className="text-[10px] text-gray-500">LifeOS Canvas</p>
-        </div>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-1.5 text-gray-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            title="Close Drawer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* ── Search ────────────────────────────────────────── */}
@@ -173,7 +188,14 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
                   <div className="flex-1 h-px" style={{ backgroundColor: (tabCfg?.color || '#888') + '20' }} />
                 </div>
                 <div className="grid grid-cols-1 gap-1.5">
-                  {nodes.map((node) => <NodeCard key={node.id} node={node} onDragStart={handleDragStart} />)}
+                  {nodes.map((node) => (
+                    <NodeCard 
+                      key={node.id} 
+                      node={node} 
+                      onDragStart={handleDragStart} 
+                      onClick={() => onAddNodeClick?.(node.id)}
+                    />
+                  ))}
                 </div>
               </div>
             );
@@ -191,7 +213,14 @@ export default function Sidebar({ onAddNodes, onAddEdges }: SidebarProps) {
               <span className="text-[10px] text-gray-600 ml-1">({filteredNodes.length})</span>
             </div>
             <div className="grid grid-cols-1 gap-1.5">
-              {filteredNodes.map((node) => <NodeCard key={node.id} node={node} onDragStart={handleDragStart} />)}
+              {filteredNodes.map((node) => (
+                <NodeCard 
+                  key={node.id} 
+                  node={node} 
+                  onDragStart={handleDragStart} 
+                  onClick={() => onAddNodeClick?.(node.id)}
+                />
+              ))}
             </div>
           </div>
         )}

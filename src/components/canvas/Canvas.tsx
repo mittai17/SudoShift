@@ -100,39 +100,39 @@ export function Canvas({
     >
       <Background color="#64748b" variant={BackgroundVariant.Dots} gap={24} size={3} />
 
-      <Panel position="top-right" className="bg-white shadow-md rounded-lg p-1.5 border border-gray-200 flex items-center space-x-1 z-10 m-4">
+      <Panel position="top-right" className="bg-white shadow-md rounded-lg p-1 md:p-1.5 border border-gray-200 flex items-center space-x-0.5 md:space-x-1 z-10 m-2 md:m-4 max-w-[calc(100vw-32px)] flex-wrap">
         <button
           onClick={() => setPanMode(false)}
-          className={`p-2 rounded transition-colors ${!panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
+          className={`p-1.5 md:p-2 rounded transition-colors ${!panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
           title="Select Tool (Marquee)"
         >
           <MousePointer2 className="w-4 h-4" />
         </button>
         <button
           onClick={() => setPanMode(true)}
-          className={`p-2 rounded transition-colors ${panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
+          className={`p-1.5 md:p-2 rounded transition-colors ${panMode ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
           title="Hand Tool (Pan)"
         >
           <Move className="w-4 h-4" />
         </button>
         <div className="w-px h-5 bg-gray-300 mx-1"></div>
-        <button onClick={handleZoomIn} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Zoom In">
+        <button onClick={handleZoomIn} className="p-1.5 md:p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Zoom In">
           <ZoomIn className="w-4 h-4" />
         </button>
-        <button onClick={handleZoomOut} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Zoom Out">
+        <button onClick={handleZoomOut} className="p-1.5 md:p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Zoom Out">
           <ZoomOut className="w-4 h-4" />
         </button>
-        <button onClick={handleFitView} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Fit View">
+        <button onClick={handleFitView} className="p-1.5 md:p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Fit View">
           <Expand className="w-4 h-4" />
         </button>
         <div className="w-px h-5 bg-gray-300 mx-1"></div>
-        <button onClick={handleDownload} className="p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Export as PNG">
+        <button onClick={handleDownload} className="p-1.5 md:p-2 rounded text-gray-600 hover:bg-gray-100 transition-colors" title="Export as PNG">
           <Download className="w-4 h-4" />
         </button>
         {hasSelectedElements && (
           <>
             <div className="w-px h-5 bg-gray-300 mx-1"></div>
-            <button onClick={handleDeleteSelected} className="p-2 rounded text-red-500 hover:bg-red-50 transition-colors" title="Delete Selected">
+            <button onClick={handleDeleteSelected} className="p-1.5 md:p-2 rounded text-red-500 hover:bg-red-50 transition-colors" title="Delete Selected">
               <Trash2 className="w-4 h-4" />
             </button>
           </>
@@ -168,7 +168,7 @@ export function Canvas({
           }
         }}
         maskColor="rgba(248, 250, 252, 0.6)"
-        className="rounded-lg shadow-md border border-gray-200"
+        className="hidden md:block rounded-lg shadow-md border border-gray-200"
       />
     </ReactFlow>
   );

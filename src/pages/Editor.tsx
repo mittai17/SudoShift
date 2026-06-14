@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -131,6 +131,8 @@ function FlowEditor() {
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jsonTransportOpen, setJsonTransportOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   // Direct Messaging / Chat Enhancements
   const [activeChatTab, setActiveChatTab] = useState<'team' | 'dm'>('team');
@@ -420,6 +422,39 @@ function FlowEditor() {
     [screenToFlowPosition, setNodes, handleNoteChange, myRole]
   );
 
+  const handleAddNodeClick = useCallback(
+    (type: string) => {
+      if (myRole === 'viewer') return;
+
+      const position = screenToFlowPosition({ 
+        x: window.innerWidth / 2, 
+        y: window.innerHeight / 2 
+      });
+
+      const registryEntry = NODE_REGISTRY.find((n) => n.id === type);
+
+      const taskData = registryEntry
+        ? { id: uuidv4(), ...registryEntry.defaultData }
+        : {
+          id: uuidv4(),
+          title: type === 'mermaidNodeType' ? 'Mermaid Diagram' : type === 'tableNodeType' ? 'Table' : type === 'imageNodeType' ? 'Image' : type === 'linkNodeType' ? 'Link' : type === 'checklistNodeType' ? 'Checklist' : type === 'codeNodeType' ? 'Code' : type === 'videoNodeType' ? 'Video' : type === 'whiteboardNodeType' ? 'Whiteboard' : type === 'timerNodeType' ? 'Timer' : type === 'calculatorNodeType' ? 'Calculator' : type === 'calendarNodeType' ? 'Calendar' : type === 'formulaNodeType' ? 'Formulas' : 'Note',
+          description: type === 'mermaidNodeType' ? 'graph TD\n  A-->B;' : type === 'checklistNodeType' ? '[{"id":"1","text":"First item","checked":false}]' : type === 'formulaNodeType' ? 'Budget = 5000\nSpend = 1200\nBudget - Spend' : '',
+          matrix: type === 'mermaidNodeType' ? 'MERMAID' : type === 'tableNodeType' ? 'TABLE' : type === 'imageNodeType' ? 'IMAGE' : type === 'linkNodeType' ? 'LINK' : type === 'checklistNodeType' ? 'CHECKLIST' : type === 'codeNodeType' ? 'CODE' : type === 'videoNodeType' ? 'VIDEO' : type === 'whiteboardNodeType' ? 'WHITEBOARD' : type === 'timerNodeType' ? 'TIMER' : type === 'calculatorNodeType' ? 'CALCULATOR' : type === 'calendarNodeType' ? 'CALENDAR' : type === 'formulaNodeType' ? 'FORMULA' : 'NOTE',
+          deadline: null,
+        };
+
+      const newNode: Node = {
+        id: uuidv4(),
+        type,
+        position,
+        data: { onChange: handleNoteChange, task: taskData },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [screenToFlowPosition, setNodes, handleNoteChange, myRole]
+  );
+
   const handleAddTasks = (newTasks: TaskData[]) => {
     setNodes((nds) => {
       const startX = nds.length > 0 ? 250 : 50;
@@ -534,7 +569,20 @@ function FlowEditor() {
           <Link to="/" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <h2 className="font-semibold text-sm">Workspace</h2>
+          <button
+            onClick={() => {
+              setSidebarOpen(!sidebarOpen);
+              if (!sidebarOpen && window.innerWidth < 1024) {
+                setChatOpen(false);
+                setHistoryOpen(false);
+              }
+            }}
+            className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 flex items-center justify-center border border-slate-200"
+            title="Toggle Nodes Panel"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <h2 className="font-semibold text-sm hidden sm:block">Workspace</h2>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -556,7 +604,7 @@ function FlowEditor() {
 
           <button
             onClick={() => setMembersModalOpen(true)}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
+            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
           >
             <Users className="w-4 h-4" />
             <span className="hidden md:inline">Members</span>
@@ -564,26 +612,38 @@ function FlowEditor() {
 
           <button
             onClick={handleShare}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-[#6366f1] text-white hover:bg-indigo-600 border border-transparent'}`}
+            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-[#6366f1] text-white hover:bg-indigo-600 border border-transparent'}`}
           >
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             <span className="hidden md:inline">{copied ? 'Copied' : 'Share'}</span>
           </button>
 
           <button
-            onClick={() => { setHistoryOpen(!historyOpen); setChatOpen(false); }}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${historyOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
+            onClick={() => {
+              setHistoryOpen(!historyOpen);
+              setChatOpen(false);
+              if (!historyOpen && window.innerWidth < 1024) {
+                setSidebarOpen(false);
+              }
+            }}
+            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${historyOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
           >
             <History className="w-4 h-4" />
             <span className="hidden md:inline">History</span>
           </button>
 
           <button
-            onClick={() => { setChatOpen(!chatOpen); setHistoryOpen(false); }}
+            onClick={() => {
+              setChatOpen(!chatOpen);
+              setHistoryOpen(false);
+              if (!chatOpen && window.innerWidth < 1024) {
+                setSidebarOpen(false);
+              }
+            }}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors relative ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
           >
             <MessageSquare className="w-4 h-4" />
-            <span>Chat</span>
+            <span className="hidden md:inline">Chat</span>
             {(unreadTeamCount + totalUnreadDMCount) > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold px-1 shadow-sm">
                 {unreadTeamCount + totalUnreadDMCount}
@@ -593,7 +653,7 @@ function FlowEditor() {
 
           <button
             onClick={() => setJsonTransportOpen(true)}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 border border-fuchsia-200"
+            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 border border-fuchsia-200"
           >
             <Code className="w-4 h-4" />
             <span className="hidden md:inline">JSON</span>
@@ -601,16 +661,102 @@ function FlowEditor() {
 
           <button
             onClick={() => setSettingsOpen(true)}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
+            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden md:inline">Settings</span>
           </button>
+
+          {/* More Options Dropdown Menu for Mobile */}
+          <div className="relative md:hidden" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+              className={`p-1.5 rounded-lg transition-colors flex items-center justify-center border ${moreMenuOpen ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'hover:bg-slate-100 text-slate-500 border-slate-200 bg-white'}`}
+              title="More Options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            {moreMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setMoreMenuOpen(false)} />
+                <div className="absolute right-0 mt-1.5 w-48 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <button
+                    onClick={() => {
+                      setMembersModalOpen(true);
+                      setMoreMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span>Members</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      handleShare();
+                      setMoreMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                     <span>{copied ? 'Copied' : 'Share Link'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setHistoryOpen(!historyOpen);
+                      setChatOpen(false);
+                      setMoreMenuOpen(false);
+                      if (!historyOpen) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                    className={`w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold transition-colors ${historyOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                  >
+                    <History className="w-4 h-4" />
+                    <span>History</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setJsonTransportOpen(true);
+                      setMoreMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  >
+                    <Code className="w-4 h-4" />
+                    <span>JSON Export</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSettingsOpen(true);
+                      setMoreMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden bg-[#f8fafc] font-sans text-gray-900 relative">
-        <Sidebar onAddNodes={handleAddTasks} onAddEdges={handleAddEdges} />
+        <div className={`
+          ${sidebarOpen ? 'flex' : 'hidden'} 
+          lg:flex absolute lg:static left-0 top-0 bottom-0 z-35 shrink-0 shadow-2xl lg:shadow-none h-full
+        `}>
+          <Sidebar 
+            onAddNodes={handleAddTasks} 
+            onAddEdges={handleAddEdges} 
+            onAddNodeClick={handleAddNodeClick}
+            onClose={() => setSidebarOpen(false)}
+          />
+        </div>
 
         <div className="flex-1 h-full relative p-2 md:p-4 pb-0">
           <div className="w-full h-full bg-white rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border border-gray-200 overflow-hidden relative" onDrop={onDrop} onDragOver={onDragOver} onPointerMove={handlePointerMove}>
@@ -655,7 +801,7 @@ function FlowEditor() {
 
         {/* Chat Sidebar */}
         {chatOpen && (
-          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full animate-in slide-in-from-right-8 duration-200">
+          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50 shrink-0">
               <div className="flex items-center space-x-2 text-slate-900 font-bold text-base">
@@ -944,7 +1090,7 @@ function FlowEditor() {
 
         {/* History Sidebar */}
         {historyOpen && (
-          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full animate-in slide-in-from-right-8 duration-200">
+          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
               <div className="flex items-center space-x-2 text-indigo-900 font-semibold">
                 <History className="w-5 h-5 text-indigo-500" />

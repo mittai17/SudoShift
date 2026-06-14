@@ -97,8 +97,8 @@ export default function Community() {
             <p className="text-gray-500 text-sm">Discover and clone setups shared by the community.</p>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <div className="relative relative-w-full md:w-64">
+          <div className="flex items-center space-x-3 w-full md:w-auto">
+            <div className="relative w-full md:w-64 animate-in fade-in duration-200">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input 
                 type="text" 

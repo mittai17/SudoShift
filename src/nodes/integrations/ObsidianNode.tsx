@@ -1,6 +1,6 @@
 import { SiObsidian } from 'react-icons/si';
 import React, { useState } from 'react';
-import { File, Terminal, Search, FileText, BookMarked, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { File, Terminal, Search, FileText, BookMarked, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const ObsidianNodeBody = ({ task, updateTask }: any) => {

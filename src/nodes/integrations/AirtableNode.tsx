@@ -1,6 +1,6 @@
 import { SiAirtable } from 'react-icons/si';
 import React, { useState } from 'react';
-import { Filter, Table, Table2, Database, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Filter, Table, Table2, Database, Key, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const AirtableNodeBody = ({ task, updateTask }: any) => {

@@ -1,6 +1,6 @@
 import { SiGooglesheets } from 'react-icons/si';
 import React, { useState } from 'react';
-import { Maximize, FileSpreadsheet, FileText, Table, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Maximize, FileSpreadsheet, FileText, Table, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const GoogleSheetsNodeBody = ({ task, updateTask }: any) => {

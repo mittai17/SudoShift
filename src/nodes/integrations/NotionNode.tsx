@@ -1,6 +1,6 @@
 import { SiNotion } from 'react-icons/si';
 import React, { useState } from 'react';
-import { Database, Search, FileText, BookOpen, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Database, Search, FileText, BookOpen, Type, Key, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const NotionNodeBody = ({ task, updateTask }: any) => {

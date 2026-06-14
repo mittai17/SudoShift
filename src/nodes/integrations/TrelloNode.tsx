@@ -1,6 +1,6 @@
 import { SiTrello } from 'react-icons/si';
 import React, { useState } from 'react';
-import { List, FileText, LayoutGrid, Layout, Type, Key, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { List, FileText, LayoutGrid, Layout, Type, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const TrelloNodeBody = ({ task, updateTask }: any) => {

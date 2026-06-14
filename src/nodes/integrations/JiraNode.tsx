@@ -1,6 +1,6 @@
 import { SiJira } from 'react-icons/si';
 import React, { useState } from 'react';
-import { Mail, Briefcase, Search, FileText, Globe, Layers, Type, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Mail, Briefcase, Search, FileText, Globe, Layers, Type, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const JiraNodeBody = ({ task, updateTask }: any) => {

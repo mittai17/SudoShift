@@ -1,6 +1,6 @@
 import { FaWindows } from 'react-icons/fa';
 import React, { useState } from 'react';
-import { Maximize, FileText, File, Table, Key, Database, AlertCircle, FileText, Download, Loader2 } from 'lucide-react';
+import { Maximize, FileText, File, Table, Key, Database, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { createResourceNode } from '../shared/BaseResourceNode';
 
 const MicrosoftNodeBody = ({ task, updateTask }: any) => {

@@ -273,26 +273,38 @@ export default function Home() {
     }
   };
 
-  const handleRenameCanvas = async (canvasId: string) => {
-    if (!renameValue.trim()) {
+  const [renamingInFlight, setRenamingInFlight] = useState(false);
+
+  const handleRenameCanvas = async (canvasId: string, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (renamingInFlight) return;
+
+    const trimmed = renameValue.trim();
+    if (!trimmed) {
       setRenamingCanvasId(null);
       return;
     }
 
+    setRenamingInFlight(true);
     try {
       const { error } = await supabase
         .from('canvases')
-        .update({ name: renameValue.trim() })
+        .update({ name: trimmed })
         .eq('id', canvasId);
 
       if (error) throw error;
 
       setCanvases(current =>
-        current.map(c => (c.id === canvasId ? { ...c, name: renameValue.trim() } : c))
+        current.map(c => (c.id === canvasId ? { ...c, name: trimmed } : c))
       );
     } catch (err: any) {
       setSetupError(err.message || 'Failed to rename canvas.');
     } finally {
+      setRenamingInFlight(false);
       setRenamingCanvasId(null);
     }
   };
@@ -564,9 +576,9 @@ export default function Home() {
                             type="text"
                             value={renameValue}
                             onChange={e => setRenameValue(e.target.value)}
-                            onBlur={() => handleRenameCanvas(canvas.id)}
+                            onBlur={(e) => handleRenameCanvas(canvas.id, e)}
                             onKeyDown={e => {
-                              if (e.key === 'Enter') handleRenameCanvas(canvas.id);
+                              if (e.key === 'Enter') handleRenameCanvas(canvas.id, e);
                               if (e.key === 'Escape') setRenamingCanvasId(null);
                             }}
                             autoFocus

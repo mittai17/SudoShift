@@ -41,6 +41,57 @@ async function startServer() {
 
   app.use(express.json());
 
+  // ==========================================
+  // OAUTH 2.0 ENDPOINTS
+  // ==========================================
+  app.get("/api/auth/notion/login", (req, res) => {
+    const clientId = process.env.NOTION_CLIENT_ID;
+    if (!clientId) return res.status(500).send("NOTION_CLIENT_ID missing in env");
+    // Ensure we build the correct redirect URI for Railway/Local
+    const host = req.get('host') || '';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const redirectUri = encodeURIComponent(`${protocol}://${host}/api/auth/notion/callback`);
+    const authUrl = `https://api.notion.com/v1/oauth/authorize?client_id=${clientId}&response_type=code&owner=user&redirect_uri=${redirectUri}`;
+    res.redirect(authUrl);
+  });
+
+  app.get("/api/auth/notion/callback", async (req, res) => {
+    const { code } = req.query;
+    const clientId = process.env.NOTION_CLIENT_ID;
+    const clientSecret = process.env.NOTION_CLIENT_SECRET;
+    const host = req.get('host') || '';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const redirectUri = `${protocol}://${host}/api/auth/notion/callback`;
+    
+    if (!code || !clientId || !clientSecret) {
+      return res.send(`<script>window.opener.postMessage({ type: 'NOTION_AUTH_ERROR', error: 'Missing code or env vars' }, '*'); window.close();</script>`);
+    }
+
+    try {
+      const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+      const response = await fetch('https://api.notion.com/v1/oauth/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authHeader}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri
+        })
+      });
+      const data = await response.json();
+      if (data.access_token) {
+        res.send(`<script>window.opener.postMessage({ type: 'NOTION_AUTH_SUCCESS', token: '${data.access_token}' }, '*'); window.close();</script>`);
+      } else {
+        res.send(`<script>window.opener.postMessage({ type: 'NOTION_AUTH_ERROR', error: '${data.error || 'Failed'}' }, '*'); window.close();</script>`);
+      }
+    } catch (e: any) {
+      res.send(`<script>window.opener.postMessage({ type: 'NOTION_AUTH_ERROR', error: '${e.message}' }, '*'); window.close();</script>`);
+    }
+  });
+
   // Stateless Collaboration Logic (Redis with local in-memory fallback)
   const localCanvases = new Map<string, { nodes: any[], edges: any[], versions: any[] }>();
   const localChats = new Map<string, any[]>();

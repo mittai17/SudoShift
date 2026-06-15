@@ -107,8 +107,8 @@ const defaultEdgeOptions = {
 
 function FlowEditor() {
   const { user } = useAuth();
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition, zoomIn, zoomOut, fitView, getViewport, setViewport, flowToScreenPosition, deleteElements } = useReactFlow();
   const [panMode, setPanMode] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1510,10 +1510,6 @@ function FlowEditor() {
       <JsonTransportDialog
         isOpen={jsonTransportOpen}
         onClose={() => setJsonTransportOpen(false)}
-        nodes={nodes}
-        edges={edges}
-        setNodes={setNodes}
-        setEdges={setEdges}
       />
       <AiAssistantWidget canvasId={canvasId} nodes={nodes} setNodes={setNodes} setEdges={setEdges} />
     </div>

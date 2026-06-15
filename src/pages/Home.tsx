@@ -10,6 +10,7 @@ import {
   FolderOpen, 
   Trash2, 
   ChevronRight,
+  ChevronLeft,
   FolderTree,
   MoreVertical,
   Edit2,
@@ -56,7 +57,7 @@ export default function Home() {
   const [activeMenuCanvasId, setActiveMenuCanvasId] = useState<string | null>(null);
   const [renamingCanvasId, setRenamingCanvasId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const loadWorkspaces = async () => {
     try {
@@ -370,7 +371,7 @@ export default function Home() {
         <section id="dashboard" className="mb-20">
           <div className="flex flex-col md:flex-row">
             {/* Mobile Sidebar Toggle Header */}
-            <div className="md:hidden mx-4 mt-8 flex items-center justify-between bg-white border border-gray-200 rounded-3xl p-4 shadow-sm">
+              <div className="md:hidden mx-4 mt-8 flex items-center justify-between bg-white border border-gray-200 rounded-3xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
                   <FolderOpen className="w-4 h-4" />
@@ -383,39 +384,39 @@ export default function Home() {
                 </div>
               </div>
               <button 
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 rounded-xl transition-all shrink-0 active:scale-95 shadow-sm"
               >
-                {sidebarCollapsed ? 'Show Folders' : 'Hide Folders'}
+                {isSidebarOpen ? 'Hide Folders' : 'Show Folders'}
               </button>
             </div>
 
-            {sidebarCollapsed && (
+            {!isSidebarOpen && (
               <div className="hidden md:flex w-16 shrink-0 border-r border-gray-200 bg-white min-h-[calc(100vh-73px)] sticky top-[73px] items-center justify-center">
                 <button
                   type="button"
-                  onClick={() => setSidebarCollapsed(false)}
+                  onClick={() => setIsSidebarOpen(true)}
                   className="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-2xl transition-all shadow-sm active:scale-95"
                   title="Open workspace panel"
                 >
-                  <FolderOpen className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             )}
 
             {/* Sidebar Column */}
-            <aside className={`relative w-full md:w-80 shrink-0 bg-white border border-gray-200 md:border-l-0 md:border-y-0 md:border-r rounded-3xl md:rounded-none p-5 md:p-6 shadow-sm md:shadow-none h-fit md:min-h-[calc(100vh-73px)] md:sticky md:top-[73px] ${sidebarCollapsed ? 'hidden' : 'block'}`}>
+            <aside className={`relative w-full md:w-80 shrink-0 bg-white border border-gray-200 md:border-l-0 md:border-y-0 md:border-r rounded-3xl md:rounded-none p-5 md:p-6 shadow-sm md:shadow-none h-fit md:min-h-[calc(100vh-73px)] md:sticky md:top-[73px] ${isSidebarOpen ? 'block' : 'hidden'}`}>
               {/* Workspace Selector */}
               <div className="space-y-2.5 pb-5 border-b border-slate-100">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace</span>
                   <button
                     type="button"
-                    onClick={() => setSidebarCollapsed(true)}
+                    onClick={() => setIsSidebarOpen(false)}
                     className="p-1.5 md:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 md:bg-white md:border md:border-gray-200 md:shadow-sm rounded-lg md:rounded-full transition-colors md:absolute md:-right-4 md:top-1/2 md:-translate-y-1/2 md:z-10"
                     title="Close workspace panel"
                   >
-                    <FolderOpen className="w-3.5 h-3.5" />
+                    <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="flex items-center gap-1.5">

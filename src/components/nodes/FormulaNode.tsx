@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Sigma } from 'lucide-react';
 import { NodeData } from '../../types';
@@ -10,6 +10,8 @@ export default function FormulaNode({ data }: { data: NodeData }) {
   const [formulas, setFormulas] = useState(
     task.description || 'Budget = 4500\nSpend = 3600\nBudget - Spend'
   );
+  const [results, setResults] = useState<React.ReactNode[] | null>(null);
+  const [inFlight, setInFlight] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -115,12 +117,29 @@ export default function FormulaNode({ data }: { data: NodeData }) {
     }
   };
 
+  const evaluate = () => {
+    setInFlight(true);
+    try {
+      const out = calculate();
+      if (Array.isArray(out)) setResults(out);
+      else setResults([out]);
+    } finally {
+      setInFlight(false);
+    }
+  };
+
   // Auto resize textarea
   const onTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const target = e.currentTarget;
     target.style.height = 'auto';
     target.style.height = `${target.scrollHeight}px`;
   };
+
+  useEffect(() => {
+    // initial evaluation
+    evaluate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <NodeWrapper>
@@ -155,8 +174,36 @@ export default function FormulaNode({ data }: { data: NodeData }) {
               spellCheck={false}
             />
 
+            <div className="flex items-center gap-2">
+              <button
+                onClick={evaluate}
+                disabled={inFlight}
+                className="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-60"
+              >
+                Calculate
+              </button>
+              <button
+                onClick={() => {
+                  if (onChange) onChange(task.id, formulas);
+                }}
+                className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setFormulas('');
+                  setResults(null);
+                  if (onChange) onChange(task.id, '');
+                }}
+                className="px-2 py-1 bg-red-50 text-red-600 text-xs rounded hover:bg-red-100"
+              >
+                Clear
+              </button>
+            </div>
+
             <div className="bg-gray-50/80 rounded-lg p-2 min-h-[3rem] text-sm font-mono shadow-inner overflow-x-auto select-text border border-gray-100">
-              {calculate()}
+              {results ? results : <div className="text-gray-400 text-xs">No results</div>}
             </div>
 
           </div>

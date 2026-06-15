@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   FolderKanban, CheckSquare, CalendarDays, Flag,
-  Flame, Library, BookOpen, LayoutGrid, Target, Search, X, BrainCircuit, Blocks
+  Flame, Library, BookOpen, LayoutGrid, Target, Search, X, BrainCircuit, Blocks, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { NODE_REGISTRY } from '../../nodes/registry/nodeTypes';
 import { NodeDefinition } from '../../nodes/registry/types';
@@ -69,6 +69,12 @@ function NodeCard({ node, onDragStart, onClick }: {
 export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClose }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [search, setSearch] = useState('');
+  const railRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollRail = (amount: number) => {
+    if (!railRef.current) return;
+    railRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+  };
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, nodeId: string) => {
     event.dataTransfer.setData('application/reactflow', nodeId);
@@ -142,24 +148,61 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
       </div>
 
       {/* ── Tab Rail ─────────────────────────────────────── */}
-      <div className="flex overflow-x-auto gap-1 px-2 py-2 border-b border-[#1e2030] shrink-0" style={{ scrollbarWidth: 'none' }}>
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id && !search;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setSearch(''); }}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 whitespace-nowrap shrink-0"
-              style={isActive
-                ? { backgroundColor: tab.color + '25', color: tab.color, borderWidth: 1, borderStyle: 'solid', borderColor: tab.color + '50' }
-                : { color: '#6b7280' }}
-              title={tab.label}
-            >
-              <span style={isActive ? { color: tab.color } : { color: '#4b5563' }}>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      <div className="relative">
+        <button
+          onClick={() => scrollRail(-160)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/5 text-white border border-[#2a2b36] shadow-sm hover:bg-white/10"
+          title="Scroll left"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+
+        <div ref={railRef} className="flex overflow-x-auto gap-2 px-3 py-2 border-b border-[#1e2030] shrink-0" style={{ scrollbarWidth: 'none' }}>
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id && !search;
+            if (tab.id === 'all') {
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); setSearch(''); }}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-150 shrink-0 ${isActive ? 'bg-white/5 border border-white/10' : 'bg-transparent'}`}
+                  style={isActive ? { color: tab.color } : { color: '#9ca3af' }}
+                  title={tab.label}
+                >
+                  <span style={isActive ? { color: tab.color } : { color: '#9ca3af' }} className="flex items-center justify-center w-4 h-4">
+                    {tab.icon}
+                  </span>
+                  <span className="text-[11px] hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSearch(''); }}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium transition-all duration-150 whitespace-nowrap shrink-0 ${isActive ? 'ring-1 ring-inset' : ''}`}
+                style={isActive
+                  ? { backgroundColor: tab.color + '14', color: tab.color }
+                  : { color: '#9ca3af' }}
+                title={tab.label}
+              >
+                <span style={isActive ? { color: tab.color } : { color: '#9ca3af' }}>{tab.icon}</span>
+                <span className="text-[11px] hidden sm:inline">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => scrollRail(160)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/5 text-white border border-[#2a2b36] shadow-sm hover:bg-white/10"
+          title="Scroll right"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-5 h-5 text-white" />
+        </button>
       </div>
 
       {/* ── Node Grid ────────────────────────────────────── */}

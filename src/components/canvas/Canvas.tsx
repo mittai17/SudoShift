@@ -16,7 +16,7 @@ import {
   getNodesBounds,
   getViewportForBounds
 } from '@xyflow/react';
-import { MousePointer2, Move, ZoomIn, ZoomOut, Expand, Trash2, Download } from 'lucide-react';
+import { MousePointer2, Move, ZoomIn, ZoomOut, Expand, Trash2, Download, Moon, Sun } from 'lucide-react';
 import { TaskData } from '../../types';
 import { nodeColorMap } from '../../nodes/registry/nodeTypes';
 import { toPng } from 'html-to-image';
@@ -37,6 +37,7 @@ interface CanvasProps {
   handleFitView: () => void;
   handleDeleteSelected: () => void;
   isDarkMode?: boolean;
+  toggleDarkMode?: () => void;
 }
 
 export function Canvas({
@@ -54,7 +55,8 @@ export function Canvas({
   handleZoomOut,
   handleFitView,
   handleDeleteSelected,
-  isDarkMode = false
+  isDarkMode = false,
+  toggleDarkMode
 }: CanvasProps) {
   const { getNodes } = useReactFlow();
   
@@ -111,6 +113,14 @@ export function Canvas({
       <Background color={isDarkMode ? '#475569' : '#64748b'} variant={BackgroundVariant.Dots} gap={24} size={3} />
 
       <Panel position="top-right" className={panelClassName}>
+        <button
+          onClick={(e) => { e.stopPropagation(); if (toggleDarkMode) toggleDarkMode(); }}
+          className={`p-2 md:p-2 rounded transition-colors ${isDarkMode ? 'bg-indigo-50 text-indigo-600' : inactiveButtonClass}`}
+          title={isDarkMode ? 'Switch canvas to light mode' : 'Switch canvas to dark mode'}
+        >
+          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
         <button
           onClick={() => setPanMode(false)}
           className={`p-2 md:p-2 rounded transition-colors ${!panMode ? 'bg-indigo-50 text-indigo-600' : inactiveButtonClass}`}

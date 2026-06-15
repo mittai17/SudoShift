@@ -41,10 +41,23 @@ export interface ChatMessage {
   workflow?: AiDumpResponse;
 }
 
+export interface CanvasNodeContext {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+}
+
+export interface CanvasContext {
+  nodeCount: number;
+  nodeTypes: string[];
+  nodes?: CanvasNodeContext[];
+}
+
 export async function sendAiMessage(
   message: string,
   history: ChatMessage[],
-  canvasContext?: { nodeCount: number; nodeTypes: string[] }
+  canvasContext?: CanvasContext
 ): Promise<AiChatResponse> {
   const res = await fetch('/api/ai-chat', {
     method: 'POST',

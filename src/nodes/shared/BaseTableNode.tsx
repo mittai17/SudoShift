@@ -59,8 +59,8 @@ export function createTableNode(config: TableConfig) {
 
     return (
       <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor}>
-        <div className="flex flex-col rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow cursor-default" style={{ minWidth: 320, maxWidth: 500 }}>
-          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
+        <div className="flex flex-col rounded-2xl shadow-xl bg-[#1a1b23] border border-[#2a2b36] hover:border-gray-600 transition-shadow cursor-default" style={{ minWidth: 320, maxWidth: 500 }}>
+          <Handle type="target" position={Position.Left} className="w-4 h-4 bg-[#2a2b36] border-2 border-[#1a1b23] -ml-2 z-10" />
           <div className="rounded-t-xl px-3 py-2 flex items-center justify-between text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
             <div className="flex items-center space-x-2">
               <span className="opacity-80">{config.icon}</span>
@@ -77,7 +77,7 @@ export function createTableNode(config: TableConfig) {
           }}>
             <Spreadsheet data={tableData} onChange={handleDataChange} />
           </div>
-          <Handle type="source" position={Position.Right} className="w-4 h-4 border border-gray-200 border-white -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
+          <Handle type="source" position={Position.Right} className="w-4 h-4 border-2 border-[#1a1b23] -mr-2 z-10" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }} />
         </div>
       </NodeWrapper>
     );

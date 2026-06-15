@@ -88,7 +88,7 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
 
     return (
       <NodeWrapper data={data} selected={selected} defaultColor={config.accentColor}>
-        <div className="flex flex-col w-72 rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="flex flex-col w-72 rounded-2xl shadow-xl bg-[#1a1b23] border border-[#2a2b36] hover:border-gray-600 transition-shadow">
           <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border border-gray-200 border-white -ml-2 z-10" />
           {/* Header */}
           <div className="rounded-t-xl px-4 py-3 text-white" style={{ backgroundColor: `var(--node-color, ${config.accentColor})` }}>
@@ -118,7 +118,7 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
           {/* Body */}
           <div className="p-3 space-y-2.5">
             <textarea
-              className="w-full text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-2 focus:outline-none resize-none min-h-[60px]"
+              className="w-full text-sm text-gray-300 bg-[#13141c] border border-[#2a2b36] rounded-xl p-2 focus:outline-none resize-none min-h-[60px] placeholder-gray-600"
               placeholder="Description..."
               value={task.description || ''}
               onChange={(e) => updateTask({ description: e.target.value })}
@@ -133,13 +133,13 @@ export function createPrimaryNode(config: PrimaryNodeConfig) {
               <div key={field.key} className="space-y-0.5">
                 <label className="text-[10px] text-gray-400 uppercase tracking-wider">{field.label}</label>
                 {field.type === 'select' ? (
-                  <select className="w-full text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1 focus:outline-none text-gray-700">
+                  <select className="w-full text-xs bg-[#13141c] border border-[#2a2b36] rounded px-2 py-1 focus:outline-none text-gray-300">
                     {field.options?.map((o) => <option key={o}>{o}</option>)}
                   </select>
                 ) : field.type === 'textarea' ? (
-                  <textarea className="w-full text-xs bg-gray-50 border border-gray-200 rounded-lg p-1.5 focus:outline-none resize-none min-h-[40px] text-gray-700" />
+                  <textarea className="w-full text-xs bg-[#13141c] border border-[#2a2b36] rounded-lg p-1.5 focus:outline-none resize-none min-h-[40px] text-gray-300" />
                 ) : (
-                  <input type={field.type} className="w-full text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1 focus:outline-none text-gray-700" />
+                  <input type={field.type} className="w-full text-xs bg-[#13141c] border border-[#2a2b36] rounded px-2 py-1 focus:outline-none text-gray-300" />
                 )}
               </div>
             ))}

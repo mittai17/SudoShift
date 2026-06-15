@@ -8,6 +8,7 @@ import {
   Sigma
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import Inbox from '../components/Inbox';
 
 const PALETTE = [
   '#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6',
@@ -34,6 +35,9 @@ export default function HowItWorks() {
           <RouterLink to="/how-it-works" className="text-gray-900 transition-colors">How it Works</RouterLink>
         </div>
         <div className="flex items-center gap-2">
+          {/* Inbox Notifications Bell */}
+          <Inbox />
+
           <RouterLink to="/profile" className="flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0 border border-white"

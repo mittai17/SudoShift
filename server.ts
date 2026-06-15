@@ -30,7 +30,7 @@ async function startServer() {
     try {
       const pubClient = createRedisClient({ url: process.env.REDIS_URL });
       const subClient = pubClient.duplicate();
-      
+
       pubClient.on('error', (err) => console.error('Redis Pub Client Error', err));
       subClient.on('error', (err) => console.error('Redis Sub Client Error', err));
 
@@ -66,7 +66,7 @@ async function startServer() {
     const host = req.get('host') || '';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const redirectUri = `${protocol}://${host}/api/auth/notion/callback`;
-    
+
     if (!code || !clientId || !clientSecret) {
       return res.send(`<script>window.opener.postMessage({ type: 'NOTION_AUTH_ERROR', error: 'Missing code or env vars' }, '*'); window.close();</script>`);
     }
@@ -96,7 +96,7 @@ async function startServer() {
     }
   });
 
-  
+
   // GitHub OAuth
   app.get("/api/auth/github/login", (req, res) => {
     const clientId = process.env.GITHUB_CLIENT_ID;
@@ -143,7 +143,7 @@ async function startServer() {
     const host = req.get('host') || '';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const redirectUri = `${protocol}://${host}/api/auth/slack/callback`;
-    if (!code || !clientId || !clientSecret) return res.send(`<script>window.opener.postMessage({ type: 'SLACK_AUTH_ERROR', error: 'Missing code or env vars' }, '*'); window.close();</script>`);
+    if (!code || typeof code !== 'string' || !clientId || !clientSecret) return res.send(`<script>window.opener.postMessage({ type: 'SLACK_AUTH_ERROR', error: 'Missing code or env vars' }, '*'); window.close();</script>`);
     try {
       const response = await fetch('https://slack.com/api/oauth.v2.access', {
         method: 'POST',
@@ -531,7 +531,7 @@ async function startServer() {
           const { error: insertError } = await socket.data.supabase
             .from('canvas_members')
             .insert({ canvas_id: canvasId, user_id: userData.id, role });
-          
+
           if (insertError) {
             console.warn("Failed to add canvas member:", insertError.message);
             socket.emit("add_member_error", "User is already a member of this canvas.");
@@ -541,7 +541,7 @@ async function startServer() {
           // 3. Broadcast updated members list
           const members = await getActiveMembers(canvasId, socket.data.supabase);
           io.to(canvasId).emit("members_updated", members);
-          
+
           socket.emit("add_member_success");
         }
       }
@@ -678,7 +678,7 @@ async function startServer() {
         if (version) {
           const restoredNodes = JSON.parse(JSON.stringify(version.nodes));
           const restoredEdges = JSON.parse(JSON.stringify(version.edges));
-          
+
           // Create restore version marker
           const newVersion = {
             id: randomUUID(),
@@ -689,7 +689,7 @@ async function startServer() {
             edges: restoredEdges
           };
           const updatedVersions = [newVersion, ...state.versions];
-          
+
           await setCanvasState(canvasId, {
             nodes: restoredNodes,
             edges: restoredEdges,
@@ -718,7 +718,7 @@ async function startServer() {
           recipientId
         };
         await addCanvasChatMessage(canvasId, msgObj, socket.data.supabase);
-        
+
         if (recipientId) {
           // Private DM: send only to sender and recipient active connections
           const targetSockets = await io.in(canvasId).fetchSockets();
@@ -737,7 +737,7 @@ async function startServer() {
     socket.on("disconnect", async () => {
       const canvasId = socket.data.canvasId;
       console.log("Client disconnected:", socket.id);
-      
+
       if (canvasId) {
         // 1. Broadcast updated members (excluding this socket)
         const members = await getActiveMembers(canvasId, socket.data.supabase, socket.id);
@@ -788,24 +788,24 @@ async function startServer() {
       try {
         const urlToFetch = new URL("https://transcriptapi.com/api/v2/youtube/transcript");
         urlToFetch.searchParams.set("video_url", url);
-        
+
         const response = await fetch(urlToFetch.toString(), {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${apiKey}`
           }
         });
-        
+
         if (response.ok) {
-           const jsonResponse = await response.json();
-           if (jsonResponse.transcript && Array.isArray(jsonResponse.transcript)) {
-             transcriptText = jsonResponse.transcript.map((t: any) => t.text).join(' ');
-           } else {
-             transcriptText = jsonResponse.transcript || JSON.stringify(jsonResponse);
-           }
+          const jsonResponse = await response.json();
+          if (jsonResponse.transcript && Array.isArray(jsonResponse.transcript)) {
+            transcriptText = jsonResponse.transcript.map((t: any) => t.text).join(' ');
+          } else {
+            transcriptText = jsonResponse.transcript || JSON.stringify(jsonResponse);
+          }
         } else {
-           const errorBody = await response.text();
-           throw new Error(`Transcript API failed (Status: ${response.status}): ${errorBody}`);
+          const errorBody = await response.text();
+          throw new Error(`Transcript API failed (Status: ${response.status}): ${errorBody}`);
         }
       } catch (err: any) {
         console.warn("External Transcript API failed, using internal fallback. ", err);
@@ -814,7 +814,7 @@ async function startServer() {
           const transcript = await YoutubeTranscript.fetchTranscript(url);
           transcriptText = transcript.map(t => t.text).join(' ');
         } catch (fallbackErr: any) {
-             throw new Error(`API failed: ${err.message}. Fallback also failed: ${fallbackErr.message}`);
+          throw new Error(`API failed: ${err.message}. Fallback also failed: ${fallbackErr.message}`);
         }
       }
 
@@ -839,10 +839,10 @@ async function startServer() {
     } catch (e: any) {
       let msg = "Failed to transcribe video.";
       if (e.message?.includes("Transcript is disabled") || e.message?.includes("Impossible to retrieve")) {
-          msg = "Free scraper failed: Transcript is disabled or URL invalid. Please use the YouTube Pro node instead.";
-          console.warn("YouTube Transcribe expected failure:", msg);
+        msg = "Free scraper failed: Transcript is disabled or URL invalid. Please use the YouTube Pro node instead.";
+        console.warn("YouTube Transcribe expected failure:", msg);
       } else {
-          console.error("YouTube Transcribe Error:", e);
+        console.error("YouTube Transcribe Error:", e);
       }
       res.status(500).json({ error: msg });
     }
@@ -852,7 +852,7 @@ async function startServer() {
     try {
       const ai = getAIClient(req);
       const { action, text, context } = req.body;
-      
+
       let prompt = '';
       if (action === 'improve') {
         prompt = `You are an AI editor. Please rewrite and improve the following text to make it more professional, clear, and concise. Only provide the improved text.\n\nText:\n"${text}"`;
@@ -892,9 +892,9 @@ async function startServer() {
     try {
       const ai = getAIClient(req);
       const { text } = req.body;
-      
+
       const prompt = `Evaluate the following mathematical formula, instructions, or expression. Provide ONLY the final result or direct output. Be extremely concise. Do not include any explanations.\n\n${text}`;
-      
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
@@ -1037,8 +1037,25 @@ Never recommend nodes randomly.
 - Output Viewer: Displays generated outputs.
 - Nested Canvas: Creates sub-workspaces.
 
+### Integration Nodes (Purpose: External connections, automation, synchronization, and workflow orchestration)
+- Notion Integration: Connects with Notion workspaces, pages, and databases for knowledge management and documentation.
+- GitHub Integration: Connects with GitHub repositories, issues, pull requests, and development workflows.
+- Slack Integration: Sends messages, notifications, and updates to Slack channels and teams.
+- Airtable Integration: Reads, creates, filters, and manages structured records in Airtable databases.
+- Jira Integration: Creates, searches, and manages Jira issues, tickets, and agile workflows.
+- Zapier Integration: Triggers Zapier automations and connects Visual Second Brain with thousands of external applications.
+- Make.com Integration: Executes Make.com scenarios and multi-step automation workflows.
+- Obsidian Integration: Reads, writes, and synchronizes notes with Obsidian vaults.
+- Google Sheets Integration: Reads, appends, updates, and manages spreadsheet-based data.
+- Trello Integration: Creates and manages boards, lists, and cards for project and task tracking.
+- Linear Integration: Connects with Linear workspaces for issue management and product development workflows.
+- Discord Integration: Sends announcements, notifications, and messages to Discord servers and channels.
+- Microsoft Integration: Connects with Microsoft services such as Excel, OneDrive, and Microsoft Graph APIs.
+- MCP Tool Integration: Discovers and executes external MCP tools for AI-powered workflows and tool orchestration.
+- Web Browser Integration: Accesses websites, extracts information, performs research, and gathers web-based knowledge.
+
 ## Node Semantics
-Goal = WHY | Project = HOW | Task = DO | Event = WHEN | Habit = REPEAT | Milestone = PROVE | Resource = LEARN
+Goal = WHY | Project = HOW | Task = DO | Event = WHEN | Habit = REPEAT | Milestone = PROVE | Resource = LEARN | Integration = CONNECT
 
 ## Important Restrictions
 - Do not answer the user's problem directly.
@@ -1395,7 +1412,7 @@ Rules:
       try {
         const indexPath = path.join(distPath, "index.html");
         let html = fs.readFileSync(indexPath, "utf-8");
-        
+
         // Inject runtime environment variables into window.ENV
         const envScript = `
           <script>

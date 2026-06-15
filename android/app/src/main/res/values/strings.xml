@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SudoShift</string>
+    <string name="title_activity_main">SudoShift</string>
+    <string name="package_name">com.sudoshift.app</string>
+    <string name="custom_url_scheme">com.sudoshift.app</string>
+</resources>

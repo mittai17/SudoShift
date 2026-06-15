@@ -261,7 +261,8 @@ function FlowEditor() {
       const token = data.session?.access_token;
       if (!token || !mounted) return;
 
-      newSocket = io({ auth: { token } });
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      newSocket = io(apiUrl || undefined, { auth: { token } });
       setSocket(newSocket);
 
       newSocket.on("connect", () => {

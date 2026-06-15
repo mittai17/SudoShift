@@ -30,10 +30,9 @@ export function createMilestoneNode(config: MilestoneNodeConfig, BodyComponent: 
       if (!task.title || isGenerating || !nodeId) return;
       setIsGenerating(true);
       try {
-        const gkey = localStorage.getItem('gemini_api_key') || '';
         const res = await fetch('/api/action', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-gemini-key': gkey },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'subtasks', text: task.title + (task.description ? ' - ' + task.description : '') }),
         });
         if (!res.ok) throw new Error('Request failed');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, User, Shield } from 'lucide-react';
+import { Settings, User, Shield } from 'lucide-react';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -7,20 +7,17 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
-  const [geminiKey, setGeminiKey] = useState('');
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('editor');
 
   useEffect(() => {
     if (isOpen) {
-      setGeminiKey(localStorage.getItem('gemini_api_key') || '');
       setUserName(localStorage.getItem('user_name') || '');
       setUserRole(localStorage.getItem('user_role') || 'editor');
     }
   }, [isOpen]);
 
   const handleSave = () => {
-    localStorage.setItem('gemini_api_key', geminiKey);
     localStorage.setItem('user_name', userName);
     localStorage.setItem('user_role', userRole);
     onClose();
@@ -47,23 +44,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-100 border-b border-gray-100 pb-2 flex items-center gap-2">
-              <Key className="w-4 h-4 text-gray-400" />
-              API Credentials
-            </h4>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-400 block">Gemini API Key</label>
-              <input
-                type="password"
-                value={geminiKey}
-                onChange={e => setGeminiKey(e.target.value)}
-                placeholder="Studio API Key"
-                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
-              />
-              <p className="text-[10px] text-gray-500">Stored locally in your browser. Sent securely to the backend for processing tasks.</p>
-            </div>
-          </div>
+
+
 
           <div className="space-y-4 pt-2">
             <h4 className="text-sm font-semibold text-gray-100 border-b border-gray-100 pb-2 flex items-center gap-2">

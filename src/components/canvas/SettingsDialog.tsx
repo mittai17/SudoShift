@@ -59,7 +59,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 value={geminiKey}
                 onChange={e => setGeminiKey(e.target.value)}
                 placeholder="Studio API Key"
-                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
+                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
               />
               <p className="text-[10px] text-gray-500">Stored locally in your browser. Sent securely to the backend for processing tasks.</p>
             </div>
@@ -77,7 +77,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 value={userName}
                 onChange={e => setUserName(e.target.value)}
                 placeholder="Your Name"
-                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
+                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
               />
             </div>
           </div>
@@ -92,7 +92,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
               <select
                 value={userRole}
                 onChange={e => setUserRole(e.target.value)}
-                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
+                className="w-full bg-[#1a1b23] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
               >
                 <option value="owner">Owner</option>
                 <option value="editor">Editor</option>

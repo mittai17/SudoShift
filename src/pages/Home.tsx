@@ -10,6 +10,7 @@ import {
   FolderOpen, 
   Trash2, 
   ChevronRight,
+  ChevronLeft,
   FolderTree,
   MoreVertical,
   Edit2,
@@ -57,7 +58,7 @@ export default function Home() {
   const [activeMenuCanvasId, setActiveMenuCanvasId] = useState<string | null>(null);
   const [renamingCanvasId, setRenamingCanvasId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const loadWorkspaces = async () => {
     try {
@@ -377,7 +378,7 @@ export default function Home() {
             <div className="md:hidden mx-4 mt-8 flex items-center justify-between bg-[#13141c] border border-[#2a2b36] rounded-3xl p-4 shadow-sm">
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg shrink-0">
-                  <FolderOpen className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" />
                 </div>
                 <div className="truncate text-left">
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Scope</span>
@@ -402,7 +403,7 @@ export default function Home() {
                   className="p-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-2xl transition-all shadow-sm active:scale-95"
                   title="Open workspace panel"
                 >
-                  <FolderOpen className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
             )}
@@ -419,7 +420,7 @@ export default function Home() {
                     className="p-1.5 md:p-2 text-gray-500 hover:text-gray-300 hover:bg-[#2a2b36] md:bg-[#13141c] md:border md:border-[#2a2b36] md:shadow-sm rounded-lg md:rounded-full transition-colors md:absolute md:-right-4 md:top-1/2 md:-translate-y-1/2 md:z-10"
                     title="Close workspace panel"
                   >
-                    <FolderOpen className="w-3.5 h-3.5" />
+                    <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="flex items-center gap-1.5">

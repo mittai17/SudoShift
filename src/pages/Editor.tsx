@@ -21,7 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { differenceInHours, parseISO, isValid } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical, Edit2, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, Expand, Move, Send, MessageSquare, Users, History, Save, RotateCcw, Share2, Check, MousePointer2, Trash2, Settings, Code, X, Globe, Mail, UserPlus, Link as LinkIcon, LayoutGrid, MoreVertical, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
@@ -862,15 +862,7 @@ function FlowEditor() {
             onDragOver={onDragOver}
             onPointerMove={handlePointerMove}
           >
-            <button
-              type="button"
-              onClick={() => setCanvasDarkMode((value) => !value)}
-              className={`absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold shadow-sm transition-colors ${canvasDarkMode ? 'bg-slate-900 text-amber-300 border-slate-700 hover:bg-slate-800' : 'bg-[#13141c] text-gray-300 border-[#2a2b36] hover:bg-[#1a1b23]'}`}
-              title={canvasDarkMode ? 'Switch canvas to light mode' : 'Switch canvas to dark mode'}
-            >
-              {canvasDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              <span className="hidden sm:inline">{canvasDarkMode ? 'Light' : 'Dark'}</span>
-            </button>
+            {/* canvas dark-mode toggle removed; keep state for other uses */}
             <Canvas
               nodes={nodes}
               edges={edges}

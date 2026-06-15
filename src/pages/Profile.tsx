@@ -255,10 +255,7 @@ export default function Profile() {
     : username.substring(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#0d0e15] text-gray-100 font-sans selection:bg-emerald-600 selection:text-white pb-20 relative overflow-hidden">
-      {/* Decorative Blur Blobs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-200/35 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-150/25 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-[#13141c] text-gray-100 font-sans selection:bg-emerald-600 selection:text-white pb-20 relative overflow-hidden">
 
       {/* Header Bar */}
       <nav className="flex items-center justify-between px-4 md:px-6 lg:px-12 py-4 border-b border-[#2a2b36]/80 bg-[#13141c]/70 backdrop-blur-md sticky top-0 z-10">
@@ -291,11 +288,11 @@ export default function Profile() {
               
               {/* Profile Card */}
               <div className="bg-[#13141c] border border-[#2a2b36] rounded-3xl shadow-sm p-6 text-center relative overflow-hidden flex flex-col items-center">
-                <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border-b border-[#2a2b36]" />
+                <div className="absolute top-0 inset-x-0 h-24 bg-[#13141c] border-b border-[#2a2b36] z-0" />
                 
                 {/* Large Avatar Bubble */}
                 <div 
-                  className="w-24 h-24 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white text-3xl font-extrabold transition-all duration-300 transform hover:scale-105 mt-10"
+                  className="w-24 h-24 rounded-full border-4 border-white shadow-md flex items-center justify-center text-white text-3xl font-extrabold transition-all duration-300 transform hover:scale-105 mt-10 relative z-10"
                   style={{ backgroundColor: selectedColor }}
                 >
                   {initials || 'U'}

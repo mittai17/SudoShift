@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { sendAiMessage, ChatMessage, CanvasOp, AiDumpResponse } from '../../lib/aiDumpService';
 import { v4 as uuidv4 } from 'uuid';
+import { NODE_REGISTRY } from '../../nodes/registry/registry';
 
 const PHASE_COLORS = [
   { bg: '#f59e0b', bgLight: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)' },
@@ -160,51 +161,102 @@ export function AiAssistantWidget({ canvasId = 'default', nodes = [], setNodes, 
 
   const applyCanvasOps = useCallback((ops: CanvasOp[], msgIndex: number) => {
     if (!setNodes || !setEdges) return;
-    const newNodeIds: string[] = [];
+    const newAddedNodeIds: string[] = [];
+
+    // Helper to change notes/task descriptions reactively
+    const onChangeHandler = (id: string, text: string) => {
+      setNodes(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data, task: { ...n.data.task, description: text } } } : n));
+    };
 
     setNodes(prev => {
       let updated = [...prev];
       ops.forEach(op => {
         if (op.op === 'addNode') {
-          const baseX = 200 + (newNodeIds.length % 4) * 280;
-          const baseY = 200 + Math.floor(newNodeIds.length / 4) * 200;
           const id = uuidv4();
-          newNodeIds.push(id);
-          updated.push({
-            id,
-            type: op.type || 'note-node',
-            position: { x: op.x ?? baseX, y: op.y ?? baseY },
-            data: {
-              task: {
+          newAddedNodeIds.push(id);
+
+          const registryEntry = NODE_REGISTRY.find((n) => n.id === op.type);
+          const taskData = registryEntry
+            ? {
+                id,
+                ...registryEntry.defaultData,
+                title: op.title || registryEntry.defaultData.title || 'AI Node',
+                description: op.description || registryEntry.defaultData.description || '',
+              }
+            : {
                 id,
                 title: op.title || 'AI Node',
                 description: op.description || '',
                 matrix: (op.type || 'note-node').toUpperCase().replace(/-/g, '_'),
                 deadline: null,
-              }
+              };
+
+          const baseX = 200 + (newAddedNodeIds.length % 4) * 280;
+          const baseY = 200 + Math.floor(newAddedNodeIds.length / 4) * 200;
+
+          updated.push({
+            id,
+            type: op.type || 'note-node',
+            position: { x: op.x ?? baseX, y: op.y ?? baseY },
+            data: {
+              onChange: (text: string) => onChangeHandler(id, text),
+              task: taskData
             }
           });
+        } else if (op.op === 'updateNode' && op.nodeId) {
+          updated = updated.map(n => {
+            if (n.id === op.nodeId) {
+              const currentTask = n.data?.task || {};
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  task: {
+                    ...currentTask,
+                    title: op.title !== undefined ? op.title : currentTask.title,
+                    description: op.description !== undefined ? op.description : currentTask.description,
+                    ...(op.updates || {})
+                  }
+                }
+              };
+            }
+            return n;
+          });
+        } else if (op.op === 'deleteNode' && op.nodeId) {
+          updated = updated.filter(n => n.id !== op.nodeId);
         }
       });
       return updated;
     });
 
-    // Add edges after a tick so node IDs are available
+    // Add edges after a tick so new node IDs are available
     setTimeout(() => {
       setEdges(prev => {
         let updated = [...prev];
         ops.forEach(op => {
-          if (op.op === 'addEdge' && op.from !== undefined && op.to !== undefined) {
-            const srcId = newNodeIds[op.from];
-            const tgtId = newNodeIds[op.to];
-            if (srcId && tgtId) {
-              updated.push({
-                id: uuidv4(),
-                source: srcId,
-                target: tgtId,
-                type: 'smoothstep',
-                style: { strokeWidth: 2, stroke: '#6366f1' },
-              });
+          if (op.op === 'addEdge') {
+            const parseId = (val: any) => {
+              if (val === undefined || val === null) return undefined;
+              const num = Number(val);
+              if (!isNaN(num) && num >= 0 && num < newAddedNodeIds.length) {
+                return newAddedNodeIds[num];
+              }
+              return String(val);
+            };
+            const fromId = parseId(op.from);
+            const toId = parseId(op.to);
+
+            if (fromId && toId) {
+              const exists = updated.some(e => e.source === fromId && e.target === toId);
+              if (!exists) {
+                updated.push({
+                  id: uuidv4(),
+                  source: fromId,
+                  target: toId,
+                  type: 'smoothstep',
+                  style: { strokeWidth: 2, stroke: '#6366f1' },
+                });
+              }
             }
           }
         });
@@ -229,6 +281,12 @@ export function AiAssistantWidget({ canvasId = 'default', nodes = [], setNodes, 
       const canvasContext = {
         nodeCount: nodes.length,
         nodeTypes: [...new Set(nodes.map((n: any) => n.type).filter(Boolean))],
+        nodes: nodes.map((n: any) => ({
+          id: n.id,
+          type: n.type,
+          title: n.data?.task?.title || '',
+          description: n.data?.task?.description || '',
+        })),
       };
 
       const response = await sendAiMessage(text, newHistory, canvasContext);
@@ -240,7 +298,14 @@ export function AiAssistantWidget({ canvasId = 'default', nodes = [], setNodes, 
         canvasOps: response.canvasOps,
         workflow: response.workflow,
       };
-      setMessages(prev => [...prev, assistantMsg]);
+
+      const newMessages = [...newHistory, assistantMsg];
+      setMessages(newMessages);
+
+      // Automatically apply canvas operations directly!
+      if (response.canvasOps && response.canvasOps.length > 0) {
+        applyCanvasOps(response.canvasOps, newHistory.length);
+      }
 
       if (response.workflow || (response.canvasOps && response.canvasOps.length > 0)) {
         setSavedWorkflows(prev => {

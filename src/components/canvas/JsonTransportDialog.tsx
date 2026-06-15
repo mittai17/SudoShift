@@ -53,15 +53,15 @@ export function JsonTransportDialog({ isOpen, onClose }: JsonTransportDialogProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
+      <div className="bg-[#13141c] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-[#1a1b23]/50">
+          <h3 className="font-semibold text-lg text-gray-100 flex items-center gap-2">
             <Code className="w-5 h-5 text-fuchsia-600" />
             JSON Transport
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            className="text-gray-400 hover:text-gray-400 transition-colors p-1"
           >
             &times;
           </button>
@@ -69,10 +69,10 @@ export function JsonTransportDialog({ isOpen, onClose }: JsonTransportDialogProp
 
         <div className="p-6 flex-1 flex flex-col min-h-0">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-xs font-semibold text-gray-600 uppercase">Workflow JSON</label>
+            <label className="text-xs font-semibold text-gray-400 uppercase">Workflow JSON</label>
             <button 
               onClick={handleCopy}
-              className="text-xs flex items-center gap-1 text-[#6366f1] hover:text-indigo-700 transition-colors"
+              className="text-xs flex items-center gap-1 text-emerald-500 hover:text-indigo-700 transition-colors"
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? 'Copied' : 'Copy to Clipboard'}
@@ -95,10 +95,10 @@ export function JsonTransportDialog({ isOpen, onClose }: JsonTransportDialogProp
           </p>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 bg-[#1a1b23] flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+            className="px-4 py-2 bg-[#13141c] border border-[#2a2b36] text-gray-300 hover:bg-[#1a1b23] rounded-lg text-sm font-medium transition-colors"
           >
             Cancel
           </button>

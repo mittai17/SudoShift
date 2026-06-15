@@ -1,6 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { FunctionSquare, Calculator, History, Check, AlertCircle, BrainCircuit, Sigma } from 'lucide-react';
+import { FunctionSquare, Calculator, History, Check, AlertCircle, BrainCircuit, Sigma, Wand2 } from 'lucide-react';
 import { createNoteNode } from '../shared/BaseNoteNode';
+
+// Category → ready-made formula template
+const CATEGORY_TEMPLATES: Record<string, string> = {
+  General: `// BMI Calculator\nWeight = 80\nHeight = 1.75\nWeight / (Height * Height)`,
+  Financial: `// Compound Interest\nPrincipal = 10000\nRate = 0.07\nYears = 5\nPrincipal * Math.pow(1 + Rate, Years)`,
+  Scientific: `// Kinetic Energy (Joules)\nMass = 70\nVelocity = 15\n0.5 * Mass * Velocity * Velocity`,
+  'Unit Conversion': `// Celsius to Fahrenheit\nCelsius = 37\n(Celsius * 9 / 5) + 32`,
+  LaTeX: `// Quadratic Formula (discriminant)\na = 1\nb = -3\nc = 2\nMath.sqrt(b*b - 4*a*c)`,
+};
 
 function evaluateFormulaSafe(input: string): { result: string; error: string } {
   try {
@@ -104,8 +113,14 @@ const NoteFormulaBody = ({ task, updateTask }: any) => {
             <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
                <BrainCircuit className="w-3 h-3 mr-1 text-emerald-400" /> Solve
             </button>
-            <button className="flex items-center justify-center bg-[#2a2b36] hover:bg-[#3f3f46] text-gray-300 rounded py-1.5 transition-colors">
-               Generate
+            <button
+               onClick={() => {
+                 const tpl = CATEGORY_TEMPLATES[category] || CATEGORY_TEMPLATES['General'];
+                 evaluateFormula(tpl);
+               }}
+               className="flex items-center justify-center gap-1 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 rounded py-1.5 transition-colors font-bold"
+            >
+               <Wand2 className="w-3 h-3" /> Generate
             </button>
          </div>
       </div>

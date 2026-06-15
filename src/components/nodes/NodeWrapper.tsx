@@ -18,7 +18,7 @@ export default function NodeWrapper({ children }: { children: React.ReactNode })
       {children}
       <button 
         onClick={deleteNode}
-        className="absolute -top-2 -right-2 bg-white text-gray-500 border border-gray-200 rounded-full p-1 shadow-sm hover:text-red-500 hover:bg-red-50 transition-all z-50 cursor-pointer"
+        className="absolute -top-2 -right-2 bg-[#13141c] text-gray-500 border border-[#2a2b36] rounded-full p-1 shadow-sm hover:text-red-500 hover:bg-red-50 transition-all z-50 cursor-pointer"
         title="Delete node"
       >
         <X className="w-3.5 h-3.5" />

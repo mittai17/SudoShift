@@ -22,7 +22,7 @@ export default function CalendarNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col w-[17rem] rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg nodrag">
+      <div className="flex flex-col w-[17rem] rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg nodrag">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#0ea5e9] rounded-t-xl px-3 py-2 flex items-center justify-between text-white">
@@ -37,7 +37,7 @@ export default function CalendarNode({ data }: { data: NodeData }) {
         </div>
       </div>
       
-      <div className="p-3 bg-white cursor-default">
+      <div className="p-3 bg-[#13141c] cursor-default">
          <div className="grid grid-cols-7 gap-1 text-center mb-2">
              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
                  <div key={day} className="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">{day}</div>
@@ -49,7 +49,7 @@ export default function CalendarNode({ data }: { data: NodeData }) {
                  <div key={i} className="aspect-square flex items-center justify-center">
                      <button className={`w-full h-full flex items-center justify-center rounded-lg text-xs font-medium cursor-pointer transition-colors ${
                          isToday(day) ? 'bg-sky-500 text-white shadow-sm ring-2 ring-sky-200 ring-offset-1 ring-offset-white' : 
-                         'text-gray-700 hover:bg-sky-50 hover:text-sky-600'
+                         'text-gray-300 hover:bg-sky-50 hover:text-sky-600'
                      }`}>
                          {format(day, 'd')}
                      </button>

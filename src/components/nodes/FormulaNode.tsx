@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Sigma } from 'lucide-react';
 import { NodeData } from '../../types';
@@ -10,8 +10,6 @@ export default function FormulaNode({ data }: { data: NodeData }) {
   const [formulas, setFormulas] = useState(
     task.description || 'Budget = 4500\nSpend = 3600\nBudget - Spend'
   );
-  const [results, setResults] = useState<React.ReactNode[] | null>(null);
-  const [inFlight, setInFlight] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -80,7 +78,7 @@ export default function FormulaNode({ data }: { data: NodeData }) {
 
             output.push(
               <div key={i} className="text-gray-800">
-                <span className="text-indigo-600 font-medium">
+                <span className="text-emerald-500 font-medium">
                   {varName}
                 </span>{' '}
                 ={' '}
@@ -117,29 +115,12 @@ export default function FormulaNode({ data }: { data: NodeData }) {
     }
   };
 
-  const evaluate = () => {
-    setInFlight(true);
-    try {
-      const out = calculate();
-      if (Array.isArray(out)) setResults(out);
-      else setResults([out]);
-    } finally {
-      setInFlight(false);
-    }
-  };
-
   // Auto resize textarea
   const onTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const target = e.currentTarget;
     target.style.height = 'auto';
     target.style.height = `${target.scrollHeight}px`;
   };
-
-  useEffect(() => {
-    // initial evaluation
-    evaluate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <NodeWrapper>
@@ -150,10 +131,10 @@ export default function FormulaNode({ data }: { data: NodeData }) {
           className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10"
         />
 
-        <div className="flex flex-col w-72 rounded-xl shadow-md bg-white border border-gray-200 overflow-hidden transition-shadow hover:shadow-lg nodrag">
+        <div className="flex flex-col w-72 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36] overflow-hidden transition-shadow hover:shadow-lg nodrag">
           
           {/* Header */}
-          <div className="bg-[#6366f1] px-3 py-2 flex items-center justify-between text-white">
+          <div className="bg-emerald-600 px-3 py-2 flex items-center justify-between text-white">
             <div className="flex items-center space-x-2 cursor-grab active:cursor-grabbing w-full">
               <Sigma className="w-4 h-4 opacity-80 pointer-events-none" />
               <h3 className="font-semibold text-sm leading-tight tracking-tight shadow-sm w-full truncate select-none pointer-events-none">
@@ -163,47 +144,19 @@ export default function FormulaNode({ data }: { data: NodeData }) {
           </div>
 
           {/* Body */}
-          <div className="p-3 bg-white flex flex-col space-y-3 cursor-default">
+          <div className="p-3 bg-[#13141c] flex flex-col space-y-3 cursor-default">
             
             <textarea
               value={formulas}
               onChange={handleChange}
               onInput={onTextareaInput}
               placeholder="A = 10&#10;B = 20&#10;A + B"
-              className="w-full min-h-[60px] bg-gray-50 border border-gray-200 rounded p-2 text-xs font-mono focus:outline-none focus:border-indigo-400 resize-none cursor-text shadow-inner"
+              className="w-full min-h-[60px] bg-[#1a1b23] border border-[#2a2b36] rounded p-2 text-xs font-mono focus:outline-none focus:border-indigo-400 resize-none cursor-text shadow-inner"
               spellCheck={false}
             />
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={evaluate}
-                disabled={inFlight}
-                className="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-60"
-              >
-                Calculate
-              </button>
-              <button
-                onClick={() => {
-                  if (onChange) onChange(task.id, formulas);
-                }}
-                className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setFormulas('');
-                  setResults(null);
-                  if (onChange) onChange(task.id, '');
-                }}
-                className="px-2 py-1 bg-red-50 text-red-600 text-xs rounded hover:bg-red-100"
-              >
-                Clear
-              </button>
-            </div>
-
-            <div className="bg-gray-50/80 rounded-lg p-2 min-h-[3rem] text-sm font-mono shadow-inner overflow-x-auto select-text border border-gray-100">
-              {results ? results : <div className="text-gray-400 text-xs">No results</div>}
+            <div className="bg-[#1a1b23]/80 rounded-lg p-2 min-h-[3rem] text-sm font-mono shadow-inner overflow-x-auto select-text border border-gray-100">
+              {calculate()}
             </div>
 
           </div>
@@ -212,7 +165,7 @@ export default function FormulaNode({ data }: { data: NodeData }) {
         <Handle
           type="source"
           position={Position.Right}
-          className="w-4 h-4 bg-[#6366f1] border-2 border-white -mr-2 z-10"
+          className="w-4 h-4 bg-emerald-600 border-2 border-white -mr-2 z-10"
         />
       </div>
     </NodeWrapper>

@@ -58,7 +58,7 @@ export default function CalculatorNode({ data }: { data: NodeData }) {
                  <button 
                     key={i} 
                     onClick={() => handleBtn(btn)}
-                    className={`p-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all outline-none ${btn === '=' ? 'col-span-2 bg-indigo-500 text-white hover:bg-indigo-600 shadow-sm' : btn.match(/[0-9.]/) ? 'bg-zinc-700 text-zinc-200 hover:bg-zinc-600 shadow-sm' : btn === 'C' ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30' : 'bg-zinc-800 text-emerald-400 hover:bg-zinc-700 shadow-sm'}`}
+                    className={`p-2.5 text-sm font-medium rounded-lg active:scale-95 transition-all outline-none ${btn === '=' ? 'col-span-2 bg-emerald-500/100 text-white hover:bg-emerald-600 shadow-sm' : btn.match(/[0-9.]/) ? 'bg-zinc-700 text-zinc-200 hover:bg-zinc-600 shadow-sm' : btn === 'C' ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30' : 'bg-zinc-800 text-emerald-400 hover:bg-zinc-700 shadow-sm'}`}
                  >
                      {btn}
                  </button>

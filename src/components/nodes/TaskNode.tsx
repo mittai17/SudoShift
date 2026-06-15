@@ -72,7 +72,7 @@ export default function TaskNode({ data }: { data: NodeData }) {
       <div className="relative">
         <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
         <div
-          className={`flex flex-col w-64 rounded-xl shadow-md bg-white border border-gray-200 overflow-hidden transition-shadow hover:shadow-lg ${task.isConflicting ? 'ring-4 ring-red-500 ring-opacity-40 animate-pulse' : ''}`}
+          className={`flex flex-col w-64 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36] overflow-hidden transition-shadow hover:shadow-lg ${task.isConflicting ? 'ring-4 ring-red-500 ring-opacity-40 animate-pulse' : ''}`}
         >
         {/* N8N Style Header */}
         <div className={`${style.main} px-3 py-2 flex items-center justify-between text-white`}>
@@ -90,16 +90,16 @@ export default function TaskNode({ data }: { data: NodeData }) {
           <button 
             onClick={handleAutoTag}
             disabled={isTagging || (!task.title && !task.description)}
-            className="text-white hover:bg-white/20 p-1.5 rounded transition-colors disabled:opacity-50 flex items-center shrink-0 ml-2"
+            className="text-white hover:bg-[#13141c]/20 p-1.5 rounded transition-colors disabled:opacity-50 flex items-center shrink-0 ml-2"
             title="Auto-tag"
           >
             {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Tag'}
           </button>
         </div>
       
-      <div className="p-3 bg-white">
+      <div className="p-3 bg-[#13141c]">
         {task.description && (
-          <p className="text-xs text-gray-700 mb-3 line-clamp-3 leading-relaxed">{task.description}</p>
+          <p className="text-xs text-gray-300 mb-3 line-clamp-3 leading-relaxed">{task.description}</p>
         )}
 
         <div className="flex items-center justify-between text-xs font-medium text-gray-500 border-t border-gray-100 pt-2 mt-auto">
@@ -121,7 +121,7 @@ export default function TaskNode({ data }: { data: NodeData }) {
         {task.tags && task.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
             {task.tags.map((tag, i) => (
-              <span key={i} className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-medium border border-gray-200">
+              <span key={i} className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-400 text-[10px] font-medium border border-[#2a2b36]">
                 <Tag className="w-2.5 h-2.5" />
                 <span>{tag}</span>
               </span>

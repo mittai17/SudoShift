@@ -26,7 +26,7 @@ export default function VideoNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col w-80 rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg">
+      <div className="flex flex-col w-80 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#ef4444] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white">
@@ -36,16 +36,16 @@ export default function VideoNode({ data }: { data: NodeData }) {
         </h3>
       </div>
       
-      <div className="p-3 bg-white flex flex-col space-y-2 nodrag">
+      <div className="p-3 bg-[#13141c] flex flex-col space-y-2 nodrag">
         <input 
           type="text"
           placeholder="Paste YouTube URL..."
-          className="w-full text-xs p-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#ef4444]"
+          className="w-full text-xs p-1.5 border border-[#2a2b36] rounded focus:outline-none focus:border-[#ef4444]"
           value={url}
           onChange={handleChange}
         />
         {videoId ? (
-          <div className="w-full aspect-video bg-gray-100 rounded border border-gray-200  mt-2 relative">
+          <div className="w-full aspect-video bg-gray-100 rounded border border-[#2a2b36]  mt-2 relative">
             <iframe 
               width="100%" 
               height="100%" 

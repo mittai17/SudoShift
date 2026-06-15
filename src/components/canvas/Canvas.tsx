@@ -86,10 +86,10 @@ export function Canvas({
 
   const panelClassName = isDarkMode
     ? 'bg-slate-900/95 shadow-md rounded-lg p-1 md:p-1.5 border border-slate-700 flex items-center space-x-0.5 md:space-x-1 z-10 m-2 md:m-4 max-w-[calc(100vw-32px)] flex-wrap'
-    : 'bg-white shadow-md rounded-lg p-1 md:p-1.5 border border-gray-200 flex items-center space-x-0.5 md:space-x-1 z-10 m-2 md:m-4 max-w-[calc(100vw-32px)] flex-wrap';
+    : 'bg-[#13141c] shadow-md rounded-lg p-1 md:p-1.5 border border-[#2a2b36] flex items-center space-x-0.5 md:space-x-1 z-10 m-2 md:m-4 max-w-[calc(100vw-32px)] flex-wrap';
   const inactiveButtonClass = isDarkMode
     ? 'text-slate-300 hover:bg-slate-800'
-    : 'text-gray-600 hover:bg-gray-100';
+    : 'text-gray-400 hover:bg-gray-100';
   const dividerClass = isDarkMode ? 'bg-slate-700' : 'bg-gray-300';
 
   return (
@@ -123,14 +123,14 @@ export function Canvas({
 
         <button
           onClick={() => setPanMode(false)}
-          className={`p-2 md:p-2 rounded transition-colors ${!panMode ? 'bg-indigo-50 text-indigo-600' : inactiveButtonClass}`}
+          className={`p-2 md:p-2 rounded transition-colors ${!panMode ? 'bg-emerald-500/10 text-emerald-500' : inactiveButtonClass}`}
           title="Select Tool (Marquee)"
         >
           <MousePointer2 className="w-4 h-4" />
         </button>
         <button
           onClick={() => setPanMode(true)}
-          className={`p-2 md:p-2 rounded transition-colors ${panMode ? 'bg-indigo-50 text-indigo-600' : inactiveButtonClass}`}
+          className={`p-2 md:p-2 rounded transition-colors ${panMode ? 'bg-emerald-500/10 text-emerald-500' : inactiveButtonClass}`}
           title="Hand Tool (Pan)"
         >
           <Move className="w-4 h-4" />
@@ -188,7 +188,7 @@ export function Canvas({
           }
         }}
         maskColor={isDarkMode ? 'rgba(15, 23, 42, 0.65)' : 'rgba(248, 250, 252, 0.6)'}
-        className={`hidden md:block rounded-lg shadow-md border ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}`}
+        className={`hidden md:block rounded-lg shadow-md border ${isDarkMode ? 'border-slate-700' : 'border-[#2a2b36]'}`}
       />
     </ReactFlow>
   );

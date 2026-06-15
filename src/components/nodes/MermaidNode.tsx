@@ -43,7 +43,7 @@ export default function MermaidNode({ data, id }: { data: NodeData, id: string }
   // N8N style nodes: dark purple for Diagram nodes
   return (
     <NodeWrapper>
-      <div className="flex flex-col w-96 rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg">
+      <div className="flex flex-col w-96 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#8b5cf6] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white">
@@ -54,9 +54,9 @@ export default function MermaidNode({ data, id }: { data: NodeData, id: string }
       </div>
       
       {/* Code Editor Area */}
-      <div className="p-3 bg-gray-50 border-b border-gray-100">
+      <div className="p-3 bg-[#1a1b23] border-b border-gray-100">
         <textarea
-          className="w-full text-xs font-mono text-gray-700 bg-transparent resize-none focus:outline-none placeholder-gray-400 min-h-[80px]"
+          className="w-full text-xs font-mono text-gray-300 bg-transparent resize-none focus:outline-none placeholder-gray-400 min-h-[80px]"
           placeholder="graph TD
   A-->B;"
           defaultValue={task.description || ''}
@@ -65,7 +65,7 @@ export default function MermaidNode({ data, id }: { data: NodeData, id: string }
       </div>
       
       {/* Preview Area */}
-      <div className="p-3 bg-white min-h-[100px] flex items-center justify-center overflow-auto pointer-events-none custom-mermaid-container">
+      <div className="p-3 bg-[#13141c] min-h-[100px] flex items-center justify-center overflow-auto pointer-events-none custom-mermaid-container">
         {error ? (
           <p className="text-[10px] text-red-500 font-mono break-all leading-tight">{error}</p>
         ) : svgStr ? (

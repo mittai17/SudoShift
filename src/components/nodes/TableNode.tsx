@@ -158,7 +158,7 @@ export default function TableNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col rounded-xl shadow-md bg-white border border-gray-200 transition-shadow w-auto min-w-[300px] max-w-3xl font-sans text-gray-800">
+      <div className="flex flex-col rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36] transition-shadow w-auto min-w-[300px] max-w-3xl font-sans text-gray-800">
         <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
         
         {/* Header Ribbon */}
@@ -172,16 +172,16 @@ export default function TableNode({ data }: { data: NodeData }) {
         </div>
 
         {/* Formula Bar */}
-        <div className="flex items-center border-b border-gray-200 bg-gray-50 px-2 py-1 space-x-2 text-xs">
-          <div className="font-mono text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded min-w-[3rem] text-center">
+        <div className="flex items-center border-b border-[#2a2b36] bg-[#1a1b23] px-2 py-1 space-x-2 text-xs">
+          <div className="font-mono text-gray-400 bg-[#13141c] border border-[#2a2b36] px-2 py-1 rounded min-w-[3rem] text-center">
             {activeCell ? `${getColName(activeCell.c)}${activeCell.r + 1}` : ''}
           </div>
-          <div className="text-gray-400 font-bold px-1 text-sm italic w-5 text-center px-2 border-l border-gray-200 h-4 flex items-center justify-center">
+          <div className="text-gray-400 font-bold px-1 text-sm italic w-5 text-center px-2 border-l border-[#2a2b36] h-4 flex items-center justify-center">
             <span className="opacity-70 mt-0.5">fx</span>
           </div>
           <input 
             type="text"
-            className="flex-1 bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-[#10b981] text-xs font-mono"
+            className="flex-1 bg-[#13141c] border border-[#2a2b36] rounded px-2 py-1 outline-none focus:ring-1 focus:ring-[#10b981] text-xs font-mono"
             placeholder={activeCell ? "Enter value or formula (e.g. =A1+B1 or =SUM(A1:B2))" : "Select a cell to edit"}
             value={activeCellValue}
             disabled={!activeCell}
@@ -191,12 +191,12 @@ export default function TableNode({ data }: { data: NodeData }) {
           />
         </div>
         
-        <div className="px-2 pb-2 mt-2 bg-white w-full overflow-x-visible nodrag">
-          <div className="border border-gray-300 rounded overflow-visible flex flex-col w-fit bg-gray-100 shadow-sm">
+        <div className="px-2 pb-2 mt-2 bg-[#13141c] w-full overflow-x-visible nodrag">
+          <div className="border border-[#3f3f46] rounded overflow-visible flex flex-col w-fit bg-gray-100 shadow-sm">
             
             {/* Column Headers */}
-            <div className="flex border-b border-gray-300">
-              <div className="w-8 h-6 flex-shrink-0 bg-gray-100 border-r border-gray-300 relative group">
+            <div className="flex border-b border-[#3f3f46]">
+              <div className="w-8 h-6 flex-shrink-0 bg-gray-100 border-r border-[#3f3f46] relative group">
                 <button
                   onClick={addRow}
                   className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 bg-emerald-500 text-white rounded p-0.5 shadow z-20 hover:scale-110 transition-transform"
@@ -206,7 +206,7 @@ export default function TableNode({ data }: { data: NodeData }) {
                 </button>
               </div>
               {tableData[0]?.map((_, cIdx) => (
-                <div key={cIdx} className="w-20 sm:w-24 border-r border-gray-300 flex items-center justify-center text-[10px] font-semibold text-gray-500 relative group cursor-default h-6 select-none shadow-sm pb-[1px]">
+                <div key={cIdx} className="w-20 sm:w-24 border-r border-[#3f3f46] flex items-center justify-center text-[10px] font-semibold text-gray-500 relative group cursor-default h-6 select-none shadow-sm pb-[1px]">
                   {getColName(cIdx)}
                   <button
                     onClick={() => removeColumn(cIdx)}
@@ -218,7 +218,7 @@ export default function TableNode({ data }: { data: NodeData }) {
                 </div>
               ))}
               <div 
-                className="w-6 flex items-center justify-center cursor-pointer hover:bg-gray-200 text-gray-500 transition-colors bg-gray-50 border-l border-white shadow-sm"
+                className="w-6 flex items-center justify-center cursor-pointer hover:bg-gray-200 text-gray-500 transition-colors bg-[#1a1b23] border-l border-white shadow-sm"
                 onClick={addColumn}
                 title="Add Column"
               >
@@ -228,9 +228,9 @@ export default function TableNode({ data }: { data: NodeData }) {
 
             {/* Rows */}
             {tableData.map((row, rIdx) => (
-              <div key={rIdx} className="flex border-b border-gray-300 last:border-b-0 relative group">
+              <div key={rIdx} className="flex border-b border-[#3f3f46] last:border-b-0 relative group">
                 {/* Row Header */}
-                <div className="w-8 flex-shrink-0 flex items-center justify-center border-r border-gray-300 text-[10px] font-semibold text-gray-500 bg-gray-100 relative select-none h-7 shadow-sm">
+                <div className="w-8 flex-shrink-0 flex items-center justify-center border-r border-[#3f3f46] text-[10px] font-semibold text-gray-500 bg-gray-100 relative select-none h-7 shadow-sm">
                   {rIdx + 1}
                   <button
                     onClick={() => removeRow(rIdx)}
@@ -247,7 +247,7 @@ export default function TableNode({ data }: { data: NodeData }) {
                   return (
                     <div 
                       key={cIdx} 
-                      className={`w-20 sm:w-24 h-7 border-r border-gray-200 bg-white flex last:border-r-0 relative z-10 ${isActive ? 'ring-2 ring-[#10b981] z-20' : 'hover:ring-1 hover:ring-emerald-300'}`}
+                      className={`w-20 sm:w-24 h-7 border-r border-[#2a2b36] bg-[#13141c] flex last:border-r-0 relative z-10 ${isActive ? 'ring-2 ring-[#10b981] z-20' : 'hover:ring-1 hover:ring-emerald-300'}`}
                       onClick={() => setActiveCell({r: rIdx, c: cIdx})}
                     >
                       <input
@@ -264,7 +264,7 @@ export default function TableNode({ data }: { data: NodeData }) {
           </div>
           
           <div className="mt-2 text-[10px] text-gray-400 flex items-center justify-between pointer-events-none">
-            <span>Try <span className="font-mono bg-gray-100 text-gray-600 px-1 py-[2px] rounded">=SUM(A1:B2)</span> or <span className="font-mono bg-gray-100 text-gray-600 px-1 py-[2px] rounded">=A1+B1</span></span>
+            <span>Try <span className="font-mono bg-gray-100 text-gray-400 px-1 py-[2px] rounded">=SUM(A1:B2)</span> or <span className="font-mono bg-gray-100 text-gray-400 px-1 py-[2px] rounded">=A1+B1</span></span>
           </div>
         </div>
 

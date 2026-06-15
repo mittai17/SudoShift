@@ -200,7 +200,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
     switch (type) {
       case 'invite':
         return (
-          <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
             <UserPlus className="w-4.5 h-4.5" />
           </div>
         );
@@ -218,7 +218,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
         );
       default:
         return (
-          <div className="w-9 h-9 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#1a1b23] text-gray-400 flex items-center justify-center shrink-0">
             <Bell className="w-4.5 h-4.5" />
           </div>
         );
@@ -230,8 +230,8 @@ export default function Inbox({ onOpenChat }: InboxProps) {
       {/* Trigger Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative p-2.5 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
-          isOpen ? 'bg-gray-100 text-indigo-600' : ''
+        className={`relative p-2.5 text-gray-500 hover:text-gray-100 rounded-xl hover:bg-gray-100 transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+          isOpen ? 'bg-gray-100 text-emerald-500' : ''
         }`}
         title="View Notifications"
       >
@@ -245,13 +245,13 @@ export default function Inbox({ onOpenChat }: InboxProps) {
 
       {/* Popover Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2.5 w-80 sm:w-96 bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="absolute right-0 mt-2.5 w-80 sm:w-96 bg-[#13141c]/95 backdrop-blur-md border border-[#2a2b36]/80 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
           {/* Header */}
-          <div className="px-4.5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div className="px-4.5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-[#1a1b23]/50">
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-slate-800 text-sm tracking-tight">Inbox</span>
+              <span className="font-bold text-gray-200 text-sm tracking-tight">Inbox</span>
               {unreadCount > 0 && (
-                <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
                   {unreadCount} new
                 </span>
               )}
@@ -259,7 +259,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="flex items-center space-x-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer"
+                className="flex items-center space-x-1 text-xs font-bold text-emerald-500 hover:text-indigo-700 transition-colors cursor-pointer"
               >
                 <CheckSquare className="w-3.5 h-3.5" />
                 <span>Mark all as read</span>
@@ -271,11 +271,11 @@ export default function Inbox({ onOpenChat }: InboxProps) {
           <div className="flex-1 overflow-y-auto max-h-[360px] scrollbar-thin scrollbar-thumb-slate-200">
             {notifications.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-center px-4">
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-3 border border-slate-100">
+                <div className="w-12 h-12 rounded-full bg-[#1a1b23] flex items-center justify-center text-gray-500 mb-3 border border-[#2a2b36]">
                   <EmptyInboxIcon className="w-6 h-6" />
                 </div>
-                <h4 className="font-bold text-slate-700 text-sm mb-1">Your inbox is clear</h4>
-                <p className="text-xs text-slate-400 max-w-[220px]">
+                <h4 className="font-bold text-gray-300 text-sm mb-1">Your inbox is clear</h4>
+                <p className="text-xs text-gray-500 max-w-[220px]">
                   You're all caught up! No notifications have arrived yet.
                 </p>
               </div>
@@ -285,8 +285,8 @@ export default function Inbox({ onOpenChat }: InboxProps) {
                   <div
                     key={notif.id}
                     onClick={() => handleNotificationClick(notif)}
-                    className={`flex items-start p-4 hover:bg-slate-50/70 transition-all cursor-pointer relative group ${
-                      !notif.is_read ? 'bg-indigo-50/20' : ''
+                    className={`flex items-start p-4 hover:bg-[#1a1b23]/70 transition-all cursor-pointer relative group ${
+                      !notif.is_read ? 'bg-emerald-500/10/20' : ''
                     }`}
                   >
                     {/* Icon Column */}
@@ -294,8 +294,8 @@ export default function Inbox({ onOpenChat }: InboxProps) {
 
                     {/* Content Column */}
                     <div className="ml-3.5 flex-1 min-w-0 text-left">
-                      <div className="text-xs text-slate-700 leading-snug">
-                        <span className="font-bold text-slate-900 pr-1">{notif.actor_name}</span>
+                      <div className="text-xs text-gray-300 leading-snug">
+                        <span className="font-bold text-gray-100 pr-1">{notif.actor_name}</span>
                         {notif.type === 'invite' && 'invited you to collaborate'}
                         {notif.type === 'mention' && 'mentioned you'}
                         {notif.type === 'dm' && 'sent you a private message'}
@@ -303,14 +303,14 @@ export default function Inbox({ onOpenChat }: InboxProps) {
                       </div>
 
                       {notif.canvas_name && (
-                        <div className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
-                          in <span className="italic text-indigo-500 font-bold">{notif.canvas_name}</span>
+                        <div className="text-[10px] text-gray-500 font-medium mt-0.5 truncate">
+                          in <span className="italic text-emerald-500 font-bold">{notif.canvas_name}</span>
                         </div>
                       )}
 
                       {/* Snippet Preview */}
                       {notif.type !== 'invite' && notif.content && (
-                        <div className="text-xs text-slate-500 mt-1 truncate bg-slate-50 px-2 py-1 rounded border border-slate-100/50">
+                        <div className="text-xs text-slate-500 mt-1 truncate bg-[#1a1b23] px-2 py-1 rounded border border-[#2a2b36]/50">
                           {notif.content}
                         </div>
                       )}
@@ -320,7 +320,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
                         {!notif.is_read && (
                           <>
                             <span className="w-1 h-1 rounded-full bg-slate-300" />
-                            <span className="text-indigo-600 font-semibold">Unread</span>
+                            <span className="text-emerald-500 font-semibold">Unread</span>
                           </>
                         )}
                       </div>
@@ -331,7 +331,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
                       {!notif.is_read && (
                         <button
                           onClick={(e) => markAsRead(notif.id, e)}
-                          className="p-1 hover:bg-indigo-50 hover:text-indigo-600 text-slate-400 rounded-md transition-colors cursor-pointer"
+                          className="p-1 hover:bg-emerald-500/10 hover:text-emerald-500 text-gray-500 rounded-md transition-colors cursor-pointer"
                           title="Mark as read"
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -339,7 +339,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
                       )}
                       <button
                         onClick={(e) => deleteNotification(notif.id, e)}
-                        className="p-1 hover:bg-rose-50 hover:text-rose-600 text-slate-400 rounded-md transition-colors cursor-pointer"
+                        className="p-1 hover:bg-rose-50 hover:text-rose-600 text-gray-500 rounded-md transition-colors cursor-pointer"
                         title="Delete notification"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -348,7 +348,7 @@ export default function Inbox({ onOpenChat }: InboxProps) {
 
                     {/* Unread dot indicator (if not hovered or no group action) */}
                     {!notif.is_read && (
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-indigo-600 rounded-full group-hover:hidden shadow-sm shadow-indigo-600/50 shrink-0" />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-600 rounded-full group-hover:hidden shadow-sm shadow-indigo-600/50 shrink-0" />
                     )}
                   </div>
                 ))}

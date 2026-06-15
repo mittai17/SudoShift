@@ -131,7 +131,7 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
             value={search}
             onChange={(e) => { setSearch(e.target.value); if (e.target.value) setActiveTab('all'); }}
             placeholder='Search nodes...'
-            className="w-full bg-[#1a1b23] border border-[#2a2b36] rounded-lg pl-8 pr-8 py-2 text-xs text-gray-300 placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-[#1a1b23] border border-[#2a2b36] rounded-lg pl-8 pr-8 py-2 text-xs text-gray-300 placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
@@ -172,7 +172,7 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
         )}
 
         {filteredNodes.length === 0 && (
-          <div className="text-center py-8 text-gray-600 text-xs">No nodes found</div>
+          <div className="text-center py-8 text-gray-400 text-xs">No nodes found</div>
         )}
 
         {/* Grouped display (All tab or search) */}
@@ -211,7 +211,7 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
               <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: activeTabConfig.color + 'aa' }}>
                 {activeTabConfig.label} Nodes
               </span>
-              <span className="text-[10px] text-gray-600 ml-1">({filteredNodes.length})</span>
+              <span className="text-[10px] text-gray-400 ml-1">({filteredNodes.length})</span>
             </div>
             <div className="grid grid-cols-1 gap-1.5">
               {filteredNodes.map((node) => (
@@ -226,7 +226,7 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
           </div>
         )}
 
-        <p className="text-[10px] text-gray-600 text-center pt-1 pb-2">Drag nodes to the canvas</p>
+        <p className="text-[10px] text-gray-400 text-center pt-1 pb-2">Drag nodes to the canvas</p>
       </div>
     </div>
   );

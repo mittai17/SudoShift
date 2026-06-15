@@ -84,7 +84,7 @@ export function FloatingToolbar() {
 
           <div className="w-px h-5 bg-[#2a2b36] mx-1" />
 
-          <button onClick={() => setShowColorPicker(!showColorPicker)} className={`p-2 md:p-2 rounded-xl transition-colors group ${showColorPicker ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-400 hover:text-white hover:bg-[#1a1b23]'}`}>
+          <button onClick={() => setShowColorPicker(!showColorPicker)} className={`p-2 md:p-2 rounded-xl transition-colors group ${showColorPicker ? 'bg-emerald-500/100/20 text-emerald-400' : 'text-gray-400 hover:text-white hover:bg-[#1a1b23]'}`}>
             <Palette className="w-4 h-4" />
             <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none">Color</span>
           </button>

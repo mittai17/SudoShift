@@ -54,7 +54,7 @@ export function ColorPicker({ color, onChange, onClose }: ColorPickerProps) {
       
       <div className="h-px w-full bg-[#2a2b36]" />
       
-      <div className="flex items-center space-x-2 bg-[#1a1b23] border border-[#2a2b36] rounded-lg px-2 py-1.5 focus-within:border-indigo-500 transition-colors">
+      <div className="flex items-center space-x-2 bg-[#1a1b23] border border-[#2a2b36] rounded-lg px-2 py-1.5 focus-within:border-emerald-500/50 transition-colors">
         <Pipette className="w-3.5 h-3.5 text-gray-500" />
         <input 
           type="text" 

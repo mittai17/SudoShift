@@ -474,9 +474,9 @@ function FlowEditor() {
     (type: string) => {
       if (myRole === 'viewer') return;
 
-      const position = screenToFlowPosition({ 
-        x: window.innerWidth / 2, 
-        y: window.innerHeight / 2 
+      const position = screenToFlowPosition({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2
       });
 
       const registryEntry = NODE_REGISTRY.find((n) => n.id === type);
@@ -531,7 +531,7 @@ function FlowEditor() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !socket) return;
-    
+
     if (activeChatTab === 'dm' && selectedDMUserId) {
       socket.emit("send_message", { text: chatInput.trim(), recipientId: selectedDMUserId });
     } else {
@@ -612,9 +612,9 @@ function FlowEditor() {
   return (
     <div className="flex flex-col w-screen h-screen overflow-hidden">
       {/* Editor Header Navigation */}
-      <div className="flex items-center justify-between px-2 md:px-4 py-2 bg-white border-b border-gray-200 z-10 shadow-sm shrink-0">
+      <div className="flex items-center justify-between px-2 md:px-4 py-2 bg-[#13141c] border-b border-[#2a2b36] z-10 shadow-sm shrink-0">
         <div className="flex items-center space-x-3">
-          <Link to="/" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
+          <Link to="/" className="p-1.5 hover:bg-[#2a2b36] rounded-lg transition-colors text-gray-400">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <button
@@ -625,12 +625,12 @@ function FlowEditor() {
                 setHistoryOpen(false);
               }
             }}
-            className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 flex items-center justify-center border border-slate-200"
+            className="lg:hidden p-1.5 hover:bg-[#2a2b36] rounded-lg transition-colors text-slate-500 flex items-center justify-center border border-[#2a2b36]"
             title="Toggle Nodes Panel"
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
-          
+
           <div className="hidden sm:flex items-center space-x-2">
             {isRenamingCanvas ? (
               <input
@@ -643,11 +643,11 @@ function FlowEditor() {
                 className="font-semibold text-sm px-1 py-0.5 border border-indigo-300 rounded outline-none focus:ring-2 focus:ring-indigo-500/20 w-48"
               />
             ) : (
-              <div 
+              <div
                 className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-gray-100 cursor-text transition-colors group"
                 onClick={() => setIsRenamingCanvas(true)}
               >
-                <h2 className="font-semibold text-sm truncate max-w-[200px]">{canvasName || 'Workspace'}</h2>
+                <h2 className="font-semibold text-sm truncate max-w-[200px] text-gray-200">{canvasName || 'Workspace'}</h2>
                 <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             )}
@@ -675,7 +675,7 @@ function FlowEditor() {
               </div>
             ))}
             {Object.keys(cursors).length > 3 && (
-              <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-200 text-[10px] font-bold shadow-sm text-gray-600">
+              <div className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-200 text-[10px] font-bold shadow-sm text-gray-400">
                 +{Object.keys(cursors).length - 3}
               </div>
             )}
@@ -683,7 +683,7 @@ function FlowEditor() {
 
           <button
             onClick={() => setMembersModalOpen(true)}
-            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
+            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-[#1a1b23] text-gray-300 hover:bg-gray-100 border border-[#2a2b36]"
           >
             <Users className="w-4 h-4" />
             <span className="hidden md:inline">Members</span>
@@ -691,7 +691,7 @@ function FlowEditor() {
 
           <button
             onClick={handleShare}
-            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-[#6366f1] text-white hover:bg-indigo-600 border border-transparent'}`}
+            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${copied ? 'bg-green-100 text-green-700' : 'bg-emerald-600 text-white hover:bg-emerald-600 border border-transparent'}`}
           >
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             <span className="hidden md:inline">{copied ? 'Copied' : 'Share'}</span>
@@ -705,7 +705,7 @@ function FlowEditor() {
                 setSidebarOpen(false);
               }
             }}
-            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${historyOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
+            className={`hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${historyOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-[#1a1b23] text-gray-300 hover:bg-gray-100 border border-[#2a2b36]'}`}
           >
             <History className="w-4 h-4" />
             <span className="hidden md:inline">History</span>
@@ -719,7 +719,7 @@ function FlowEditor() {
                 setSidebarOpen(false);
               }
             }}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors relative ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors relative ${chatOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-[#1a1b23] text-gray-300 hover:bg-gray-100 border border-[#2a2b36]'}`}
           >
             <MessageSquare className="w-4 h-4" />
             <span className="hidden md:inline">Chat</span>
@@ -740,7 +740,7 @@ function FlowEditor() {
 
           <button
             onClick={() => setSettingsOpen(true)}
-            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200"
+            className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-[#1a1b23] text-gray-300 hover:bg-gray-100 border border-[#2a2b36]"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden md:inline">Settings</span>
@@ -750,7 +750,7 @@ function FlowEditor() {
           <div className="relative md:hidden" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-              className={`p-1.5 rounded-lg transition-colors flex items-center justify-center border ${moreMenuOpen ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'hover:bg-slate-100 text-slate-500 border-slate-200 bg-white'}`}
+              className={`p-1.5 rounded-lg transition-colors flex items-center justify-center border ${moreMenuOpen ? 'bg-emerald-500/10 text-emerald-500 border-indigo-200' : 'hover:bg-[#2a2b36] text-slate-500 border-[#2a2b36] bg-[#13141c]'}`}
               title="More Options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -758,27 +758,27 @@ function FlowEditor() {
             {moreMenuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMoreMenuOpen(false)} />
-                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 mt-1.5 w-52 bg-[#13141c] border border-[#2a2b36] rounded-xl shadow-xl py-1 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
                   <button
                     onClick={() => {
                       setMembersModalOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-gray-300 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
                   >
                     <Users className="w-4 h-4" />
                     <span>Members</span>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       handleShare();
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-gray-300 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-                     <span>{copied ? 'Copied' : 'Share Link'}</span>
+                    <span>{copied ? 'Copied' : 'Share Link'}</span>
                   </button>
 
                   <button
@@ -790,7 +790,7 @@ function FlowEditor() {
                         setSidebarOpen(false);
                       }
                     }}
-                    className={`w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold transition-colors ${historyOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'}`}
+                    className={`w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold transition-colors ${historyOpen ? 'bg-emerald-500/10 text-emerald-500' : 'text-gray-300 hover:bg-emerald-500/10 hover:text-emerald-500'}`}
                   >
                     <History className="w-4 h-4" />
                     <span>History</span>
@@ -801,7 +801,7 @@ function FlowEditor() {
                       setJsonTransportOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-gray-300 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
                   >
                     <Code className="w-4 h-4" />
                     <span>JSON Export</span>
@@ -812,7 +812,7 @@ function FlowEditor() {
                       setSettingsOpen(true);
                       setMoreMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                    className="w-full flex items-center space-x-2.5 px-4 py-3 md:py-2.5 text-sm md:text-xs font-bold text-gray-300 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
                   >
                     <Settings className="w-4 h-4" />
                     <span>Settings</span>
@@ -824,10 +824,10 @@ function FlowEditor() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden bg-[#f8fafc] font-sans text-gray-900 relative">
+      <div className="flex-1 flex overflow-hidden bg-[#0d0e15] font-sans text-gray-100 relative">
         {/* Sidebar Backdrop Overlay */}
         {sidebarOpen && (
-          <div 
+          <div
             className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-30"
             onClick={() => setSidebarOpen(false)}
           />
@@ -837,9 +837,9 @@ function FlowEditor() {
           ${sidebarOpen ? 'flex' : 'hidden'} 
           absolute lg:static left-0 top-0 bottom-0 z-35 shrink-0 shadow-2xl lg:shadow-none h-full
         `}>
-          <Sidebar 
-            onAddNodes={handleAddTasks} 
-            onAddEdges={handleAddEdges} 
+          <Sidebar
+            onAddNodes={handleAddTasks}
+            onAddEdges={handleAddEdges}
             onAddNodeClick={handleAddNodeClick}
             onClose={() => setSidebarOpen(false)}
           />
@@ -848,7 +848,7 @@ function FlowEditor() {
         {/* Desktop Sidebar Toggle Arrow */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="hidden lg:flex absolute top-1/2 -translate-y-1/2 z-40 bg-white border border-gray-200 shadow-sm p-1.5 rounded-r-lg hover:bg-gray-50 transition-all duration-300"
+          className="hidden lg:flex absolute top-1/2 -translate-y-1/2 z-40 bg-[#13141c] border border-[#2a2b36] shadow-sm p-1.5 rounded-r-lg hover:bg-[#1a1b23] transition-all duration-300"
           style={{ left: sidebarOpen ? '288px' : '0px' }}
           title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
@@ -857,7 +857,7 @@ function FlowEditor() {
 
         <div className="flex-1 h-full relative p-1 sm:p-2 md:p-4 pb-0">
           <div
-            className={`w-full h-full rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border overflow-hidden relative transition-colors ${canvasDarkMode ? 'bg-slate-950 border-slate-700' : 'bg-white border-gray-200'}`}
+            className={`w-full h-full rounded-t-xl rounded-tr-none md:rounded-xl shadow-inner border overflow-hidden relative transition-colors ${canvasDarkMode ? 'bg-slate-950 border-slate-700' : 'bg-[#13141c] border-[#2a2b36]'}`}
             onDrop={onDrop}
             onDragOver={onDragOver}
             onPointerMove={handlePointerMove}
@@ -865,7 +865,7 @@ function FlowEditor() {
             <button
               type="button"
               onClick={() => setCanvasDarkMode((value) => !value)}
-              className={`absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold shadow-sm transition-colors ${canvasDarkMode ? 'bg-slate-900 text-amber-300 border-slate-700 hover:bg-slate-800' : 'bg-white text-slate-700 border-gray-200 hover:bg-slate-50'}`}
+              className={`absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold shadow-sm transition-colors ${canvasDarkMode ? 'bg-slate-900 text-amber-300 border-slate-700 hover:bg-slate-800' : 'bg-[#13141c] text-gray-300 border-[#2a2b36] hover:bg-[#1a1b23]'}`}
               title={canvasDarkMode ? 'Switch canvas to light mode' : 'Switch canvas to dark mode'}
             >
               {canvasDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -902,7 +902,7 @@ function FlowEditor() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill={data.user.color} xmlns="http://www.w3.org/2000/svg" className="absolute -left-1 -top-1" style={{ filter: 'drop-shadow(1px 2px 2px rgba(0,0,0,0.2))' }}>
                     <path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.42c.45 0 .67-.54.35-.85L6.35 3.32a.5.5 0 0 0-.85.35z" />
                   </svg>
-                  <div className="absolute top-5 left-5 bg-white text-xs px-2 py-0.5 rounded shadow-sm font-semibold truncate border whitespace-nowrap" style={{ color: data.user.color, borderColor: data.user.color }}>
+                  <div className="absolute top-5 left-5 bg-[#13141c] text-xs px-2 py-0.5 rounded shadow-sm font-semibold truncate border whitespace-nowrap" style={{ color: data.user.color, borderColor: data.user.color }}>
                     {data.user.name}
                   </div>
                 </div>
@@ -913,7 +913,7 @@ function FlowEditor() {
 
         {/* Chat Backdrop Overlay */}
         {chatOpen && (
-          <div 
+          <div
             className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-15"
             onClick={() => setChatOpen(false)}
           />
@@ -921,30 +921,29 @@ function FlowEditor() {
 
         {/* Chat Sidebar */}
         {chatOpen && (
-          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
+          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-[#13141c] border-l border-[#2a2b36] shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50 shrink-0">
-              <div className="flex items-center space-x-2 text-slate-900 font-bold text-base">
-                <MessageSquare className="w-5 h-5 text-indigo-600" />
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-[#1a1b23] shrink-0">
+              <div className="flex items-center space-x-2 text-gray-100 font-bold text-base">
+                <MessageSquare className="w-5 h-5 text-emerald-500" />
                 <span>Workspace Chat</span>
               </div>
-              <button 
-                onClick={() => setChatOpen(false)} 
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+              <button
+                onClick={() => setChatOpen(false)}
+                className="p-1.5 text-gray-500 hover:text-gray-400 hover:bg-[#2a2b36] rounded-lg transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Tabs Selector */}
-            <div className="flex border-b border-slate-150 shrink-0 bg-slate-50/50 p-1">
+            <div className="flex border-b border-slate-150 shrink-0 bg-[#1a1b23]/50 p-1">
               <button
                 onClick={() => { setActiveChatTab('team'); setSelectedDMUserId(null); }}
-                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${
-                  activeChatTab === 'team'
-                    ? 'bg-white text-indigo-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                }`}
+                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${activeChatTab === 'team'
+                    ? 'bg-[#13141c] text-emerald-500 shadow-sm'
+                    : 'text-slate-500 hover:text-gray-300 hover:bg-[#2a2b36]'
+                  }`}
               >
                 <Users className="w-3.5 h-3.5" />
                 <span>Team Chat</span>
@@ -954,11 +953,10 @@ function FlowEditor() {
               </button>
               <button
                 onClick={() => setActiveChatTab('dm')}
-                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${
-                  activeChatTab === 'dm'
-                    ? 'bg-white text-indigo-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-                }`}
+                className={`flex-1 flex items-center justify-center space-x-1.5 py-2 text-xs font-bold rounded-xl transition-all ${activeChatTab === 'dm'
+                    ? 'bg-[#13141c] text-emerald-500 shadow-sm'
+                    : 'text-slate-500 hover:text-gray-300 hover:bg-[#2a2b36]'
+                  }`}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>DMs</span>
@@ -975,7 +973,7 @@ function FlowEditor() {
               {activeChatTab === 'team' ? (
                 /* Team Chat Thread */
                 messages.filter(m => !m.recipientId).length === 0 ? (
-                  <div className="text-center text-slate-400 text-xs mt-10">
+                  <div className="text-center text-gray-500 text-xs mt-10">
                     No team messages yet. Start collaborating!
                   </div>
                 ) : (
@@ -984,7 +982,7 @@ function FlowEditor() {
                       const isMe = msg.user.id === currentUser.id;
                       const prevMsg = index > 0 ? arr[index - 1] : null;
                       const showSenderHeader = !prevMsg || prevMsg.user.id !== msg.user.id;
-                      
+
                       return (
                         <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${showSenderHeader ? 'mt-3' : 'mt-1'}`}>
                           {showSenderHeader && !isMe && (
@@ -994,29 +992,27 @@ function FlowEditor() {
                           )}
                           <div className={`flex items-end space-x-2 max-w-[85%] ${isMe ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}>
                             {!isMe && (
-                              <div 
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${
-                                  showSenderHeader ? 'visible' : 'invisible'
-                                }`}
+                              <div
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${showSenderHeader ? 'visible' : 'invisible'
+                                  }`}
                                 style={{ backgroundColor: msg.user.color }}
                               >
                                 {msg.user.name.substring(0, 1).toUpperCase()}
                               </div>
                             )}
                             <div className="flex flex-col group">
-                              <div 
-                                className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${
-                                  isMe 
-                                    ? 'bg-indigo-600 text-white rounded-tr-none' 
-                                    : msg.text.includes(`@${currentUser.name}`) 
+                              <div
+                                className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${isMe
+                                    ? 'bg-emerald-600 text-white rounded-tr-none'
+                                    : msg.text.includes(`@${currentUser.name}`)
                                       ? 'bg-amber-50 border border-amber-200 text-amber-900 rounded-tl-none font-medium'
-                                      : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
-                                }`}
+                                      : 'bg-[#2a2b36] text-gray-200 rounded-tl-none border border-[#2a2b36]'
+                                  }`}
                               >
                                 {msg.text.split(' ').map((word: string, i: number) => {
                                   if (word.startsWith('@')) {
                                     return (
-                                      <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-indigo-600 bg-indigo-50/50 px-1 py-0.5 rounded'}`}>
+                                      <span key={i} className={`font-bold ${isMe ? 'text-indigo-200' : 'text-emerald-500 bg-emerald-500/10/50 px-1 py-0.5 rounded'}`}>
                                         {word}{' '}
                                       </span>
                                     );
@@ -1024,7 +1020,7 @@ function FlowEditor() {
                                   return word + ' ';
                                 })}
                               </div>
-                              <span className={`text-[9px] text-slate-400 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
+                              <span className={`text-[9px] text-gray-500 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
                                 {formatTime(msg.timestamp)}
                               </span>
                             </div>
@@ -1043,7 +1039,7 @@ function FlowEditor() {
                       Direct Message collaborators
                     </span>
                     {members.filter(m => m.user.id !== currentUser.id).length === 0 ? (
-                      <div className="text-center text-slate-400 text-xs mt-10">
+                      <div className="text-center text-gray-500 text-xs mt-10">
                         Invite members to start private chatting!
                       </div>
                     ) : (
@@ -1053,7 +1049,7 @@ function FlowEditor() {
                           <button
                             key={member.user.id}
                             onClick={() => setSelectedDMUserId(member.user.id)}
-                            className="w-full flex items-center justify-between p-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-2xl transition-all duration-200 text-left active:scale-95 group"
+                            className="w-full flex items-center justify-between p-3 bg-[#1a1b23]/50 hover:bg-[#1a1b23] border border-[#2a2b36] rounded-2xl transition-all duration-200 text-left active:scale-95 group"
                           >
                             <div className="flex items-center space-x-3 min-w-0">
                               <div
@@ -1062,21 +1058,20 @@ function FlowEditor() {
                               >
                                 {member.user.name.substring(0, 1).toUpperCase()}
                                 <div
-                                  className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                                    member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
-                                  }`}
+                                  className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                                    }`}
                                 />
                               </div>
                               <div className="min-w-0">
-                                <span className="font-bold text-slate-800 text-xs group-hover:text-indigo-600 transition-colors block truncate">
+                                <span className="font-bold text-gray-200 text-xs group-hover:text-emerald-500 transition-colors block truncate">
                                   {member.user.name}
                                 </span>
-                                <span className="text-[10px] text-slate-400 truncate block">
+                                <span className="text-[10px] text-gray-500 truncate block">
                                   {member.isOnline ? 'Active now' : 'Offline'}
                                 </span>
                               </div>
                             </div>
-                            
+
                             {unreadCount > 0 && (
                               <span className="bg-red-500 text-white text-[9px] font-extrabold rounded-full px-1.5 py-0.5 min-w-[16px] text-center shadow-sm">
                                 {unreadCount}
@@ -1091,39 +1086,38 @@ function FlowEditor() {
                   /* DM Chat Thread with selected user */
                   (() => {
                     const selectedMember = members.find(m => m.user.id === selectedDMUserId);
-                    const dmMessages = messages.filter(m => 
+                    const dmMessages = messages.filter(m =>
                       (m.user.id === currentUser.id && m.recipientId === selectedDMUserId) ||
                       (m.user.id === selectedDMUserId && m.recipientId === currentUser.id)
                     );
-                    
+
                     return (
                       <div className="space-y-4">
                         {/* DM Thread Subheader */}
-                        <div className="flex items-center space-x-2.5 pb-2 border-b border-slate-100 shrink-0">
+                        <div className="flex items-center space-x-2.5 pb-2 border-b border-[#2a2b36] shrink-0">
                           <button
                             onClick={() => setSelectedDMUserId(null)}
-                            className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                            className="p-1 text-gray-500 hover:text-gray-400 hover:bg-[#2a2b36] rounded-lg transition-all"
                             title="Back to DMs"
                           >
                             <ArrowLeft className="w-4 h-4" />
                           </button>
-                          
+
                           <div
                             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white relative shrink-0 shadow-sm"
                             style={{ backgroundColor: selectedMember?.user.color || '#94a3b8' }}
                           >
                             {selectedMember?.user.name.substring(0, 1).toUpperCase() || '?'}
                             <div
-                              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                                selectedMember?.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
-                              }`}
+                              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${selectedMember?.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                                }`}
                             />
                           </div>
                           <div className="min-w-0">
-                            <span className="font-bold text-slate-800 text-xs block truncate leading-tight">
+                            <span className="font-bold text-gray-200 text-xs block truncate leading-tight">
                               {selectedMember?.user.name || 'Collaborator'}
                             </span>
-                            <span className="text-[10px] text-slate-400 leading-none">
+                            <span className="text-[10px] text-gray-500 leading-none">
                               {selectedMember?.isOnline ? 'Active now' : 'Offline'}
                             </span>
                           </div>
@@ -1131,7 +1125,7 @@ function FlowEditor() {
 
                         {/* DM Message history list */}
                         {dmMessages.length === 0 ? (
-                          <div className="text-center text-slate-400 text-xs mt-10">
+                          <div className="text-center text-gray-500 text-xs mt-10">
                             No private messages yet. Send a DM to start chatting!
                           </div>
                         ) : (
@@ -1139,31 +1133,29 @@ function FlowEditor() {
                             const isMe = msg.user.id === currentUser.id;
                             const prevMsg = index > 0 ? arr[index - 1] : null;
                             const showSenderHeader = !prevMsg || prevMsg.user.id !== msg.user.id;
-                            
+
                             return (
                               <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} ${showSenderHeader ? 'mt-2' : 'mt-1'}`}>
                                 <div className={`flex items-end space-x-2 max-w-[85%] ${isMe ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}>
                                   {!isMe && (
-                                    <div 
-                                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${
-                                        showSenderHeader ? 'visible' : 'invisible'
-                                      }`}
+                                    <div
+                                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm ${showSenderHeader ? 'visible' : 'invisible'
+                                        }`}
                                       style={{ backgroundColor: msg.user.color }}
                                     >
                                       {msg.user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                   )}
                                   <div className="flex flex-col group">
-                                    <div 
-                                      className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${
-                                        isMe 
-                                          ? 'bg-indigo-600 text-white rounded-tr-none' 
-                                          : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
-                                      }`}
+                                    <div
+                                      className={`px-3.5 py-2 rounded-2xl text-xs shadow-sm leading-relaxed ${isMe
+                                          ? 'bg-emerald-600 text-white rounded-tr-none'
+                                          : 'bg-[#2a2b36] text-gray-200 rounded-tl-none border border-[#2a2b36]'
+                                        }`}
                                     >
                                       {msg.text}
                                     </div>
-                                    <span className={`text-[9px] text-slate-400 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
+                                    <span className={`text-[9px] text-gray-500 mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
                                       {formatTime(msg.timestamp)}
                                     </span>
                                   </div>
@@ -1182,7 +1174,7 @@ function FlowEditor() {
 
             {/* Input form - only visible if in team tab or if a user is selected in DMs */}
             {!(activeChatTab === 'dm' && selectedDMUserId === null) && (
-              <div className="p-3.5 border-t border-gray-200 bg-white shrink-0">
+              <div className="p-3.5 border-t border-[#2a2b36] bg-[#13141c] shrink-0">
                 <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
                   <input
                     type="text"
@@ -1193,12 +1185,12 @@ function FlowEditor() {
                         ? "Type a message or @mention..."
                         : `Message ${members.find(m => m.user.id === selectedDMUserId)?.user.name || 'member'}...`
                     }
-                    className="flex-1 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-slate-400 text-slate-800"
+                    className="flex-1 bg-[#1a1b23] hover:bg-[#2a2b36]/50 focus:bg-[#13141c] border border-[#2a2b36] rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-900/50 transition-all placeholder-slate-400 text-gray-200"
                   />
-                  <button 
-                    type="submit" 
-                    disabled={!chatInput.trim()} 
-                    className="bg-[#6366f1] text-white p-2.5 rounded-2xl hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm hover:shadow"
+                  <button
+                    type="submit"
+                    disabled={!chatInput.trim()}
+                    className="bg-emerald-600 text-white p-2.5 rounded-2xl hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm hover:shadow"
                   >
                     <Send className="w-3.5 h-3.5 ml-0.5" />
                   </button>
@@ -1210,7 +1202,7 @@ function FlowEditor() {
 
         {/* History Backdrop Overlay */}
         {historyOpen && (
-          <div 
+          <div
             className="lg:hidden fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-15"
             onClick={() => setHistoryOpen(false)}
           />
@@ -1218,13 +1210,13 @@ function FlowEditor() {
 
         {/* History Sidebar */}
         {historyOpen && (
-          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 shrink-0">
+          <div className="w-full max-w-xs sm:max-w-sm md:w-80 bg-[#13141c] border-l border-[#2a2b36] shadow-xl flex flex-col z-20 h-full absolute lg:static right-0 top-0 bottom-0 animate-in slide-in-from-right-8 duration-200">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-[#1a1b23] shrink-0">
               <div className="flex items-center space-x-2 text-indigo-900 font-semibold">
-                <History className="w-5 h-5 text-indigo-500" />
+                <History className="w-5 h-5 text-emerald-500" />
                 <span>Version History</span>
               </div>
-              <button onClick={() => setHistoryOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">&times;</button>
+              <button onClick={() => setHistoryOpen(false)} className="text-gray-400 hover:text-gray-400 transition-colors">&times;</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1234,18 +1226,18 @@ function FlowEditor() {
                 </div>
               ) : (
                 versions.map(v => (
-                  <div key={v.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow group">
+                  <div key={v.id} className="bg-[#13141c] border border-[#2a2b36] rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow group">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-sm text-gray-900">{v.name}</h4>
+                      <h4 className="font-semibold text-sm text-gray-100">{v.name}</h4>
                       <span className="text-[10px] text-gray-500 ml-2 shrink-0">{new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div className="flex items-center space-x-2 mb-3">
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: v.author.color }}></div>
-                      <span className="text-xs text-gray-600 truncate">{v.author.name}</span>
+                      <span className="text-xs text-gray-400 truncate">{v.author.name}</span>
                     </div>
                     <button
                       onClick={() => handleRestoreVersion(v.id)}
-                      className="w-full flex items-center justify-center space-x-2 py-1.5 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
+                      className="w-full flex items-center justify-center space-x-2 py-1.5 bg-[#1a1b23] hover:bg-emerald-500/10 hover:text-indigo-700 text-gray-300 text-xs font-medium rounded-lg border border-[#2a2b36] transition-colors"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>Restore Version</span>
@@ -1255,7 +1247,7 @@ function FlowEditor() {
               )}
             </div>
 
-            <div className="p-4 border-t border-gray-200 bg-gray-50 shrink-0">
+            <div className="p-4 border-t border-[#2a2b36] bg-[#1a1b23] shrink-0">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Save Current State</h3>
               <form onSubmit={handleSaveVersion} className="flex flex-col space-y-2">
                 <input
@@ -1263,9 +1255,9 @@ function FlowEditor() {
                   value={versionName}
                   onChange={e => setVersionName(e.target.value)}
                   placeholder="e.g. Added login flow"
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]"
+                  className="w-full bg-[#13141c] border border-[#3f3f46] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-[#6366f1]"
                 />
-                <button type="submit" className="w-full bg-[#6366f1] text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors shadow-sm text-sm font-medium flex items-center justify-center space-x-2">
+                <button type="submit" className="w-full bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors shadow-sm text-sm font-medium flex items-center justify-center space-x-2">
                   <Save className="w-4 h-4" />
                   <span>Create Snapshot</span>
                 </button>
@@ -1278,15 +1270,15 @@ function FlowEditor() {
       {/* Members Modal */}
       {membersModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-100 animate-in zoom-in-95 duration-200">
+          <div className="bg-[#13141c] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-[#2a2b36] animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-[#2a2b36] flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
-                  <Users className="w-5 h-5 text-indigo-600" />
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-900">Share this canvas</h3>
+                  <h3 className="font-bold text-lg text-gray-100">Share this canvas</h3>
                   <p className="text-xs text-slate-500">Collaborate with others in real-time</p>
                 </div>
               </div>
@@ -1297,7 +1289,7 @@ function FlowEditor() {
                   setInviteError('');
                   setInviteSuccess(false);
                 }}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all duration-200 active:scale-95"
+                className="p-2 text-gray-500 hover:text-gray-400 hover:bg-[#1a1b23] rounded-xl transition-all duration-200 active:scale-95"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1307,33 +1299,33 @@ function FlowEditor() {
               {/* Invite Form (Only visible to Owners) */}
               {myRole === 'owner' && canvasId !== 'default' && (
                 <div className="space-y-2.5">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                     <UserPlus className="w-3.5 h-3.5 text-slate-500" />
                     Invite new member
                   </h4>
                   <form onSubmit={handleAddMember} className="flex items-stretch gap-2">
-                    <div className="flex-1 relative flex items-center bg-slate-50 border border-slate-200 focus-within:border-indigo-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 rounded-xl px-3.5 transition-all">
-                      <Mail className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
+                    <div className="flex-1 relative flex items-center bg-[#1a1b23] border border-[#2a2b36] focus-within:border-emerald-500/50 focus-within:bg-[#13141c] focus-within:ring-2 focus-within:ring-indigo-100 rounded-xl px-3.5 transition-all">
+                      <Mail className="w-4 h-4 text-gray-500 mr-2.5 shrink-0" />
                       <input
                         type="email"
                         required
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                         placeholder="Enter email address..."
-                        className="w-full bg-transparent border-0 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 p-0 h-[42px]"
+                        className="w-full bg-transparent border-0 text-sm text-gray-100 placeholder-slate-400 focus:outline-none focus:ring-0 p-0 h-[42px]"
                       />
                     </div>
-                    
+
                     <div className="relative shrink-0">
                       <select
                         value={inviteRole}
                         onChange={(e) => setInviteRole(e.target.value)}
-                        className="appearance-none bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-xl pl-3.5 pr-9 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer h-[44px] min-w-[110px]"
+                        className="appearance-none bg-[#1a1b23] border border-[#2a2b36] text-xs font-semibold text-gray-300 rounded-xl pl-3.5 pr-9 focus:outline-none focus:border-emerald-500/50 focus:bg-[#13141c] focus:ring-2 focus:ring-emerald-900/50 transition-all cursor-pointer h-[44px] min-w-[110px]"
                       >
                         <option value="editor">Can edit</option>
                         <option value="viewer">Can view</option>
                       </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                         </svg>
@@ -1343,7 +1335,7 @@ function FlowEditor() {
                     <button
                       type="submit"
                       disabled={isInviting || !inviteEmail.trim()}
-                      className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-5 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:scale-100 shrink-0 h-[44px] flex items-center justify-center"
+                      className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-5 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:scale-100 shrink-0 h-[44px] flex items-center justify-center"
                     >
                       {isInviting ? 'Inviting...' : 'Invite'}
                     </button>
@@ -1367,7 +1359,7 @@ function FlowEditor() {
                   <Users className="w-3.5 h-3.5" />
                   People with access ({members.length})
                 </h4>
-                
+
                 <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                   {members.map(member => {
                     const isCurrentUser = member.user.id === currentUser.id;
@@ -1376,7 +1368,7 @@ function FlowEditor() {
                     return (
                       <div
                         key={member.user.id}
-                        className="flex items-center justify-between p-3.5 bg-slate-50/50 hover:bg-slate-50 border border-slate-100/80 rounded-2xl transition-all duration-200"
+                        className="flex items-center justify-between p-3.5 bg-[#1a1b23]/50 hover:bg-[#1a1b23] border border-[#2a2b36]/80 rounded-2xl transition-all duration-200"
                       >
                         <div className="flex items-center space-x-3.5 min-w-0">
                           <div
@@ -1385,25 +1377,24 @@ function FlowEditor() {
                           >
                             {member.user.name.substring(0, 1).toUpperCase()}
                             <div
-                              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white shadow-sm ${
-                                member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
-                              }`}
+                              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white shadow-sm ${member.isOnline ? 'bg-emerald-500' : 'bg-slate-300'
+                                }`}
                               title={member.isOnline ? 'Online' : 'Offline'}
                             />
                           </div>
-                          
+
                           <div className="min-w-0">
                             <div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
-                              <span className="font-bold text-slate-800 text-sm truncate max-w-[160px]">
+                              <span className="font-bold text-gray-200 text-sm truncate max-w-[160px]">
                                 {member.user.name}
                               </span>
                               {isCurrentUser && (
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                                   (You)
                                 </span>
                               )}
                               {member.role === 'owner' && (
-                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-extrabold rounded-md uppercase tracking-wider border border-indigo-100">
+                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[9px] font-extrabold rounded-md uppercase tracking-wider border border-indigo-100">
                                   Owner
                                 </span>
                               )}
@@ -1415,7 +1406,7 @@ function FlowEditor() {
                                   <span className="w-1 h-1 rounded-full bg-emerald-500" /> Active now
                                 </span>
                               ) : (
-                                <span className="text-slate-400">Offline</span>
+                                <span className="text-gray-500">Offline</span>
                               )}
                             </p>
                           </div>
@@ -1433,13 +1424,13 @@ function FlowEditor() {
                                     handleUpdateRole(member.user.id, e.target.value);
                                   }
                                 }}
-                                className="appearance-none bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm"
+                                className="appearance-none bg-[#13141c] hover:bg-[#2a2b36] border border-[#2a2b36] text-xs font-semibold text-gray-300 rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:border-emerald-500/50 transition-all cursor-pointer shadow-sm"
                               >
                                 <option value="editor">Can edit</option>
                                 <option value="viewer">Can view</option>
                                 <option value="remove" className="text-red-600 font-bold">Remove member</option>
                               </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                                 <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                   <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                 </svg>
@@ -1447,7 +1438,7 @@ function FlowEditor() {
                             </div>
                           ) : (
                             member.role !== 'owner' && (
-                              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider px-2.5 py-1 bg-slate-100 border border-slate-200/60 rounded-lg">
+                              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider px-2.5 py-1 bg-[#2a2b36] border border-[#2a2b36]/60 rounded-lg">
                                 {member.role === 'editor' ? 'Can edit' : 'Can view'}
                               </span>
                             )
@@ -1465,23 +1456,22 @@ function FlowEditor() {
                   <LinkIcon className="w-3.5 h-3.5" />
                   Collaboration link
                 </h4>
-                <div className="flex items-center justify-between p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/40">
+                <div className="flex items-center justify-between p-4 bg-emerald-500/10/40 rounded-2xl border border-indigo-100/40">
                   <div className="flex items-center space-x-3 min-w-0 mr-4">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100/50">
-                      <Globe className="w-4.5 h-4.5 text-indigo-600" />
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 shadow-sm border border-indigo-100/50">
+                      <Globe className="w-4.5 h-4.5 text-emerald-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800">Anyone with the link</p>
+                      <p className="text-xs font-bold text-gray-200">Anyone with the link</p>
                       <p className="text-[11px] text-slate-500">Can view and edit this workspace</p>
                     </div>
                   </div>
                   <button
                     onClick={handleShare}
-                    className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border shrink-0 ${
-                      copied
+                    className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border shrink-0 ${copied
                         ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-none'
-                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm hover:shadow active:scale-95'
-                    }`}
+                        : 'bg-[#13141c] hover:bg-[#1a1b23] border-[#2a2b36] text-gray-300 shadow-sm hover:shadow active:scale-95'
+                      }`}
                   >
                     {copied ? (
                       <>
@@ -1500,7 +1490,7 @@ function FlowEditor() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <div className="px-6 py-4 border-t border-[#2a2b36] bg-[#1a1b23] flex justify-end">
               <button
                 onClick={() => {
                   setMembersModalOpen(false);
@@ -1508,7 +1498,7 @@ function FlowEditor() {
                   setInviteError('');
                   setInviteSuccess(false);
                 }}
-                className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95"
+                className="px-5 py-2.5 bg-[#13141c] border border-[#2a2b36] text-gray-300 hover:bg-[#1a1b23] rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-95"
               >
                 Close
               </button>

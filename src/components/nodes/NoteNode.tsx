@@ -47,7 +47,7 @@ export default function NoteNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col w-64 rounded-xl shadow-md bg-white border border-gray-200 transition-shadow hover:shadow-lg">
+      <div className="flex flex-col w-64 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36] transition-shadow hover:shadow-lg">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       {/* N8N Style Header */}
@@ -61,7 +61,7 @@ export default function NoteNode({ data }: { data: NodeData }) {
         <button 
           onClick={handleAutoTag}
           disabled={isTagging || !task.description}
-          className="text-white hover:bg-white/20 p-1 rounded transition-colors disabled:opacity-50 flex items-center"
+          className="text-white hover:bg-[#13141c]/20 p-1 rounded transition-colors disabled:opacity-50 flex items-center"
           title="Auto-tag"
         >
           {isTagging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Tag'}
@@ -69,9 +69,9 @@ export default function NoteNode({ data }: { data: NodeData }) {
       </div>
       
       {/* Body containing an editable textarea */}
-      <div className="p-3 bg-white flex flex-col h-full rounded-b-xl relative">
+      <div className="p-3 bg-[#13141c] flex flex-col h-full rounded-b-xl relative">
         <textarea
-          className="w-full text-sm text-gray-700 bg-transparent resize-none focus:outline-none placeholder-gray-300 min-h-[80px]"
+          className="w-full text-sm text-gray-300 bg-transparent resize-none focus:outline-none placeholder-gray-300 min-h-[80px]"
           placeholder="Type your note here..."
           defaultValue={task.description || ''}
           onChange={handleChange}
@@ -79,7 +79,7 @@ export default function NoteNode({ data }: { data: NodeData }) {
         {task.tags && task.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-gray-100">
             {task.tags.map((tag, i) => (
-              <span key={i} className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-medium border border-gray-200">
+              <span key={i} className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-400 text-[10px] font-medium border border-[#2a2b36]">
                 <Tag className="w-2.5 h-2.5" />
                 <span>{tag}</span>
               </span>

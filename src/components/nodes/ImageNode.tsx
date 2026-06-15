@@ -17,7 +17,7 @@ export default function ImageNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col w-64 rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg">
+      <div className="flex flex-col w-64 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#f59e0b] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white">
@@ -27,16 +27,16 @@ export default function ImageNode({ data }: { data: NodeData }) {
         </h3>
       </div>
       
-      <div className="p-3 bg-white flex flex-col space-y-2">
+      <div className="p-3 bg-[#13141c] flex flex-col space-y-2">
         <input 
           type="text"
           placeholder="Paste image URL here..."
-          className="w-full text-xs p-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#f59e0b]"
+          className="w-full text-xs p-1.5 border border-[#2a2b36] rounded focus:outline-none focus:border-[#f59e0b]"
           value={url}
           onChange={handleChange}
         />
         {url && (
-          <div className="w-full h-32 bg-gray-100 rounded border border-gray-200  mt-2 flex items-center justify-center relative">
+          <div className="w-full h-32 bg-gray-100 rounded border border-[#2a2b36]  mt-2 flex items-center justify-center relative">
             <img 
               src={url} 
               alt="Node contents" 

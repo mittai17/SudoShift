@@ -52,7 +52,7 @@ export default function ChecklistNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg w-64">
+      <div className="flex flex-col rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg w-64">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#ec4899] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white">
@@ -62,7 +62,7 @@ export default function ChecklistNode({ data }: { data: NodeData }) {
         </h3>
       </div>
       
-      <div className="p-3 bg-white nodrag cursor-default">
+      <div className="p-3 bg-[#13141c] nodrag cursor-default">
         <div className="flex flex-col space-y-2">
           {items.map(item => (
             <div key={item.id} className="flex items-center space-x-2 group relative">
@@ -70,14 +70,14 @@ export default function ChecklistNode({ data }: { data: NodeData }) {
                 type="checkbox" 
                 checked={item.checked} 
                 onChange={() => toggleItem(item.id)}
-                className="w-4 h-4 text-[#ec4899] rounded border-gray-300 focus:ring-[#ec4899]"
+                className="w-4 h-4 text-[#ec4899] rounded border-[#3f3f46] focus:ring-[#ec4899]"
               />
               <input 
                 type="text" 
                 value={item.text}
                 onChange={(e) => updateItemText(item.id, e.target.value)}
                 placeholder="List item..."
-                className={`flex-1 w-full text-sm outline-none ${item.checked ? 'line-through text-gray-400' : 'text-gray-700'}`}
+                className={`flex-1 w-full text-sm outline-none ${item.checked ? 'line-through text-gray-400' : 'text-gray-300'}`}
               />
               <button 
                 onClick={() => removeItem(item.id)}

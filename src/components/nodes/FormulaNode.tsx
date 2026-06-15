@@ -78,7 +78,7 @@ export default function FormulaNode({ data }: { data: NodeData }) {
 
             output.push(
               <div key={i} className="text-gray-800">
-                <span className="text-indigo-600 font-medium">
+                <span className="text-emerald-500 font-medium">
                   {varName}
                 </span>{' '}
                 ={' '}
@@ -131,10 +131,10 @@ export default function FormulaNode({ data }: { data: NodeData }) {
           className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10"
         />
 
-        <div className="flex flex-col w-72 rounded-xl shadow-md bg-white border border-gray-200 overflow-hidden transition-shadow hover:shadow-lg nodrag">
+        <div className="flex flex-col w-72 rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36] overflow-hidden transition-shadow hover:shadow-lg nodrag">
           
           {/* Header */}
-          <div className="bg-[#6366f1] px-3 py-2 flex items-center justify-between text-white">
+          <div className="bg-emerald-600 px-3 py-2 flex items-center justify-between text-white">
             <div className="flex items-center space-x-2 cursor-grab active:cursor-grabbing w-full">
               <Sigma className="w-4 h-4 opacity-80 pointer-events-none" />
               <h3 className="font-semibold text-sm leading-tight tracking-tight shadow-sm w-full truncate select-none pointer-events-none">
@@ -144,18 +144,18 @@ export default function FormulaNode({ data }: { data: NodeData }) {
           </div>
 
           {/* Body */}
-          <div className="p-3 bg-white flex flex-col space-y-3 cursor-default">
+          <div className="p-3 bg-[#13141c] flex flex-col space-y-3 cursor-default">
             
             <textarea
               value={formulas}
               onChange={handleChange}
               onInput={onTextareaInput}
               placeholder="A = 10&#10;B = 20&#10;A + B"
-              className="w-full min-h-[60px] bg-gray-50 border border-gray-200 rounded p-2 text-xs font-mono focus:outline-none focus:border-indigo-400 resize-none cursor-text shadow-inner"
+              className="w-full min-h-[60px] bg-[#1a1b23] border border-[#2a2b36] rounded p-2 text-xs font-mono focus:outline-none focus:border-indigo-400 resize-none cursor-text shadow-inner"
               spellCheck={false}
             />
 
-            <div className="bg-gray-50/80 rounded-lg p-2 min-h-[3rem] text-sm font-mono shadow-inner overflow-x-auto select-text border border-gray-100">
+            <div className="bg-[#1a1b23]/80 rounded-lg p-2 min-h-[3rem] text-sm font-mono shadow-inner overflow-x-auto select-text border border-gray-100">
               {calculate()}
             </div>
 
@@ -165,7 +165,7 @@ export default function FormulaNode({ data }: { data: NodeData }) {
         <Handle
           type="source"
           position={Position.Right}
-          className="w-4 h-4 bg-[#6366f1] border-2 border-white -mr-2 z-10"
+          className="w-4 h-4 bg-emerald-600 border-2 border-white -mr-2 z-10"
         />
       </div>
     </NodeWrapper>

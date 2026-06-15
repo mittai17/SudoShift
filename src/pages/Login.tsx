@@ -50,7 +50,7 @@ export default function Login() {
         if (!cleanUsername) {
           throw new Error('Username is required.');
         }
-        
+
         // 1. Check if username is already taken
         const { data: existing, error: checkError } = await supabase
           .from('profiles')
@@ -89,46 +89,46 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-950 flex">
+    <div className="min-h-screen bg-[#0d0e15] text-gray-100 flex">
       <section className="hidden lg:flex flex-1 bg-slate-950 text-white px-14 py-12 flex-col justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-indigo-500">
+          <div className="p-2.5 rounded-lg bg-emerald-500/100">
             <BrainCircuit className="w-6 h-6" />
           </div>
           <span className="font-bold text-xl">Visual Second Brain</span>
         </div>
         <div className="max-w-xl">
-          <p className="text-sm uppercase tracking-[0.22em] text-indigo-300 mb-5">Collaborative canvas</p>
+          <p className="text-sm uppercase tracking-[0.22em] text-emerald-400 mb-5">Collaborative canvas</p>
           <h1 className="text-5xl font-bold leading-tight mb-6">Sign in, share a board, and build together in real time.</h1>
           <p className="text-slate-300 text-lg leading-8">
             Authenticated workspaces keep your boards tied to your account while live cursors, chat, history, and node syncing keep the team moving.
           </p>
         </div>
-        <div className="text-sm text-slate-400">Supabase Auth + Socket.IO collaboration</div>
+        <div className="text-sm text-gray-500">Supabase Auth + Socket.IO collaboration</div>
       </section>
 
       <main className="w-full lg:w-[480px] flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="p-2.5 rounded-lg bg-indigo-600 text-white">
+            <div className="p-2.5 rounded-lg bg-emerald-600 text-white">
               <BrainCircuit className="w-6 h-6" />
             </div>
             <span className="font-bold text-xl">Visual Second Brain</span>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-            <div className="flex rounded-lg bg-slate-100 p-1 mb-6">
+          <div className="bg-[#13141c] border border-[#2a2b36] rounded-xl shadow-sm p-6">
+            <div className="flex rounded-lg bg-[#2a2b36] p-1 mb-6">
               <button
                 type="button"
                 onClick={() => setMode('signin')}
-                className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors ${mode === 'signin' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors ${mode === 'signin' ? 'bg-[#13141c] text-gray-100 shadow-sm' : 'text-slate-500 hover:text-gray-200'}`}
               >
                 Sign in
               </button>
               <button
                 type="button"
                 onClick={() => setMode('signup')}
-                className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors ${mode === 'signup' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors ${mode === 'signup' ? 'bg-[#13141c] text-gray-100 shadow-sm' : 'text-slate-500 hover:text-gray-200'}`}
               >
                 Sign up
               </button>
@@ -143,21 +143,21 @@ export default function Login() {
               {mode === 'signup' && (
                 <>
                   <label className="block mb-3">
-                    <span className="text-sm font-medium text-slate-700">Username</span>
+                    <span className="text-sm font-medium text-gray-300">Username</span>
                     <input
                       required
                       value={username}
                       onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="mt-1 w-full bg-[#0d0e15] text-gray-200 rounded-lg border border-[#2a2b36] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       placeholder="e.g. adajoin"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-sm font-medium text-slate-700">Name</span>
+                    <span className="text-sm font-medium text-gray-300">Name</span>
                     <input
                       value={fullName}
                       onChange={(event) => setFullName(event.target.value)}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="mt-1 w-full bg-[#0d0e15] text-gray-200 rounded-lg border border-[#2a2b36] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       placeholder="Ada Lovelace"
                     />
                   </label>
@@ -165,19 +165,19 @@ export default function Login() {
               )}
 
               <label className="block">
-                <span className="text-sm font-medium text-slate-700">Email</span>
+                <span className="text-sm font-medium text-gray-300">Email</span>
                 <input
                   required
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="mt-1 w-full bg-[#0d0e15] text-gray-200 rounded-lg border border-[#2a2b36] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   placeholder="you@example.com"
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-slate-700">Password</span>
+                <span className="text-sm font-medium text-gray-300">Password</span>
                 <div className="mt-1 relative">
                   <input
                     required
@@ -185,13 +185,13 @@ export default function Login() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-[#0d0e15] text-gray-200 rounded-lg border border-[#2a2b36] px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                     placeholder="At least 6 characters"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-300"
                     title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -205,7 +205,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 {mode === 'signin' ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
                 {busy ? 'Working...' : mode === 'signin' ? 'Sign in' : 'Create account'}

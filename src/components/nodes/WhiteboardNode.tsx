@@ -112,7 +112,7 @@ export default function WhiteboardNode({ data }: { data: NodeData }) {
 
   return (
     <NodeWrapper>
-      <div className="flex flex-col rounded-xl shadow-md bg-white border border-gray-200  transition-shadow hover:shadow-lg nodrag">
+      <div className="flex flex-col rounded-xl shadow-md bg-[#13141c] border border-[#2a2b36]  transition-shadow hover:shadow-lg nodrag">
       <Handle type="target" position={Position.Left} className="w-4 h-4 bg-gray-400 border-2 border-white -ml-2 z-10" />
       
       <div className="bg-[#a855f7] rounded-t-xl px-3 py-2 flex items-center space-x-2 text-white justify-between">
@@ -124,13 +124,13 @@ export default function WhiteboardNode({ data }: { data: NodeData }) {
         </div>
       </div>
       
-      <div className="p-2 bg-gray-50 flex flex-col items-center space-y-2 select-none">
-          <div className="flex w-full items-center justify-between px-1 bg-white border border-gray-200 rounded p-1">
+      <div className="p-2 bg-[#1a1b23] flex flex-col items-center space-y-2 select-none">
+          <div className="flex w-full items-center justify-between px-1 bg-[#13141c] border border-[#2a2b36] rounded p-1">
               <div className="flex space-x-1">
-                 <button onClick={() => setMode('draw')} className={`p-1.5 rounded-md transition-colors ${mode === 'draw' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`} title="Draw">
+                 <button onClick={() => setMode('draw')} className={`p-1.5 rounded-md transition-colors ${mode === 'draw' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-400 hover:bg-gray-100'}`} title="Draw">
                      <Palette className="w-4 h-4" />
                  </button>
-                 <button onClick={() => setMode('erase')} className={`p-1.5 rounded-md transition-colors ${mode === 'erase' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`} title="Eraser">
+                 <button onClick={() => setMode('erase')} className={`p-1.5 rounded-md transition-colors ${mode === 'erase' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-400 hover:bg-gray-100'}`} title="Eraser">
                      <Eraser className="w-4 h-4" />
                  </button>
                  <button onClick={clearCanvas} className="p-1.5 rounded-md text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Clear Canvas">
@@ -145,7 +145,7 @@ export default function WhiteboardNode({ data }: { data: NodeData }) {
               </div>
           </div>
         
-        <div className="border border-gray-300 bg-white shadow-inner rounded-md  relative" style={{ touchAction: 'none' }}>
+        <div className="border border-[#3f3f46] bg-[#13141c] shadow-inner rounded-md  relative" style={{ touchAction: 'none' }}>
             <canvas
               ref={canvasRef}
               width={400}
@@ -154,7 +154,7 @@ export default function WhiteboardNode({ data }: { data: NodeData }) {
               onPointerMove={draw}
               onPointerUp={stopDrawing}
               onPointerCancel={stopDrawing}
-              className="touch-none cursor-crosshair bg-white"
+              className="touch-none cursor-crosshair bg-[#13141c]"
             />
         </div>
       </div>

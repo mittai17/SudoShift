@@ -59,7 +59,7 @@ export default function BoardNode({ data, selected }: { data: any, selected: boo
 
           <button
             onClick={(e) => { e.stopPropagation(); setShowColorPicker(true); }}
-            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 transition-all shrink-0"
+            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-[#13141c]/10 transition-all shrink-0"
             title="Change Board Color"
           >
             <div className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: color }} />

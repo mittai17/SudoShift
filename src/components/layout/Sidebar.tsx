@@ -149,15 +149,6 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
 
       {/* ── Tab Rail ─────────────────────────────────────── */}
       <div className="relative">
-        <button
-          onClick={() => scrollRail(-160)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/5 text-white border border-[#2a2b36] shadow-sm hover:bg-white/10"
-          title="Scroll left"
-          aria-label="Scroll left"
-        >
-          <ChevronLeft className="w-5 h-5 text-white" />
-        </button>
-
         <div ref={railRef} className="flex overflow-x-auto gap-2 px-3 py-2 border-b border-[#1e2030] shrink-0" style={{ scrollbarWidth: 'none' }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id && !search;
@@ -194,15 +185,6 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
             );
           })}
         </div>
-
-        <button
-          onClick={() => scrollRail(160)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/5 text-white border border-[#2a2b36] shadow-sm hover:bg-white/10"
-          title="Scroll right"
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="w-5 h-5 text-white" />
-        </button>
       </div>
 
       {/* ── Node Grid ────────────────────────────────────── */}

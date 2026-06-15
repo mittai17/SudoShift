@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { 
-  AlertCircle, 
-  BrainCircuit, 
-  LayoutDashboard, 
-  LogOut, 
-  Plus, 
-  Folder, 
-  FolderOpen, 
-  Trash2, 
+import {
+  AlertCircle,
+  BrainCircuit,
+  LayoutDashboard,
+  LogOut,
+  Plus,
+  Folder,
+  FolderOpen,
+  Trash2,
   ChevronRight,
   ChevronLeft,
   FolderTree,
@@ -83,15 +83,31 @@ export default function Home() {
             .select();
           if (insertErr) throw insertErr;
           const combined = [...data, ...(inserted || [])];
-          setWorkspaces(combined);
+          const deduped = (() => {
+            const map = new Map<string, any>();
+            combined.forEach((w: any) => {
+              const key = (w.name || '').toLowerCase();
+              if (!map.has(key)) map.set(key, w);
+            });
+            return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+          })();
+          setWorkspaces(deduped);
           const savedWs = localStorage.getItem('activeWorkspaceId');
-          const found = combined.find(w => w.id === savedWs);
-          setActiveWorkspaceId(found ? found.id : combined[0].id);
+          const found = deduped.find(w => w.id === savedWs);
+          setActiveWorkspaceId(found ? found.id : deduped[0].id);
         } else {
-          setWorkspaces(data);
+          const deduped = (() => {
+            const map = new Map<string, any>();
+            data.forEach((w: any) => {
+              const key = (w.name || '').toLowerCase();
+              if (!map.has(key)) map.set(key, w);
+            });
+            return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+          })();
+          setWorkspaces(deduped);
           const savedWs = localStorage.getItem('activeWorkspaceId');
-          const found = data.find(w => w.id === savedWs);
-          setActiveWorkspaceId(found ? found.id : data[0].id);
+          const found = deduped.find(w => w.id === savedWs);
+          setActiveWorkspaceId(found ? found.id : deduped[0].id);
         }
       } else if (user) {
         // Safe fallback to create default Personal Workspace on the fly

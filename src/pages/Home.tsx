@@ -19,6 +19,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../auth/AuthContext';
 import { supabase } from '../lib/supabase';
+import Inbox from '../components/Inbox';
 
 interface CanvasMeta {
   id: string;
@@ -345,6 +346,9 @@ export default function Home() {
           <RouterLink to="/how-it-works" className="hover:text-gray-900 transition-colors">How it Works</RouterLink>
         </div>
         <div className="flex items-center gap-2">
+          {/* Inbox Notifications Bell */}
+          <Inbox />
+
           {/* Linked Profile Page Circle */}
           <RouterLink to="/profile" className="flex items-center gap-2.5 mr-3 hover:opacity-85 transition-opacity group">
             <div 

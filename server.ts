@@ -538,6 +538,26 @@ async function startServer() {
             return;
           }
 
+          // Fetch canvas name for the notification
+          const { data: canvasData } = await socket.data.supabase
+            .from('canvases')
+            .select('name')
+            .eq('id', canvasId)
+            .maybeSingle();
+
+          // Create invite notification in inbox
+          await socket.data.supabase
+            .from('inbox')
+            .insert({
+              user_id: userData.id,
+              type: 'invite',
+              actor_id: socket.data.user.id,
+              actor_name: socket.data.user.name,
+              canvas_id: canvasId,
+              canvas_name: canvasData?.name || 'Untitled Canvas',
+              content: `invited you to join as ${role}`
+            });
+
           // 3. Broadcast updated members list
           const members = await getActiveMembers(canvasId, socket.data.supabase);
           io.to(canvasId).emit("members_updated", members);
@@ -727,9 +747,70 @@ async function startServer() {
               s.emit("new_message", msgObj);
             }
           }
+
+          // Create DM notification
+          const { data: canvasData } = await socket.data.supabase
+            .from('canvases')
+            .select('name')
+            .eq('id', canvasId)
+            .maybeSingle();
+
+          await socket.data.supabase
+            .from('inbox')
+            .insert({
+              user_id: recipientId,
+              type: 'dm',
+              actor_id: socket.data.user.id,
+              actor_name: socket.data.user.name,
+              canvas_id: canvasId,
+              canvas_name: canvasData?.name || 'Untitled Canvas',
+              content: text.length > 60 ? text.substring(0, 57) + '...' : text,
+              message_id: msgObj.id
+            });
         } else {
           // Public message: broadcast to the whole room
           io.to(canvasId).emit("new_message", msgObj);
+
+          // Check for mentions like @username in public message
+          const mentionRegex = /@([a-zA-Z0-9_-]+)/g;
+          const matches = [...text.matchAll(mentionRegex)];
+          const usernames = [...new Set(matches.map(m => m[1]))];
+
+          if (usernames.length > 0) {
+            const { data: profiles } = await socket.data.supabase
+              .from('profiles')
+              .select('id, username')
+              .in('username', usernames);
+
+            if (profiles && profiles.length > 0) {
+              const { data: canvasData } = await socket.data.supabase
+                .from('canvases')
+                .select('name')
+                .eq('id', canvasId)
+                .maybeSingle();
+
+              const canvasName = canvasData?.name || 'Untitled Canvas';
+
+              const notifications = profiles
+                .filter((p: any) => p.id !== socket.data.user.id)
+                .map((p: any) => ({
+                  user_id: p.id,
+                  type: 'mention',
+                  actor_id: socket.data.user.id,
+                  actor_name: socket.data.user.name,
+                  canvas_id: canvasId,
+                  canvas_name: canvasName,
+                  content: text.length > 60 ? text.substring(0, 57) + '...' : text,
+                  message_id: msgObj.id
+                }));
+
+              if (notifications.length > 0) {
+                await socket.data.supabase
+                  .from('inbox')
+                  .insert(notifications);
+              }
+            }
+          }
         }
       }
     });

@@ -35,6 +35,7 @@ import { AiAssistantWidget } from '../components/canvas/AiAssistantWidget';
 import { TaskData } from '../types';
 import { getInitialData } from '../data/initialData';
 import { nodeTypes as registryNodeTypes, nodeColorMap, NODE_REGISTRY } from '../nodes/registry/nodeTypes';
+import Inbox from '../components/Inbox';
 
 // Legacy node imports for backward compat with existing canvas data
 import TaskNodeLegacy from '../components/nodes/TaskNode';
@@ -110,7 +111,7 @@ function FlowEditor() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { screenToFlowPosition, zoomIn, zoomOut, fitView, getViewport, setViewport, flowToScreenPosition, deleteElements } = useReactFlow();
   const [panMode, setPanMode] = useState(false);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const canvasId = searchParams.get('id') || 'default';
 
   // Real-time state
@@ -167,6 +168,30 @@ function FlowEditor() {
       setCanvasName('Local Workspace');
     }
   }, [canvasId]);
+
+  // Handle inbox action triggers from URL query params
+  useEffect(() => {
+    const openChat = searchParams.get('openChat');
+    const userId = searchParams.get('userId');
+    if (openChat) {
+      setChatOpen(true);
+      setHistoryOpen(false);
+      if (openChat === 'dm') {
+        setActiveChatTab('dm');
+        if (userId) {
+          setSelectedDMUserId(userId);
+        }
+      } else {
+        setActiveChatTab('team');
+      }
+
+      // Clean search parameters to prevent trigger loop on refresh
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('openChat');
+      newParams.delete('userId');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleRenameCanvas = async () => {
     if (!canvasName.trim() || canvasId === 'default') {
@@ -630,6 +655,16 @@ function FlowEditor() {
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Inbox notifications */}
+          <Inbox onOpenChat={(tab, targetUserId) => {
+            setChatOpen(true);
+            setHistoryOpen(false);
+            setActiveChatTab(tab);
+            if (targetUserId) {
+              setSelectedDMUserId(targetUserId);
+            }
+          }} />
+
           <div className="flex -space-x-2 mr-2">
             <Link to="/profile" className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold shadow-sm hover:scale-110 hover:shadow-md transition-all cursor-pointer block" style={{ backgroundColor: currentUser.color, color: 'white' }} title="Edit Profile">
               YOU

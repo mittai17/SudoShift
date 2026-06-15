@@ -70,10 +70,29 @@ export default function Home() {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        setWorkspaces(data);
-        const savedWs = localStorage.getItem('activeWorkspaceId');
-        const found = data.find(w => w.id === savedWs);
-        setActiveWorkspaceId(found ? found.id : data[0].id);
+        // Ensure required default workspaces exist
+        const requiredNames = ['Personal Workspace', 'Hackathon', 'Startup'];
+        const existingNames = data.map((w: any) => w.name);
+        const missing = requiredNames.filter(n => !existingNames.includes(n));
+
+        if (missing.length > 0 && user) {
+          const inserts = missing.map(name => ({ name, owner_id: user.id }));
+          const { data: inserted, error: insertErr } = await supabase
+            .from('workspaces')
+            .insert(inserts)
+            .select();
+          if (insertErr) throw insertErr;
+          const combined = [...data, ...(inserted || [])];
+          setWorkspaces(combined);
+          const savedWs = localStorage.getItem('activeWorkspaceId');
+          const found = combined.find(w => w.id === savedWs);
+          setActiveWorkspaceId(found ? found.id : combined[0].id);
+        } else {
+          setWorkspaces(data);
+          const savedWs = localStorage.getItem('activeWorkspaceId');
+          const found = data.find(w => w.id === savedWs);
+          setActiveWorkspaceId(found ? found.id : data[0].id);
+        }
       } else if (user) {
         // Safe fallback to create default Personal Workspace on the fly
         const { data: newWs, error: wsErr } = await supabase
@@ -396,14 +415,15 @@ export default function Home() {
             </div>
 
             {sidebarCollapsed && (
-              <div className="hidden md:flex w-16 shrink-0 border-r border-[#2a2b36] bg-[#13141c] min-h-[calc(100vh-73px)] sticky top-[73px] items-center justify-center">
+              <div className="hidden md:flex w-16 shrink-0 border-r border-[#2a2b36] bg-transparent min-h-[calc(100vh-73px)] sticky top-[73px] items-center justify-center">
                 <button
                   type="button"
                   onClick={() => setSidebarCollapsed(false)}
-                  className="p-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-2xl transition-all shadow-sm active:scale-95"
+                  className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
                   title="Open workspace panel"
+                  aria-label="Open workspace panel"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -417,10 +437,11 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setSidebarCollapsed(true)}
-                    className="p-1.5 md:p-2 text-gray-500 hover:text-gray-300 hover:bg-[#2a2b36] md:bg-[#13141c] md:border md:border-[#2a2b36] md:shadow-sm rounded-lg md:rounded-full transition-colors md:absolute md:-right-4 md:top-1/2 md:-translate-y-1/2 md:z-10"
+                    className="p-1 text-gray-400 hover:text-gray-200 md:absolute md:-right-3 md:top-1/2 md:-translate-y-1/2 md:z-10 transition-colors"
                     title="Close workspace panel"
+                    aria-label="Close workspace panel"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="flex items-center gap-1.5">

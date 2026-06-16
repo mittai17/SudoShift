@@ -6,6 +6,7 @@ import {
 import { NODE_REGISTRY } from '../../nodes/registry/nodeTypes';
 import { NodeDefinition } from '../../nodes/registry/types';
 import { NodeCategory } from '../../types';
+import { EisenhowerMatrixWidget } from './EisenhowerMatrixWidget';
 
 interface SidebarProps {
   onAddNodes: (nodes: any[]) => void;
@@ -253,6 +254,9 @@ export default function Sidebar({ onAddNodes, onAddEdges, onAddNodeClick, onClos
 
         <p className="text-[10px] text-gray-400 text-center pt-1 pb-2">Drag nodes to the canvas</p>
       </div>
+
+      {/* ── Eisenhower Matrix AI Widget ───────────────────── */}
+      <EisenhowerMatrixWidget onAddNodes={onAddNodes} />
     </div>
   );
 }

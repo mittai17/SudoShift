@@ -512,7 +512,7 @@ function FlowEditor() {
       const newFlowNodes: Node[] = newTasks.map((t, idx) => ({
         id: t.id,
         type: 'taskNodeType',
-        position: { x: startX + idx * 300, y: startY + (idx % 2 === 0 ? 0 : 50) },
+        position: (t as any).position || { x: startX + idx * 300, y: startY + (idx % 2 === 0 ? 0 : 50) },
         data: { task: t }
       }));
 

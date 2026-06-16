@@ -849,12 +849,119 @@ async function startServer() {
     return JSON.parse(clean);
   };
 
-  const getAIClient = (_req?: express.Request) => {
-    const apiKey = process.env.DEEPSEEK_API;
-    if (!apiKey) {
-      throw new Error("No DeepSeek API key configured. Please set DEEPSEEK_API in your environment.");
+  // ── Multi-Provider AI Router ──────────────────────────────────────────────────
+  // Priority: OpenRouter Key 1 → OpenRouter Key 2 → DeepSeek (fallback)
+  // All providers expose an OpenAI-compatible interface.
+
+  const AI_PROVIDERS = [
+    {
+      name: "OpenRouter-1",
+      apiKey: process.env.OPENROUTER_API_KEY_1 || "",
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultModel: "deepseek/deepseek-chat-v3-0324:free",
+      geminiModel: "google/gemini-flash-1.5",
+      headers: {
+        "HTTP-Referer": process.env.APP_URL || "http://localhost:3000",
+        "X-Title": "SudoShift Visual Second Brain",
+      },
+    },
+    {
+      name: "OpenRouter-2",
+      apiKey: process.env.OPENROUTER_API_KEY_2 || "",
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultModel: "deepseek/deepseek-chat-v3-0324:free",
+      geminiModel: "google/gemini-flash-1.5",
+      headers: {
+        "HTTP-Referer": process.env.APP_URL || "http://localhost:3000",
+        "X-Title": "SudoShift Visual Second Brain",
+      },
+    },
+    {
+      name: "DeepSeek",
+      apiKey: process.env.DEEPSEEK_API || "",
+      baseURL: "https://api.deepseek.com",
+      defaultModel: "deepseek-chat",
+      geminiModel: "deepseek-chat", // fallback to deepseek if OR fails
+      headers: {},
+    },
+  ].filter((p) => p.apiKey !== "");
+
+  // Round-robin index for load balancing across OpenRouter keys
+  let orRoundRobinIdx = 0;
+
+  /**
+   * callAI — resilient multi-provider chat completion with automatic failover.
+   * @param messages   OpenAI-format messages array
+   * @param opts       Optional overrides: { model?, useGemini?, maxTokens?, temperature? }
+   */
+  async function callAI(
+    messages: OpenAI.ChatCompletionMessageParam[],
+    opts: { model?: string; useGemini?: boolean; maxTokens?: number; temperature?: number } = {}
+  ): Promise<string> {
+    const errors: string[] = [];
+
+    // Try providers in order, but start round-robin among OpenRouter providers first
+    const openRouterProviders = AI_PROVIDERS.filter((p) => p.name.startsWith("OpenRouter"));
+    const fallbackProviders = AI_PROVIDERS.filter((p) => !p.name.startsWith("OpenRouter"));
+
+    // Pick starting OR provider via round-robin
+    const orderedProviders = openRouterProviders.length > 0
+      ? [
+          ...openRouterProviders.slice(orRoundRobinIdx % openRouterProviders.length),
+          ...openRouterProviders.slice(0, orRoundRobinIdx % openRouterProviders.length),
+          ...fallbackProviders,
+        ]
+      : fallbackProviders;
+
+    if (openRouterProviders.length > 0) {
+      orRoundRobinIdx = (orRoundRobinIdx + 1) % openRouterProviders.length;
     }
-    return new OpenAI({ apiKey, baseURL: "https://api.deepseek.com" });
+
+    for (const provider of orderedProviders) {
+      try {
+        const client = new OpenAI({
+          apiKey: provider.apiKey,
+          baseURL: provider.baseURL,
+          defaultHeaders: provider.headers,
+        });
+
+        const model = opts.model
+          ? opts.model
+          : opts.useGemini
+          ? provider.geminiModel
+          : provider.defaultModel;
+
+        const response = await client.chat.completions.create({
+          model,
+          messages,
+          ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+          ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
+        });
+
+        const content = response.choices[0]?.message?.content;
+        if (!content) throw new Error("Empty response from model");
+
+        console.log(`[AI] ✅ ${provider.name} (${model}) responded successfully`);
+        return content;
+      } catch (err: any) {
+        const msg = `${provider.name}: ${err.message || err}`;
+        errors.push(msg);
+        console.warn(`[AI] ⚠️ ${msg} — trying next provider…`);
+      }
+    }
+
+    throw new Error(`All AI providers failed:\n${errors.join("\n")}`);
+  }
+
+  // Legacy compatibility shim — used by existing route handlers
+  const getAIClient = (_req?: express.Request) => {
+    // Returns a proxy object with the same interface as OpenAI client
+    // but routes through our multi-provider callAI function
+    const available = AI_PROVIDERS.find((p) => p.name === "DeepSeek");
+    if (!available) {
+      throw new Error("No AI providers configured. Set OPENROUTER_API_KEY_1, OPENROUTER_API_KEY_2, or DEEPSEEK_API.");
+    }
+    return new OpenAI({ apiKey: available.apiKey, baseURL: available.baseURL });
   };
 
   app.post("/api/transcriptapi", async (req, res) => {
@@ -930,7 +1037,6 @@ async function startServer() {
 
   app.post("/api/action", async (req, res) => {
     try {
-      const ai = getAIClient();
       const { action, text, context } = req.body;
 
       let prompt = '';
@@ -948,13 +1054,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid action" });
       }
 
-      const response = await ai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [{ role: "user", content: prompt }],
-      });
-
-      const resultText = response.choices[0]?.message?.content;
-      if (!resultText) throw new Error("No response from the model");
+      const resultText = await callAI([{ role: "user", content: prompt }]);
 
       if (action === 'subtasks') {
         const parsed = parseJsonFromMarkdown(resultText);
@@ -970,18 +1070,10 @@ async function startServer() {
 
   app.post("/api/evaluate-formula", async (req, res) => {
     try {
-      const ai = getAIClient();
       const { text } = req.body;
-
       const prompt = `Evaluate the following mathematical formula, instructions, or expression. Provide ONLY the final result or direct output. Be extremely concise. Do not include any explanations.\n\n${text}`;
-
-      const response = await ai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 100,
-      });
-
-      res.json({ result: response.choices[0]?.message?.content });
+      const result = await callAI([{ role: "user", content: prompt }], { maxTokens: 100 });
+      res.json({ result });
     } catch (e: any) {
       console.error("Formula Eval Error:", e);
       res.status(500).json({ error: e.message || "Failed to evaluate formula." });
@@ -990,33 +1082,19 @@ async function startServer() {
 
   app.post("/api/auto-tag", async (req, res) => {
     try {
-      const ai = getAIClient();
       const { text } = req.body;
-      if (!text) {
-        return res.status(400).json({ error: "Text is required" });
-      }
+      if (!text) return res.status(400).json({ error: "Text is required" });
 
-      const prompt = `
-        You are an AI that tags content for better searchability.
-        Analyze the following text and provide a JSON array of 1 to 4 relevant short tags (strings). Do not provide any other text.
-        Tags should be short and descriptive, max 2 words each.
-        
-        Text:
-        "${text}"
-      `;
+      const prompt = `You are an AI that tags content for better searchability.
+Analyze the following text and provide a JSON array of 1 to 4 relevant short tags (strings). Do not provide any other text.
+Tags should be short and descriptive, max 2 words each.
 
-      const response = await ai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [{ role: "user", content: prompt }],
-      });
+Text:
+"${text}"`;
 
-      const resultText = response.choices[0]?.message?.content;
-      if (!resultText) throw new Error("No response from AI");
-
+      const resultText = await callAI([{ role: "user", content: prompt }]);
       const parsed = parseJsonFromMarkdown(resultText);
-      const tags = Array.isArray(parsed) ? parsed : [];
-
-      res.json({ tags });
+      res.json({ tags: Array.isArray(parsed) ? parsed : [] });
     } catch (e: any) {
       console.error("Auto Tagging Error:", e);
       res.status(500).json({ error: "Failed to generate tags." });
@@ -1157,23 +1235,18 @@ You MUST respond in valid JSON with this exact structure. No markdown, no text b
 Generate a minimum of 5 phases. Each phase must have title, node, purpose, and instructions.
 The connections array should list the node names in order of the workflow flow.`;
 
-      const response = await ai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [
+      const resultText = await callAI(
+        [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
-        ],
-      });
-
-      const resultText = response.choices[0]?.message?.content;
-      if (!resultText) throw new Error("No response from the model");
+        ]
+      );
 
       // Parse the JSON response
       let parsed;
       try {
         parsed = parseJsonFromMarkdown(resultText);
       } catch {
-        // If JSON parsing fails, return raw text
         parsed = { raw: resultText };
       }
 
@@ -1187,8 +1260,6 @@ The connections array should list the node names in order of the workflow flow.`
   // ── AI Chat (multi-turn, memory, canvas ops) ─────────────────────────────────
   app.post("/api/ai-chat", async (req, res) => {
     try {
-      const ai = getAIClient();
-
       const { message, history = [], canvasContext } = req.body;
       if (!message?.trim()) return res.status(400).json({ error: "Message is required." });
 
@@ -1252,7 +1323,7 @@ Rules:
 - Keep "reply" conversational and helpful.
 - If just answering a question, canvasOps = [] and workflow = null.`;
 
-      // Build conversation history for DeepSeek
+      // Build conversation history
       const messages: OpenAI.ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
       ];
@@ -1261,12 +1332,7 @@ Rules:
       }
       messages.push({ role: 'user', content: message });
 
-      const result = await ai.chat.completions.create({
-        model: 'deepseek-chat',
-        messages,
-      });
-
-      const rawText = result.choices[0]?.message?.content || '';
+      const rawText = await callAI(messages);
       let parsed: any;
       try {
         parsed = parseJsonFromMarkdown(rawText);
@@ -1499,8 +1565,78 @@ Rules:
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 
+  // ─── Eisenhower Matrix AI Endpoint ──────────────────────────────────────────
+  app.post("/api/eisenhower", async (req, res) => {
+    try {
+      const { goal, tasks } = req.body;
+      if (!goal || !tasks) {
+        return res.status(400).json({ error: "goal and tasks are required" });
+      }
+
+      const systemPrompt = `You are an expert productivity coach specializing in the Eisenhower Matrix — a decision-making framework that categorizes tasks by urgency and importance.
+
+Your job:
+1. Analyze the user's goal and task list.
+2. Categorize EACH task into exactly ONE of these quadrants:
+   - "do"       → Urgent + Important   (needs immediate action)
+   - "decide"   → Important + Not Urgent (schedule for later)
+   - "delegate" → Urgent + Not Important (assign to someone else)
+   - "delete"   → Not Urgent + Not Important (eliminate)
+3. Provide concise, actionable recommendations.
+
+Return ONLY valid JSON in this exact shape (no markdown, no explanation):
+{
+  "goal": "<the user's goal>",
+  "tasks": [
+    { "text": "<task text>", "quadrant": "do" | "decide" | "delegate" | "delete" }
+  ],
+  "recommendations": {
+    "doNow": ["<action 1>", "<action 2>"],
+    "schedule": ["<action 1>", "<action 2>"],
+    "delegate": ["<action 1>"],
+    "eliminate": ["<action 1>"]
+  }
+}`;
+
+      const userPrompt = `Goal: ${goal}\n\nTasks (one per line):\n${tasks}`;
+
+      const apiKey = process.env.NEW_GEMINI_KEY;
+      if (!apiKey) {
+        throw new Error("Missing NEW_GEMINI_KEY in environment variables.");
+      }
+
+      const resAi = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: systemPrompt + `\n\n${userPrompt}` }]
+          }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        }),
+      });
+
+      if (!resAi.ok) {
+        const errData = await resAi.json().catch(() => ({}));
+        throw new Error(errData.error?.message || 'Gemini API Error');
+      }
+
+      const data = await resAi.json();
+      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!resultText) throw new Error("Empty response from AI");
+
+      const parsed = JSON.parse(resultText);
+      res.json(parsed);
+    } catch (e: any) {
+      console.error("Eisenhower AI Error:", e);
+      res.status(500).json({ error: e.message || "Failed to analyze tasks." });
+    }
+  });
 
   if (process.env.NODE_ENV !== "production") {
+
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
